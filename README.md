@@ -1,1 +1,1 @@
-#Simple headless CMS for creating blog api
+# Simple headless CMS for creating blog api

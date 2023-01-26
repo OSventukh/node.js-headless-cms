@@ -1,0 +1,19 @@
+{
+  "name": "node.js-headless-cms",
+  "description": "",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "test": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OSventukh/node.js-headless-cms.git"
+  },
+  "author": "Oleksandr Sventukh",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/OSventukh/node.js-headless-cms/issues"
+  },
+  "homepage": "https://github.com/OSventukh/node.js-headless-cms#readme"
+}
