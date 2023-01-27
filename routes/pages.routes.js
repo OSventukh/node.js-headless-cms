@@ -1,9 +1,6 @@
 import express from 'express';
-
 const router = express.Router();
 
-router.get('/pages', () => {
-
-});
+router.post('/pages', () => {});
 
 export default router;
