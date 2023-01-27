@@ -1,7 +1,21 @@
-import { createPost } from '../services/post.services.js';
+import { createPost, getOnePost } from '../services/post.services.js';
+
 export const getAllPosts = async (req, res, next) => {};
 
-export const getPost = async (req, res, next) => {};
+export const getPost = async (req, res, next) => {
+  const { postId } = req.params;
+  console.log(req.body)
+  try {
+    const post = await getOnePost(postId);
+    res.status(200).json({
+      post: post,
+    });
+  } catch (error) {
+    res.status(404).json({
+      message: 'Could not find this post',
+    });
+  }
+};
 
 export const addPost = async (req, res, next) => {
   const { title, content, excerpt, slug, status } = req.body;
