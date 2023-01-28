@@ -1,14 +1,25 @@
-import { createPost, getOnePost } from '../services/post.services.js';
+import { createPost, getOnePost, getMultiplePosts } from '../services/post.services.js';
 
-export const getAllPosts = async (req, res, next) => {};
+export const getAllPosts = async (req, res, next) => {
+  try {
+    const posts = await getMultiplePosts();
+    res.status(200).json({
+      posts,
+    });
+  } catch (error) {
+    res.status(404).json({
+      message: 'Could not find these posts',
+    });
+  }
+};
 
 export const getPost = async (req, res, next) => {
   const { postId } = req.params;
-  console.log(req.body)
+
   try {
     const post = await getOnePost(postId);
     res.status(200).json({
-      post: post,
+      post,
     });
   } catch (error) {
     res.status(404).json({

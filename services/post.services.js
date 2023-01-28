@@ -16,11 +16,25 @@ export const getOnePost = async (id) => {
     const { Post } = await db;
     const post = await Post.findOne({
       where: {
-        id: id,
+        id,
       },
     });
     return post;
   } catch (error) {
     throw new Error('Could not find this post');
+  }
+};
+
+export const getMultiplePosts = async (whereOptions = {}, includeOptions = []) => {
+  try {
+    const { Post } = await db;
+    const posts = await Post.findAll({
+      where: whereOptions,
+      include: includeOptions,
+    });
+    return posts;
+  } catch (error) {
+    console.log(error.message);
+    throw new Error('Could not find these posts');
   }
 };

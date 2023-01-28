@@ -2,6 +2,6 @@ import express from 'express';
 
 const router = express.Router();
 
-router.get('/posts', () => {});
+router.get('/users', () => {});
 
 export default router;
