@@ -1,36 +1,32 @@
 import db from '../models/index.js';
 
-export const createPostService = async (title, content, excerpt, slug, status) => {
+export const createPostService = async (
+  title,
+  content,
+  excerpt,
+  slug,
+  status,
+) => {
   try {
     const { Post } = await db;
     const post = await Post.create({ title, content, excerpt, slug, status });
     return post;
   } catch (error) {
-    console.log(error.message);
     throw new Error('Creating post failed');
   }
 };
 
-export const getOnePostService = async (id) => {
-  try {
-    const { Post } = await db;
-    const post = await Post.findOne({
-      where: {
-        id,
-      },
-    });
-    return post;
-  } catch (error) {
-    throw new Error('Could not find this post');
-  }
-};
-
-export const getMultiplePostsService = async (whereOptions = {}, includeOptions = []) => {
+export const getPostsService = async (
+  whereOptions = {},
+  includeOptions = [],
+  orderOptions = [],
+) => {
   try {
     const { Post } = await db;
     const posts = await Post.findAll({
       where: whereOptions,
       include: includeOptions,
+      order: orderOptions,
     });
     return posts;
   } catch (error) {
@@ -45,7 +41,6 @@ export const deletePostService = async (whereOption) => {
       where: whereOption,
     });
   } catch (error) {
-    console.log(error.message);
     throw new Error('Could not delete this post');
   }
 };

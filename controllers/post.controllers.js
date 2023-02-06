@@ -1,28 +1,25 @@
 import {
   createPostService,
-  getOnePostService,
-  getMultiplePostsService,
+  getPostsService,
   deletePostService,
 } from '../services/post.services.js';
 
-export const getAllPosts = async (req, res, next) => {
-  try {
-    const posts = await getMultiplePostsService();
-    res.status(200).json({
-      posts,
-    });
-  } catch (error) {
-    res.status(404).json({
-      message: 'Could not find these posts',
-    });
-  }
-};
-
-export const getPost = async (req, res, next) => {
+export const getPosts = async (req, res, next) => {
   const { postId } = req.params;
+  const { slug } = req.query;
+
+  let whereOptions;
+
+  if (postId) {
+    whereOptions = { id: postId };
+  }
+
+  if (slug) {
+    whereOptions = { slug };
+  }
 
   try {
-    const post = await getOnePostService(postId);
+    const post = await getPostsService(whereOptions);
     res.status(200).json({
       post,
     });
