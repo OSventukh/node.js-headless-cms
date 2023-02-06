@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import { readdirSync } from 'fs';
 import { basename, dirname } from 'path';
 import { Sequelize, DataTypes } from 'sequelize';
@@ -12,17 +13,16 @@ const sequelize = new Sequelize(database.development);
 
 export default (async () => {
   const files = readdirSync(__dirname).filter(
-    (file) =>
-      file.indexOf('.') !== 0 &&
-      file !== basename(__filename) &&
-      file.slice(-3) === '.js'
+    (file) => file.indexOf('.') !== 0
+    && file !== basename(__filename)
+    && file.slice(-3) === '.js',
   );
 
-  for await (const file of files) {
+  Promise.all(files.map(async (file) => {
     const model = await import(`./${file}`);
     const namedModel = model.default(sequelize, DataTypes);
     db[namedModel.name] = namedModel;
-  }
+  }));
 
   Object.keys(db).forEach((modelName) => {
     if (db[modelName].associate) {
