@@ -30,9 +30,6 @@ export default (sequelize, DataTypes) => {
         type: DataTypes.TEXT,
         allowNull: false,
       },
-      topics: {
-        type: DataTypes.TEXT,
-      },
     },
     {
       sequelize,
