@@ -12,7 +12,7 @@ export const createPostService = async (
     const post = await Post.create({ title, content, excerpt, slug, status });
     return post;
   } catch (error) {
-    throw new Error('Creating post failed');
+    throw new Error('Could not create new post');
   }
 };
 
