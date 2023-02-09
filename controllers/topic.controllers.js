@@ -58,7 +58,7 @@ export const updateTopic = async (req, res, next) => {
   try {
     await updateTopicService({ ...req.body }, { id: topicId });
     res.status(200).json({
-      message: 'Topic successfully updated',
+      message: 'Topic was successfully updated',
     });
   } catch (error) {
     res.status(500).json({
@@ -67,4 +67,19 @@ export const updateTopic = async (req, res, next) => {
   }
 };
 
-export const deleteTopic = async (req, res, next) => {};
+export const deleteTopic = async (req, res, next) => {
+  const { topicIds } = req.body;
+
+  try {
+    Promise.all(topicIds.map(async (id) => {
+      await deleteTopicService({ id });
+    }));
+    res.status(200).json({
+      message: 'Topic was succesfully deleted',
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Could not delete post',
+    });
+  }
+};

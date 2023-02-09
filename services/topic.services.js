@@ -58,4 +58,13 @@ export const updateTopicService = async (toUpdate, whereOptions) => {
   }
 };
 
-export const deleteTopicService = async () => {};
+export const deleteTopicService = async (whereOptions) => {
+  try {
+    const { Topic } = await db;
+    await Topic.destroy({
+      where: whereOptions,
+    });
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
