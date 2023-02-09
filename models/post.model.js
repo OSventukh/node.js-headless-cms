@@ -44,7 +44,7 @@ export default (sequelize, DataTypes) => {
     {
       sequelize,
       modelName: 'Post',
-    }
+    },
   );
   return Post;
 };

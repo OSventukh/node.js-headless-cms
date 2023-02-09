@@ -1,6 +1,7 @@
 import {
   createPostService,
   getPostsService,
+  updatePostService,
   deletePostService,
 } from '../services/post.services.js';
 
@@ -44,6 +45,20 @@ export const createPost = async (req, res, next) => {
   } catch (error) {
     res.status(500).json({
       message: error.message,
+    });
+  }
+};
+
+export const updatePost = async (req, res, next) => {
+  const { postId } = req.params;
+  try {
+    await updatePostService({ ...req.body }, { id: postId });
+    res.status(201).json({
+      message: 'Post successfully updated',
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Could not update this post',
     });
   }
 };

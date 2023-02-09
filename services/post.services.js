@@ -34,6 +34,18 @@ export const getPostsService = async (
   }
 };
 
+export const updatePostService = async (toUpdate, whereOptions) => {
+  try {
+    const { Post } = await db;
+    const result = await Post.update({ ...toUpdate }, { where: whereOptions });
+    if (result[0] === 0) {
+      throw new Error('Could not update this post');
+    }
+  } catch (error) {
+    throw new Error('Could not update this post');
+  }
+};
+
 export const deletePostService = async (whereOption) => {
   try {
     const { Post } = await db;
