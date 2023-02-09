@@ -8,7 +8,7 @@ export const createUserService = async (
   role,
 ) => {
   try {
-    const { User } = await db();
+    const { User } = await db;
     const user = await User.create({
       firstname,
       lastname,
@@ -18,6 +18,7 @@ export const createUserService = async (
     });
     return user;
   } catch (error) {
+    console.log(error.message);
     throw new Error('Could not create new user');
   }
 };
@@ -28,7 +29,7 @@ export const getUsersService = async (
   orderOptions = [],
 ) => {
   try {
-    const { User } = await db();
+    const { User } = await db;
     const users = await User.findAll({
       where: whereOptions,
       include: includeOptions,

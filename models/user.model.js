@@ -10,25 +10,26 @@ export default (sequelize, DataTypes) => {
   User.init(
     {
       firstname: {
-        type: DataTypes.TEXT,
+        type: DataTypes.STRING,
         allowNull: false,
       },
       lastname: {
-        type: DataTypes.TEXT,
+        type: DataTypes.STRING,
         allowNull: false,
       },
       email: {
-        type: DataTypes.TEXT,
+        type: DataTypes.STRING,
         allowNull: false,
         unique: true,
       },
       password: {
-        type: DataTypes.TEXT,
+        type: DataTypes.STRING,
         allowNull: false,
       },
       role: {
-        type: DataTypes.TEXT,
+        type: DataTypes.STRING,
         allowNull: false,
+        defaultValue: 'writer',
       },
     },
     {
