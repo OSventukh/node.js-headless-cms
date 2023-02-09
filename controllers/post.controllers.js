@@ -6,7 +6,7 @@ import {
 
 export const getPosts = async (req, res, next) => {
   const { postId } = req.params;
-  const { slug } = req.query;
+  const { slug, status } = req.query;
 
   let whereOptions;
 
@@ -14,8 +14,11 @@ export const getPosts = async (req, res, next) => {
     whereOptions = { id: postId };
   }
 
-  if (slug) {
-    whereOptions = { slug };
+  if (slug || status) {
+    whereOptions = {
+      ...(slug && { slug }),
+      ...(status && { status }),
+    };
   }
 
   try {
@@ -30,7 +33,7 @@ export const getPosts = async (req, res, next) => {
   }
 };
 
-export const addPost = async (req, res, next) => {
+export const createPost = async (req, res, next) => {
   const { title, content, excerpt, slug, status } = req.body;
 
   try {
