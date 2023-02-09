@@ -5,7 +5,7 @@ import {
   getTopics,
   updateTopic,
   deleteTopic,
-} from '../controllers/topic.controllers';
+} from '../controllers/topic.controllers.js';
 
 const router = express.Router();
 
@@ -13,12 +13,12 @@ router.get('/topics/:topicId', getTopics);
 
 router.get('/topics', getTopics);
 
-router.post('/topic', createTopic);
+router.post('/topics', createTopic);
 
-router.patch('/topic', updateTopic);
+router.patch('/topics/:topicId', updateTopic);
 
-router.delete('/topic/:topicId', deleteTopic);
+router.delete('/topics/:topicId', deleteTopic);
 
-router.delete('/topic', deleteTopic);
+router.delete('/topics', deleteTopic);
 
 export default router;

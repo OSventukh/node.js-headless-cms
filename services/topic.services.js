@@ -40,6 +40,22 @@ export const getTopicsService = async (
   }
 };
 
-export const updateTopicService = async () => {};
+export const updateTopicService = async (toUpdate, whereOptions) => {
+  try {
+    const { Topic } = await db;
+    const result = Topic.update(
+      toUpdate,
+      {
+        where: whereOptions,
+      },
+    );
+
+    if (result[0] === 0) {
+      throw new Error('Could not update this topic');
+    }
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
 
 export const deleteTopicService = async () => {};

@@ -9,12 +9,14 @@ export default (sequelize, DataTypes) => {
 
   Post.init({
     title: {
-      type: DataTypes.STING,
+      type: DataTypes.STRING,
       allowNull: false,
+      unique: true,
     },
     slug: {
       type: DataTypes.STRING,
       allowNull: false,
+      unique: true,
     },
     image: {
       type: DataTypes.STRING,
