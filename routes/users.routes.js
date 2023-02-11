@@ -2,6 +2,6 @@ import express from 'express';
 
 const router = express.Router();
 
-router.get('/auth', () => {});
+router.get('/users', () => {});
 
 export default router;
