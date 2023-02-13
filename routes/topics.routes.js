@@ -17,6 +17,8 @@ router.post('/topics', createTopic);
 
 router.patch('/topics/:topicId', updateTopic);
 
+router.patch('/topics', updateTopic);
+
 router.delete('/topics/:topicId', deleteTopic);
 
 router.delete('/topics', deleteTopic);

@@ -55,8 +55,11 @@ export const getTopics = async (req, res, next) => {
 
 export const updateTopic = async (req, res, next) => {
   const { topicId } = req.params;
+  const { id, ...toUpdate } = req.body;
+
+  console.log(toUpdate)
   try {
-    await updateTopicService({ ...req.body }, { id: topicId });
+    await updateTopicService(toUpdate, { id: topicId || id });
     res.status(200).json({
       message: 'Topic was successfully updated',
     });
