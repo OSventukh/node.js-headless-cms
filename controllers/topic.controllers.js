@@ -1,3 +1,4 @@
+import { Op } from 'sequelize';
 import {
   createTopicService,
   getTopicsService,
@@ -57,9 +58,15 @@ export const updateTopic = async (req, res, next) => {
   const { topicId } = req.params;
   const { id, ...toUpdate } = req.body;
 
-  console.log(toUpdate)
   try {
+    const topic = await getTopicsService({ id: topicId || id });
+
+    if (!topic || topic.length === 0) {
+      throw new Error('This topic does not exist');
+    }
+
     await updateTopicService(toUpdate, { id: topicId || id });
+
     res.status(200).json({
       message: 'Topic was successfully updated',
     });
@@ -72,11 +79,18 @@ export const updateTopic = async (req, res, next) => {
 
 export const deleteTopic = async (req, res, next) => {
   const { topicIds } = req.body;
-
   try {
-    Promise.all(topicIds.map(async (id) => {
-      await deleteTopicService({ id });
-    }));
+    const topic = await getTopicsService({ id: { [Op.in]: topicIds } });
+
+    if (!topic || topic.length === 0) {
+      throw new Error('This topic does not exist');
+    }
+
+    Promise.all(
+      topicIds.map(async (id) => {
+        await deleteTopicService({ id });
+      }),
+    );
     res.status(200).json({
       message: 'Topic was succesfully deleted',
     });
