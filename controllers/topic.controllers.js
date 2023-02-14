@@ -80,9 +80,9 @@ export const updateTopic = async (req, res, next) => {
 export const deleteTopic = async (req, res, next) => {
   const { topicIds } = req.body;
   try {
-    const topic = await getTopicsService({ id: { [Op.in]: topicIds } });
+    const topics = await getTopicsService({ id: { [Op.in]: topicIds } });
 
-    if (!topic || topic.length === 0) {
+    if (!topics || topics.length === 0) {
       throw new Error('This topic does not exist');
     }
 
