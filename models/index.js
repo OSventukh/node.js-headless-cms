@@ -13,27 +13,28 @@ const sequelize = new Sequelize(database.development);
 
 (async () => {
   const files = readdirSync(__dirname).filter(
-    (file) => file.indexOf('.') !== 0
-    && file !== basename(__filename)
-    && file.slice(-3) === '.js',
+    (file) =>
+      file.indexOf('.') !== 0 &&
+      file !== basename(__filename) &&
+      file.slice(-3) === '.js'
   );
 
-  Promise.all(files.map(async (file) => {
-    const model = await import(`./${file}`);
-    const namedModel = model.default(sequelize, DataTypes);
-    db[namedModel.name] = namedModel;
-  }));
+  Promise.all(
+    files.map(async (file) => {
+      const model = await import(`./${file}`);
+      const namedModel = model.default(sequelize, DataTypes);
+      db[namedModel.name] = namedModel;
+    })
+  );
 
   Object.keys(db).forEach((modelName) => {
     if (db[modelName].associate) {
       db[modelName].associate(db);
     }
   });
-
-  db.sequelize = sequelize;
-  db.Sequelize = Sequelize;
-
-  return db;
 })();
+
+db.sequelize = sequelize;
+db.Sequelize = Sequelize;
 
 export default db;
