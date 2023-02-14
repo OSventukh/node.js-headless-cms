@@ -1,5 +1,7 @@
 import db from '../models/index.js';
 
+const { Topic } = db;
+
 export const createTopicService = async (
   title,
   slug,
@@ -8,7 +10,6 @@ export const createTopicService = async (
   status,
 ) => {
   try {
-    const { Topic } = await db;
     const topic = await Topic.create({
       title,
       slug,
@@ -28,7 +29,6 @@ export const getTopicsService = async (
   orderOptions = [],
 ) => {
   try {
-    const { Topic } = await db;
     const topics = await Topic.findAll({
       where: whereOptions,
       include: includeOptions,
@@ -42,7 +42,6 @@ export const getTopicsService = async (
 
 export const updateTopicService = async (toUpdate, whereOptions) => {
   try {
-    const { Topic } = await db;
     const result = Topic.update(
       toUpdate,
       {
@@ -60,7 +59,6 @@ export const updateTopicService = async (toUpdate, whereOptions) => {
 
 export const deleteTopicService = async (whereOptions) => {
   try {
-    const { Topic } = await db;
     await Topic.destroy({
       where: whereOptions,
     });

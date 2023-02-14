@@ -11,7 +11,7 @@ const __dirname = dirname(__filename);
 const db = {};
 const sequelize = new Sequelize(database.development);
 
-export default (async () => {
+(async () => {
   const files = readdirSync(__dirname).filter(
     (file) => file.indexOf('.') !== 0
     && file !== basename(__filename)
@@ -35,3 +35,5 @@ export default (async () => {
 
   return db;
 })();
+
+export default db;
