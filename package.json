@@ -6,6 +6,7 @@
   "main": "app.js",
   "scripts": {
     "test": "cross-env NODE_ENV=test vitest",
+    "test:coverage": "cross-env NODE_ENV=test vitest run --coverage",
     "start": "node server.js",
     "dev": "cross-env NODE_ENV=development nodemon server.js"
   },
@@ -25,6 +26,7 @@
     "sequelize": "^6.28.0"
   },
   "devDependencies": {
+    "@vitest/coverage-c8": "^0.28.5",
     "cross-env": "^7.0.3",
     "eslint": "^8.32.0",
     "eslint-config-airbnb": "^19.0.4",

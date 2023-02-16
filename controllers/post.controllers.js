@@ -1,12 +1,16 @@
 import {
-  createPostService,
-  getPostsService,
-  deletePostService,
-} from '../services/post.services.js';
+  createService,
+  deleteService,
+  getService,
+  updateService,
+} from '../services/services.js';
 
+import db from '../models/index.js';
+
+const { Post } = db;
 export const getPosts = async (req, res, next) => {
   const { postId } = req.params;
-  const { slug } = req.query;
+  const { slug, status } = req.query;
 
   let whereOptions;
 
@@ -14,12 +18,15 @@ export const getPosts = async (req, res, next) => {
     whereOptions = { id: postId };
   }
 
-  if (slug) {
-    whereOptions = { slug };
+  if (slug || status) {
+    whereOptions = {
+      ...(slug && { slug }),
+      ...(status && { status }),
+    };
   }
 
   try {
-    const post = await getPostsService(whereOptions);
+    const post = await getService(Post, whereOptions);
     res.status(200).json({
       post,
     });
@@ -34,7 +41,7 @@ export const addPost = async (req, res, next) => {
   const { title, content, excerpt, slug, status } = req.body;
 
   try {
-    await createPostService(title, content, excerpt, slug, status);
+    await createService(Post, req.body);
     res.status(201).json({
       message: 'Post successfully created',
     });
@@ -45,13 +52,27 @@ export const addPost = async (req, res, next) => {
   }
 };
 
+export const updatePost = async (req, res, next) => {
+  const { postId } = req.params;
+  try {
+    await updatePostService({ ...req.body }, { id: postId });
+    res.status(201).json({
+      message: 'Post successfully updated',
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Could not update this post',
+    });
+  }
+};
+
 export const deletePost = async (req, res, next) => {
   const { postIds } = req.body;
 
   try {
     Promise.all(
       postIds.map(async (id) => {
-        await deletePostService({ id });
+        await deleteService(Post, { id });
       }),
     );
     res.status(200).json({
