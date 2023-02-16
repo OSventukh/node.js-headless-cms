@@ -1,5 +1,5 @@
 import express from 'express';
-import { createPost, getPosts, updatePost, deletePost } from '../controllers/post.controllers.js';
+import { addPost, getPosts, updatePost, deletePost } from '../controllers/post.controllers.js';
 
 const router = express.Router();
 
@@ -7,7 +7,7 @@ router.get('/posts/:postId', getPosts);
 
 router.get('/posts', getPosts);
 
-router.post('/posts', createPost);
+router.post('/posts', addPost);
 
 router.patch('/posts/:postId', updatePost);
 

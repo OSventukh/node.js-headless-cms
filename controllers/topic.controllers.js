@@ -1,16 +1,19 @@
 import { Op } from 'sequelize';
+
 import {
-  createTopicService,
-  getTopicsService,
-  updateTopicService,
-  deleteTopicService,
-} from '../services/topic.services.js';
+  createService,
+  getService,
+  updateService,
+  deleteService,
+} from '../services/services.js';
+
+import db from '../models/index.js';
+
+const { Topic } = db;
 
 export const createTopic = async (req, res, next) => {
-  const { title, slug, image, description, status } = req.body;
-
   try {
-    await createTopicService(title, slug, image, description, status);
+    await createService(Topic, req.body);
     res.status(201).json({
       message: 'Topic successfully created',
     });
@@ -43,7 +46,7 @@ export const getTopics = async (req, res, next) => {
   }
 
   try {
-    const topics = await getTopicsService(whereOptions);
+    const topics = await getService(Topic, whereOptions);
     res.status(200).json({
       topics,
     });
@@ -59,13 +62,13 @@ export const updateTopic = async (req, res, next) => {
   const { id, ...toUpdate } = req.body;
 
   try {
-    const topic = await getTopicsService({ id: topicId || id });
+    const topic = await getService(Topic, { id: topicId || id });
 
     if (!topic || topic.length === 0) {
       throw new Error('This topic does not exist');
     }
 
-    await updateTopicService(toUpdate, { id: topicId || id });
+    await updateService(Topic, toUpdate, { id: topicId || id });
 
     res.status(200).json({
       message: 'Topic was successfully updated',
@@ -80,7 +83,7 @@ export const updateTopic = async (req, res, next) => {
 export const deleteTopic = async (req, res, next) => {
   const { topicIds } = req.body;
   try {
-    const topics = await getTopicsService({ id: { [Op.in]: topicIds } });
+    const topics = await getService(Topic, { id: { [Op.in]: topicIds } });
 
     if (!topics || topics.length === 0) {
       throw new Error('This topic does not exist');
@@ -88,7 +91,7 @@ export const deleteTopic = async (req, res, next) => {
 
     Promise.all(
       topicIds.map(async (id) => {
-        await deleteTopicService({ id });
+        await deleteService(Topic, { id });
       }),
     );
     res.status(200).json({
