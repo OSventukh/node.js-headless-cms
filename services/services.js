@@ -1,9 +1,5 @@
-export const createService = async (
-  Model,
-  data,
-) => {
+export const createService = async (Model, data) => {
   try {
-    console.log(Model)
     const topic = await Model.create(data);
     return topic;
   } catch (error) {
