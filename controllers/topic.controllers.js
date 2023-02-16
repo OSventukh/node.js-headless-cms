@@ -25,27 +25,22 @@ export const createTopic = async (req, res, next) => {
 };
 
 export const getTopics = async (req, res, next) => {
-  const { topicId } = req.params;
-  const { id, title, slug, description, status } = req.query;
+  // receive topic id form usr params or query
+  const id = req.params.topicId || req.query.id;
+  // receive other parameters from url query
+  const { title, slug, description, status } = req.query;
 
-  let whereOptions;
-  if (topicId) {
-    whereOptions = {
-      id: topicId,
-    };
-  }
-
-  if (id || title || slug || description || status) {
-    whereOptions = {
-      ...(id && { id }),
-      ...(title && { title }),
-      ...(slug && { slug }),
-      ...(description && { description }),
-      ...(status && { status }),
-    };
-  }
+  // If parameter was provided add it to object which will be passed as where query to sequelize
+  const whereOptions = {
+    ...(id && { id }),
+    ...(title && { title }),
+    ...(slug && { slug }),
+    ...(description && { description }),
+    ...(status && { status }),
+  };
 
   try {
+    // getting topics with provided paramaters and response it to the client
     const topics = await getService(Topic, whereOptions);
     res.status(200).json({
       topics,
@@ -58,17 +53,23 @@ export const getTopics = async (req, res, next) => {
 };
 
 export const updateTopic = async (req, res, next) => {
-  const { topicId } = req.params;
+  // receive topic id from url params or request body
+  const topicId = req.params.topicId || req.body.id;
+
+  // divide the request body into data that will be updated and topic id if it was passed.
+  // Id should remain unchanged
   const { id, ...toUpdate } = req.body;
 
   try {
-    const topic = await getService(Topic, { id: topicId || id });
+    // Checking if topic or with passed id is exists
+    const topic = await getService(Topic, { id: topicId });
 
     if (!topic || topic.length === 0) {
       throw new Error('This topic does not exist');
     }
 
-    await updateService(Topic, toUpdate, { id: topicId || id });
+    // update existing topic
+    await updateService(Topic, toUpdate, { id: topicId });
 
     res.status(200).json({
       message: 'Topic was successfully updated',
@@ -81,16 +82,26 @@ export const updateTopic = async (req, res, next) => {
 };
 
 export const deleteTopic = async (req, res, next) => {
-  const { topicIds } = req.body;
+  // receive topic id from url params or request body
+  let targetTopicIds = req.params.topicId || req.body.id;
+
+  // transform topic id to array if it is not
+  if (targetTopicIds && !Array.isArray(targetTopicIds)) {
+    targetTopicIds = [targetTopicIds];
+  }
+
   try {
-    const topics = await getService(Topic, { id: { [Op.in]: topicIds } });
+    // Checking if topic or topics with passed id(s) is exists
+    const topics = await getService(Topic, {
+      id: { [Op.in]: targetTopicIds },
+    });
 
     if (!topics || topics.length === 0) {
       throw new Error('This topic does not exist');
     }
-
+    // deleting all topics with given id
     Promise.all(
-      topicIds.map(async (id) => {
+      targetTopicIds.map(async (id) => {
         await deleteService(Topic, { id });
       }),
     );
