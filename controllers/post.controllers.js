@@ -8,6 +8,22 @@ import {
 import db from '../models/index.js';
 
 const { Post } = db;
+
+export const createPost = async (req, res, next) => {
+  const { title, content, excerpt, slug, status } = req.body;
+
+  try {
+    await createService(Post, req.body);
+    res.status(201).json({
+      message: 'Post successfully created',
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
 export const getPosts = async (req, res, next) => {
   const { postId } = req.params;
   const { slug, status } = req.query;
@@ -37,25 +53,10 @@ export const getPosts = async (req, res, next) => {
   }
 };
 
-export const addPost = async (req, res, next) => {
-  const { title, content, excerpt, slug, status } = req.body;
-
-  try {
-    await createService(Post, req.body);
-    res.status(201).json({
-      message: 'Post successfully created',
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
-  }
-};
-
 export const updatePost = async (req, res, next) => {
   const { postId } = req.params;
   try {
-    await updatePostService({ ...req.body }, { id: postId });
+    await updateService(Post, { ...req.body }, { id: postId });
     res.status(201).json({
       message: 'Post successfully updated',
     });
