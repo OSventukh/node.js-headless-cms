@@ -9,14 +9,14 @@ import {
   deleteService,
 } from '../../services/services.js';
 
-describe('Topic controller', () => {
+describe('Post controller', () => {
   afterEach(() => {
     vi.resetAllMocks();
   });
   vi.mock('../../services/services');
 
-  describe('Create topic', () => {
-    it('Should response with status code 201, when topic created', async () => {
+  describe('Create post', () => {
+    it('Should response with status code 201, when post created', async () => {
       const body = {
         title: 'Test title',
         slug: 'slug',
@@ -26,11 +26,11 @@ describe('Topic controller', () => {
 
       createService.mockImplementationOnce();
 
-      const response = await request(app).post('/topics').send(body);
+      const response = await request(app).post('/posts').send(body);
       expect(response.statusCode).toBe(201);
     });
 
-    it('Should response with status code 500 if topic creating fails', async () => {
+    it('Should response with status code 500 if post creating fails', async () => {
       const body = {
         title: 'Test title',
         slug: 'slug',
@@ -40,27 +40,28 @@ describe('Topic controller', () => {
 
       createService.mockRejectedValueOnce(new Error());
 
-      const response = await request(app).post('/topics').send(body);
+      const response = await request(app).post('/posts').send(body);
       expect(response.statusCode).toBe(500);
     });
 
-    it('Should response with text "Could not create topic" if topic creating fails', async () => {
+    it('Should response with text "Could not create post" if post creating fails', async () => {
       const body = {
         title: 'Test title',
-        slug: 'slug',
-        image: 'test',
-        description: 'test',
+        content: 'slug',
+        slug: 'test',
+        excerpt: 'test',
+        status: 'draft',
       };
 
       createService.mockRejectedValueOnce(new Error());
 
-      const response = await request(app).post('/topics').send(body);
-      expect(response.text).toContain('Could not create topic');
+      const response = await request(app).post('/posts').send(body);
+      expect(response.text).toContain('Could not create post');
     });
   });
 
-  describe('Get topics', () => {
-    it('Should response with status code 200, if successfully get topics', async () => {
+  describe('Get posts', () => {
+    it('Should response with status code 200, if successfully get posts', async () => {
       getService.mockImplementationOnce(() => [
         {
           id: '1',
@@ -70,11 +71,11 @@ describe('Topic controller', () => {
           status: 'active',
         },
       ]);
-      const response = await request(app).get('/topics');
+      const response = await request(app).get('/posts');
       expect(response.statusCode).toBe(200);
     });
 
-    it('Should response object with property "topics"', async () => {
+    it('Should response object with property "posts"', async () => {
       const body = [
         {
           id: '1',
@@ -85,11 +86,11 @@ describe('Topic controller', () => {
         },
       ];
       getService.mockResolvedValueOnce(body);
-      const response = await request(app).get('/topics');
-      expect(response.body).toHaveProperty('topics');
+      const response = await request(app).get('/posts');
+      expect(response.body).toHaveProperty('posts');
     });
 
-    it('Should response array that "getTopicsService" returns', async () => {
+    it('Should response array that "getService" returns', async () => {
       const body = [
         {
           id: '1',
@@ -100,45 +101,45 @@ describe('Topic controller', () => {
         },
       ];
       getService.mockResolvedValueOnce(body);
-      const response = await request(app).get('/topics');
-      expect(response.body.topics).toEqual(body);
+      const response = await request(app).get('/posts');
+      expect(response.body.posts).toEqual(body);
     });
 
-    it('Should response with status code 404 if getting topics failed', async () => {
+    it('Should response with status code 404 if post does not exist', async () => {
       getService.mockRejectedValueOnce(new Error());
-      const response = await request(app).get('/topics');
+      const response = await request(app).get('/posts');
       expect(response.statusCode).toBe(404);
     });
 
-    it('Should response with text "Could not find topic(s)" if topic does not exist', async () => {
+    it('Should response with text "Could not find post(s)" if getting topis failed', async () => {
       getService.mockRejectedValueOnce(new Error());
 
-      const response = await request(app).get('/topics');
-      expect(response.text).toContain('Could not find topic(s)');
+      const response = await request(app).get('/posts');
+      expect(response.text).toContain('Could not find post(s)');
     });
   });
 
-  describe('update topic', () => {
+  describe('update post', () => {
     it('Should response with status code 200, if updating was successfully', async () => {
       getService.mockResolvedValueOnce(true);
       updateService.mockImplementationOnce();
-      const response = await request(app).patch('/topics/1');
+      const response = await request(app).patch('/posts/1');
       expect(response.statusCode).toBe(200);
     });
 
     it('Should response with status code 500, if updating was failed', async () => {
       updateService.mockRejectedValueOnce(new Error());
-      const response = await request(app).patch('/topics/1');
+      const response = await request(app).patch('/posts/1');
       expect(response.statusCode).toBe(500);
     });
   });
 
-  describe('delete topic', () => {
+  describe('delete post', () => {
     it('Should response with status code 200, if deleting was successfully and id passed as reqest body', async () => {
       getService.mockResolvedValueOnce(true);
       deleteService.mockImplementationOnce();
       const response = await request(app)
-        .delete('/topics')
+        .delete('/posts')
         .send({ id: [1] });
       expect(response.statusCode).toBe(200);
     });
@@ -146,20 +147,20 @@ describe('Topic controller', () => {
     it('Should response with status code 200, if deleting was successfully and id passed as url param', async () => {
       getService.mockResolvedValueOnce(true);
       deleteService.mockImplementationOnce();
-      const response = await request(app).delete('/topics/1');
+      const response = await request(app).delete('/posts/1');
       expect(response.statusCode).toBe(200);
     });
 
     it('Should response with status code 500, if deleting was failed', async () => {
       deleteService.mockRejectedValueOnce(new Error());
-      const response = await request(app).delete('/topics/1');
+      const response = await request(app).delete('/posts/1');
       expect(response.statusCode).toBe(500);
     });
 
     it('Should response with text "Could not delete post", if deleting was failed', async () => {
       deleteService.mockRejectedValueOnce(new Error());
-      const response = await request(app).delete('/topics/1');
-      expect(response.text).toContain('Could not delete topic');
+      const response = await request(app).delete('/posts/1');
+      expect(response.text).toContain('Could not delete post');
     });
   });
 });

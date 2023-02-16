@@ -19,7 +19,7 @@ export const createPost = async (req, res, next) => {
     });
   } catch (error) {
     res.status(500).json({
-      message: error.message,
+      message: 'Could not create post',
     });
   }
 };
@@ -47,7 +47,7 @@ export const getPosts = async (req, res, next) => {
     });
   } catch (error) {
     res.status(404).json({
-      message: 'Could not find this post',
+      message: 'Could not find post(s)',
     });
   }
 };
@@ -71,7 +71,7 @@ export const updatePost = async (req, res, next) => {
     // Update existion post
     await updateService(Post, toUpdate, { id: postId });
 
-    res.status(201).json({
+    res.status(200).json({
       message: 'Post successfully updated',
     });
   } catch (error) {

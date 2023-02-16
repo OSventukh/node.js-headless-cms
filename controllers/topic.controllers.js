@@ -46,7 +46,7 @@ export const getTopics = async (req, res, next) => {
       topics,
     });
   } catch (error) {
-    res.status(500).json({
+    res.status(404).json({
       message: 'Could not find topic(s)',
     });
   }
