@@ -35,8 +35,6 @@ export const getPosts = async (req, res, next) => {
 };
 
 export const addPost = async (req, res, next) => {
-  console.log('controller', Post)
-
   try {
     await createService(Post, req.body);
     res.status(201).json({
