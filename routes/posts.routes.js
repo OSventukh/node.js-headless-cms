@@ -13,6 +13,8 @@ router.patch('/posts/:postId', updatePost);
 
 router.patch('/posts', updatePost);
 
+router.delete('/posts/:postId', deletePost);
+
 router.delete('/posts', deletePost);
 
 export default router;
