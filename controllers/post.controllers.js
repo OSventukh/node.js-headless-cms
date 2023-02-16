@@ -1,9 +1,13 @@
 import {
-  createPostService,
-  getPostsService,
-  deletePostService,
-} from '../services/post.services.js';
+  createService,
+  deleteService,
+  getService,
+  updateService,
+} from '../services/services.js';
 
+import db from '../models/index.js';
+
+const { Post } = db;
 export const getPosts = async (req, res, next) => {
   const { postId } = req.params;
   const { slug } = req.query;
@@ -19,7 +23,7 @@ export const getPosts = async (req, res, next) => {
   }
 
   try {
-    const post = await getPostsService(whereOptions);
+    const post = await getService(Post, whereOptions);
     res.status(200).json({
       post,
     });
@@ -31,10 +35,10 @@ export const getPosts = async (req, res, next) => {
 };
 
 export const addPost = async (req, res, next) => {
-  const { title, content, excerpt, slug, status } = req.body;
+  console.log('controller', Post)
 
   try {
-    await createPostService(title, content, excerpt, slug, status);
+    await createService(Post, req.body);
     res.status(201).json({
       message: 'Post successfully created',
     });
@@ -51,7 +55,7 @@ export const deletePost = async (req, res, next) => {
   try {
     Promise.all(
       postIds.map(async (id) => {
-        await deletePostService({ id });
+        await deleteService(Post, { id });
       }),
     );
     res.status(200).json({
