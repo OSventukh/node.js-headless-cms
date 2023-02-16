@@ -25,7 +25,7 @@ export const createTopic = async (req, res, next) => {
 };
 
 export const getTopics = async (req, res, next) => {
-  // receive topic id form usr params or query
+  // receive topic id from url params or query
   const id = req.params.topicId || req.query.id;
   // receive other parameters from url query
   const { title, slug, description, status } = req.query;
@@ -53,15 +53,15 @@ export const getTopics = async (req, res, next) => {
 };
 
 export const updateTopic = async (req, res, next) => {
-  // receive topic id from url params or request body
+  // Receive topic id from url params or request body
   const topicId = req.params.topicId || req.body.id;
 
-  // divide the request body into data that will be updated and topic id if it was passed.
+  // Divide the request body into data that will be updated and topic id if it was passed.
   // Id should remain unchanged
   const { id, ...toUpdate } = req.body;
 
   try {
-    // Checking if topic or with passed id is exists
+    // Check if topic or topics with provided id are exists
     const topic = await getService(Topic, { id: topicId });
 
     if (!topic || topic.length === 0) {
@@ -83,17 +83,17 @@ export const updateTopic = async (req, res, next) => {
 
 export const deleteTopic = async (req, res, next) => {
   // receive topic id from url params or request body
-  let targetTopicIds = req.params.topicId || req.body.id;
+  let topicId = req.params.topicId || req.body.id;
 
   // transform topic id to array if it is not
-  if (targetTopicIds && !Array.isArray(targetTopicIds)) {
-    targetTopicIds = [targetTopicIds];
+  if (topicId && !Array.isArray(topicId)) {
+    topicId = [topicId];
   }
 
   try {
     // Checking if topic or topics with passed id(s) is exists
     const topics = await getService(Topic, {
-      id: { [Op.in]: targetTopicIds },
+      id: { [Op.in]: topicId },
     });
 
     if (!topics || topics.length === 0) {
@@ -101,7 +101,7 @@ export const deleteTopic = async (req, res, next) => {
     }
     // deleting all topics with given id
     Promise.all(
-      targetTopicIds.map(async (id) => {
+      topicId.map(async (id) => {
         await deleteService(Topic, { id });
       }),
     );
@@ -110,7 +110,7 @@ export const deleteTopic = async (req, res, next) => {
     });
   } catch (error) {
     res.status(500).json({
-      message: 'Could not delete post',
+      message: 'Could not delete topic',
     });
   }
 };

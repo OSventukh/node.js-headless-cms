@@ -1,3 +1,5 @@
+import { Op } from 'sequelize';
+
 import {
   createService,
   deleteService,
@@ -10,8 +12,6 @@ import db from '../models/index.js';
 const { Post } = db;
 
 export const createPost = async (req, res, next) => {
-  const { title, content, excerpt, slug, status } = req.body;
-
   try {
     await createService(Post, req.body);
     res.status(201).json({
@@ -25,26 +25,25 @@ export const createPost = async (req, res, next) => {
 };
 
 export const getPosts = async (req, res, next) => {
-  const { postId } = req.params;
-  const { slug, status } = req.query;
+  // Receive post id from url params or query
+  const id = req.params.postId || req.query.id;
 
-  let whereOptions;
+  // Receive other parameters from url query
+  const { title, slug, status } = req.query;
 
-  if (postId) {
-    whereOptions = { id: postId };
-  }
-
-  if (slug || status) {
-    whereOptions = {
-      ...(slug && { slug }),
-      ...(status && { status }),
-    };
-  }
+  // If parameters was provided add it to object which will be passed as where query to sequelize
+  const whereOptions = {
+    ...(id && { id }),
+    ...(title && { title }),
+    ...(slug && { slug }),
+    ...(status && { status }),
+  };
 
   try {
-    const post = await getService(Post, whereOptions);
+    // get topics with provided parameters and response it to the client
+    const posts = await getService(Post, whereOptions);
     res.status(200).json({
-      post,
+      posts,
     });
   } catch (error) {
     res.status(404).json({
@@ -54,9 +53,24 @@ export const getPosts = async (req, res, next) => {
 };
 
 export const updatePost = async (req, res, next) => {
-  const { postId } = req.params;
+  // Receive post id from url params or request body
+  const postId = req.params || req.body.id;
+
+  // Divide the request body into data that will be updated and post id
+  // Post id should reamin unchanged
+  const { id, ...toUpdate } = req.body;
+
   try {
-    await updateService(Post, { ...req.body }, { id: postId });
+    // Check if post or posts with provided id are exists
+    const posts = await getService(Post, { id: postId });
+
+    if (!posts || posts.length === 0) {
+      throw new Error('This posts does not exist');
+    }
+
+    // Update existion post
+    await updateService(Post, toUpdate, { id: postId });
+
     res.status(201).json({
       message: 'Post successfully updated',
     });
@@ -68,11 +82,25 @@ export const updatePost = async (req, res, next) => {
 };
 
 export const deletePost = async (req, res, next) => {
-  const { postIds } = req.body;
+  // Receive post id from url param or request body
+  let postId = req.params.postId || req.body.id;
+
+  // Transform post id to array if it is not
+  if (postId && !Array.isArray(postId)) {
+    postId = [postId];
+  }
 
   try {
+    // Check if post or post with provided id are exist
+    const posts = await getService(Post, {
+      id: { [Op.in]: postId },
+    });
+
+    if (!posts || posts.length === 0) {
+      throw new Error('This post does not exist');
+    }
     Promise.all(
-      postIds.map(async (id) => {
+      postId.map(async (id) => {
         await deleteService(Post, { id });
       }),
     );
@@ -81,7 +109,7 @@ export const deletePost = async (req, res, next) => {
     });
   } catch (error) {
     res.status(500).json({
-      message: 'Deleting post failed',
+      message: 'Could not delete post',
     });
   }
 };
