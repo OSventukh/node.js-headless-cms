@@ -15,6 +15,7 @@
         "import/extensions": ["off", "never"],
         "object-curly-newline": "off",
         "no-unused-vars": "warn",
-        "object-shorthand": "warn"
+        "object-shorthand": "warn",
+        "comma-dangle": "warn"
     }
 }
