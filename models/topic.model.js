@@ -7,38 +7,41 @@ export default (sequelize, DataTypes) => {
     }
   }
 
-  Post.init({
-    title: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
-    },
-    slug: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
-    },
-    image: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    description: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    status: {
-      type: DataTypes.STRING,
-      defaultValue: 'active',
-      validate: {
-        isIn: {
-          args: [['active', 'inactive']],
-          msg: 'Incorect topic status value',
+  Post.init(
+    {
+      title: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+      },
+      slug: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+      },
+      image: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      description: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      status: {
+        type: DataTypes.STRING,
+        defaultValue: 'active',
+        validate: {
+          isIn: {
+            args: [['active', 'inactive']],
+            msg: 'Incorect topic status value',
+          },
         },
       },
     },
-  }, {
-    sequelize,
-    modelName: 'Topic',
-  });
+    {
+      sequelize,
+      modelName: 'Topic',
+    }
+  );
   return Post;
 };
