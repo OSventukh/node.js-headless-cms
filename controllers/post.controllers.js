@@ -54,7 +54,7 @@ export const getPosts = async (req, res, next) => {
 
 export const updatePost = async (req, res, next) => {
   // Receive post id from url params or request body
-  const postId = req.params || req.body.id;
+  const postId = req.params.postId || req.body.id;
 
   // Divide the request body into data that will be updated and post id
   // Post id should reamin unchanged
