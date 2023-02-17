@@ -7,6 +7,7 @@ export default (sequelize, DataTypes) => {
     }
   }
 
+<<<<<<< HEAD
   User.init({
     firstname: {
       type: DataTypes.STRING,
@@ -29,6 +30,7 @@ export default (sequelize, DataTypes) => {
     role: {
       type: DataTypes.STRING,
       allowNull: false,
+      defaultValue: 'writer',
     }
   }, {
     sequelize,
