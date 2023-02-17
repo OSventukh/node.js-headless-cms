@@ -18,11 +18,18 @@ describe('User controller', () => {
   describe('Create user', () => {
     it('Should response with status code 201, when user created', async () => {
       const body = {
-        title: 'Test title',
-        slug: 'slug',
-        image: 'test',
-        description: 'test',
+        firstname: 'Test firstname',
+        lastname: 'Test lastname',
+        email: 'test@test.com',
+        password: 'test',
+        role: 'writer',
       };
+
+      const hashedPassword = vi.fn();
+
+      hashedPassword.mockImplementationOnce(
+        (password) => `'hashed' ${password}`
+      );
 
       createService.mockImplementationOnce();
 
@@ -32,10 +39,11 @@ describe('User controller', () => {
 
     it('Should response with status code 500 if user creating fails', async () => {
       const body = {
-        title: 'Test title',
-        slug: 'slug',
-        image: 'test',
-        description: 'test',
+        firstname: 'Test firstname',
+        lastname: 'Test lastname',
+        email: 'test@test.com',
+        password: 'test',
+        role: 'writer',
       };
 
       createService.mockRejectedValueOnce(new Error());
@@ -46,10 +54,11 @@ describe('User controller', () => {
 
     it('Should response with text "Could not create user" if user creating fails', async () => {
       const body = {
-        title: 'Test title',
-        slug: 'slug',
-        image: 'test',
-        description: 'test',
+        firstname: 'Test firstname',
+        lastname: 'Test lastname',
+        email: 'test@test.com',
+        password: 'test',
+        role: 'writer',
       };
 
       createService.mockRejectedValueOnce(new Error());
@@ -63,10 +72,11 @@ describe('User controller', () => {
     it('Should response with status code 200, if successfully get users', async () => {
       getService.mockImplementationOnce(() => [
         {
-          id: '1',
-          fistname: 'Test name',
-          lastname: 'test',
+          firstname: 'Test firstname',
+          lastname: 'Test lastname',
           email: 'test@test.com',
+          password: 'test',
+          role: 'writer',
         },
       ]);
       const response = await request(app).get('/users');
@@ -76,10 +86,11 @@ describe('User controller', () => {
     it('Should response object with property "users"', async () => {
       const body = [
         {
-          id: '1',
-          fistname: 'Test name',
-          lastname: 'test',
+          firstname: 'Test firstname',
+          lastname: 'Test lastname',
           email: 'test@test.com',
+          password: 'test',
+          role: 'writer',
         },
       ];
       getService.mockResolvedValueOnce(body);
@@ -90,10 +101,11 @@ describe('User controller', () => {
     it('Should response array that "getService" returns', async () => {
       const body = [
         {
-          id: '1',
-          fistname: 'Test name',
-          lastname: 'test',
+          firstname: 'Test firstname',
+          lastname: 'Test lastname',
           email: 'test@test.com',
+          password: 'test',
+          role: 'writer',
         },
       ];
       getService.mockResolvedValueOnce(body);
