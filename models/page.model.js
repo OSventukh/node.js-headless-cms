@@ -14,8 +14,8 @@ export default (sequelize, DataTypes) => {
   Page.init(
     {
       title: {
-        allowNull: false,
         type: DataTypes.TEXT,
+        allowNull: false,
       },
       content: {
         type: DataTypes.TEXT,
