@@ -6,14 +6,19 @@ import {
   updateService,
   deleteService,
 } from '../services/services.js';
-
 import db from '../models/index.js';
+import { hashPassword } from '../utils/hash.js';
 
 const { User } = db;
 
 export const createUser = async (req, res, next) => {
+  // Hashing password
   try {
-    await createService(User, req.body);
+    const userData = {
+      ...req.body,
+      password: await hashPassword(req.body.password),
+    };
+    await createService(User, userData);
     res.status(201).json({
       message: 'User successfully created',
     });
@@ -28,15 +33,15 @@ export const getUsers = async (req, res, next) => {
   // receive user id from url params or query
   const id = req.params.userId || req.query.id;
   // receive other parameters from url query
-  const { title, slug, description, status } = req.query;
+  const { firstname, lastname, email, role } = req.query;
 
   // If parameter was provided add it to object which will be passed as where query to sequelize
   const whereOptions = {
     ...(id && { id }),
-    ...(title && { title }),
-    ...(slug && { slug }),
-    ...(description && { description }),
-    ...(status && { status }),
+    ...(firstname && { lastname }),
+    ...(lastname && { lastname }),
+    ...(email && { email }),
+    ...(role && { role }),
   };
 
   try {
@@ -103,7 +108,7 @@ export const deleteUser = async (req, res, next) => {
     Promise.all(
       userId.map(async (id) => {
         await deleteService(User, { id });
-      }),
+      })
     );
     res.status(200).json({
       message: 'User was succesfully deleted',

@@ -8,7 +8,7 @@ export default (sequelize, DataTypes) => {
   }
 
   User.init({
-    fistname: {
+    firstname: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: false,
@@ -26,6 +26,10 @@ export default (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    role: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    }
   }, {
     sequelize,
     modelName: 'User',
