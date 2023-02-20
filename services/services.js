@@ -1,9 +1,17 @@
+import HttpError from '../utils/http-error.js';
+
 export const createService = async (Model, data) => {
   try {
-    const topic = await Model.create(data);
-    return topic;
+    const result = await Model.create(data);
+    return result;
   } catch (error) {
-    throw new Error(error.message);
+    if (error.name === 'SequelizeValidationError') {
+      throw new HttpError(error.message, 400);
+    }
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      throw new HttpError(error.message, 409);
+    }
+    throw new HttpError(error.message || 'Something went wrong', 500);
   }
 };
 
@@ -14,14 +22,14 @@ export const getService = async (
   orderOptions = [],
 ) => {
   try {
-    const topics = await Model.findAll({
+    const result = await Model.findAll({
       where: whereOptions,
       include: includeOptions,
       order: orderOptions,
     });
-    return topics;
+    return result;
   } catch (error) {
-    throw new Error(error.message);
+    throw new HttpError(error.message || 'Something went wrong', 500);
   }
 };
 
@@ -32,10 +40,13 @@ export const updateService = async (Model, toUpdate, whereOptions) => {
     });
 
     if (result[0] === 0) {
-      throw new Error('Could not update this topic');
+      throw new HttpError('Could not update this topic', 500);
     }
   } catch (error) {
-    throw new Error(error.message);
+    if (error.name === 'SequelizeValidationError') {
+      throw new HttpError(error.message, 400);
+    }
+    throw new HttpError(error.message || 'Something went wrong', 500);
   }
 };
 
@@ -45,6 +56,6 @@ export const deleteService = async (Model, whereOptions) => {
       where: whereOptions,
     });
   } catch (error) {
-    throw new Error(error.message);
+    throw new HttpError(error.message || 'Something went wrong', 500);
   }
 };

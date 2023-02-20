@@ -1,4 +1,5 @@
 import { Op } from 'sequelize';
+import HttpError from '../utils/http-error.js';
 
 import {
   createService,
@@ -18,9 +19,7 @@ export const createPage = async (req, res, next) => {
       message: 'Page successfully created',
     });
   } catch (error) {
-    res.status(500).json({
-      message: 'Could not create page',
-    });
+    next(HttpError(error.message, error.statusCode));
   }
 };
 
@@ -46,9 +45,7 @@ export const getPages = async (req, res, next) => {
       pages,
     });
   } catch (error) {
-    res.status(404).json({
-      message: 'Could not find page(s)',
-    });
+    next(HttpError(error.message, error.statusCode));
   }
 };
 
@@ -64,7 +61,7 @@ export const updatePage = async (req, res, next) => {
     // Check if page or pages with provided id are exists
     const pages = await getService(Page, { id: pageId });
     if (!pages || pages.length === 0) {
-      throw new Error('This pages does not exist');
+      throw new HttpError('This pages does not exist', 404);
     }
 
     // Update existion page
@@ -74,9 +71,7 @@ export const updatePage = async (req, res, next) => {
       message: 'Page successfully updated',
     });
   } catch (error) {
-    res.status(500).json({
-      message: 'Could not update this page',
-    });
+    next(HttpError(error.message, error.statusCode));
   }
 };
 
@@ -96,8 +91,9 @@ export const deletePage = async (req, res, next) => {
     });
 
     if (!pages || pages.length === 0) {
-      throw new Error('This page does not exist');
+      throw new HttpError('This page does not exist', 404);
     }
+
     Promise.all(
       pageId.map(async (id) => {
         await deleteService(Page, { id });
@@ -107,8 +103,6 @@ export const deletePage = async (req, res, next) => {
       message: 'Page was successfully deleted',
     });
   } catch (error) {
-    res.status(500).json({
-      message: 'Could not delete page',
-    });
+    next(HttpError(error.message, error.statusCode));
   }
 };

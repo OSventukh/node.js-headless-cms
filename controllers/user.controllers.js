@@ -1,4 +1,5 @@
 import { Op } from 'sequelize';
+import HttpError from '../utils/http-error.js';
 
 import {
   createService,
@@ -6,26 +7,20 @@ import {
   updateService,
   deleteService,
 } from '../services/services.js';
+import userServices from '../services/user.service.js';
 import db from '../models/index.js';
-import { hashPassword } from '../utils/hash.js';
 
 const { User } = db;
 
 export const createUser = async (req, res, next) => {
-  // Hashing password
   try {
-    const userData = {
-      ...req.body,
-      password: await hashPassword(req.body.password),
-    };
-    await createService(User, userData);
+    const user = await userServices.createUser(req.body);
     res.status(201).json({
       message: 'User successfully created',
+      user,
     });
   } catch (error) {
-    res.status(500).json({
-      message: 'Could not create user',
-    });
+    next(new HttpError(error.message, error.statusCode));
   }
 };
 
@@ -35,25 +30,21 @@ export const getUsers = async (req, res, next) => {
   // receive other parameters from url query
   const { firstname, lastname, email, role } = req.query;
 
-  // If parameter was provided add it to object which will be passed as where query to sequelize
-  const whereOptions = {
-    ...(id && { id }),
-    ...(firstname && { lastname }),
-    ...(lastname && { lastname }),
-    ...(email && { email }),
-    ...(role && { role }),
-  };
-
   try {
     // getting users with provided paramaters and response it to the client
-    const users = await getService(User, whereOptions);
+    const { count, rows } = await userServices.getUsers({
+      id,
+      firstname,
+      lastname,
+      email,
+      role,
+    });
     res.status(200).json({
-      users,
+      count,
+      users: rows,
     });
   } catch (error) {
-    res.status(404).json({
-      message: 'Could not find user(s)',
-    });
+    next(new HttpError(error.message, error.statusCode));
   }
 };
 
@@ -67,22 +58,12 @@ export const updateUser = async (req, res, next) => {
 
   try {
     // Check if user or users with provided id are exists
-    const user = await getService(User, { id: userId });
-
-    if (!user || user.length === 0) {
-      throw new Error('This user does not exist');
-    }
-
-    // update existing user
-    await updateService(User, toUpdate, { id: userId });
-
+    await userServices.updateUser(userId, toUpdate);
     res.status(200).json({
       message: 'User was successfully updated',
     });
   } catch (error) {
-    res.status(500).json({
-      message: 'Could not update this user',
-    });
+    next(new HttpError(error.message, error.statusCode));
   }
 };
 
@@ -94,28 +75,15 @@ export const deleteUser = async (req, res, next) => {
   if (userId && !Array.isArray(userId)) {
     userId = [userId];
   }
-
   try {
-    // Checking if user or users with passed id(s) is exists
-    const users = await getService(User, {
-      id: { [Op.in]: userId },
-    });
-
-    if (!users || users.length === 0) {
-      throw new Error('This user does not exist');
-    }
     // deleting all users with given id
-    Promise.all(
-      userId.map(async (id) => {
-        await deleteService(User, { id });
-      })
-    );
+    const result = await userServices.deleteUser(userId);
+
     res.status(200).json({
-      message: 'User was succesfully deleted',
+      message: result > 1 ? 'Users were successfully deleted' : 'User was successfully deleted',
+      count: result,
     });
   } catch (error) {
-    res.status(500).json({
-      message: 'Could not delete user',
-    });
+    next(new HttpError(error.message, error.statusCode));
   }
 };

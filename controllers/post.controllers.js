@@ -1,4 +1,5 @@
 import { Op } from 'sequelize';
+import HttpError from '../utils/http-error.js';
 
 import {
   createService,
@@ -18,9 +19,7 @@ export const createPost = async (req, res, next) => {
       message: 'Post successfully created',
     });
   } catch (error) {
-    res.status(500).json({
-      message: 'Could not create post',
-    });
+    next(new HttpError(error.message, error.statusCode));
   }
 };
 
@@ -46,9 +45,7 @@ export const getPosts = async (req, res, next) => {
       posts,
     });
   } catch (error) {
-    res.status(404).json({
-      message: 'Could not find post(s)',
-    });
+    next(new HttpError(error.message, error.statusCode));
   }
 };
 
@@ -65,7 +62,7 @@ export const updatePost = async (req, res, next) => {
     const posts = await getService(Post, { id: postId });
 
     if (!posts || posts.length === 0) {
-      throw new Error('This posts does not exist');
+      throw new HttpError('Post does node exist', 404);
     }
 
     // Update existion post
@@ -75,9 +72,7 @@ export const updatePost = async (req, res, next) => {
       message: 'Post successfully updated',
     });
   } catch (error) {
-    res.status(500).json({
-      message: 'Could not update this post',
-    });
+    next(new HttpError(error.message, error.statusCode));
   }
 };
 
@@ -97,7 +92,7 @@ export const deletePost = async (req, res, next) => {
     });
 
     if (!posts || posts.length === 0) {
-      throw new Error('This post does not exist');
+      throw new HttpError('Post does node exist', 404);
     }
     Promise.all(
       postId.map(async (id) => {
@@ -108,8 +103,6 @@ export const deletePost = async (req, res, next) => {
       message: 'Post was successfully deleted',
     });
   } catch (error) {
-    res.status(500).json({
-      message: 'Could not delete post',
-    });
+    next(new HttpError(error.message, error.statusCode));
   }
 };

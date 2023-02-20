@@ -1,4 +1,5 @@
 import { Op } from 'sequelize';
+import HttpError from '../utils/http-error.js';
 
 import {
   createService,
@@ -18,9 +19,7 @@ export const createTopic = async (req, res, next) => {
       message: 'Topic successfully created',
     });
   } catch (error) {
-    res.status(500).json({
-      message: 'Could not create topic',
-    });
+    next(new HttpError(error.message, error.statusCode));
   }
 };
 
@@ -46,9 +45,7 @@ export const getTopics = async (req, res, next) => {
       topics,
     });
   } catch (error) {
-    res.status(404).json({
-      message: 'Could not find topic(s)',
-    });
+    next(new HttpError(error.message, error.statusCode));
   }
 };
 
@@ -65,7 +62,7 @@ export const updateTopic = async (req, res, next) => {
     const topic = await getService(Topic, { id: topicId });
 
     if (!topic || topic.length === 0) {
-      throw new Error('This topic does not exist');
+      throw new HttpError('Topic does not exist', '404');
     }
 
     // update existing topic
@@ -75,9 +72,7 @@ export const updateTopic = async (req, res, next) => {
       message: 'Topic was successfully updated',
     });
   } catch (error) {
-    res.status(500).json({
-      message: 'Could not update this topic',
-    });
+    next(new HttpError(error.message, error.statusCode));
   }
 };
 
@@ -97,7 +92,7 @@ export const deleteTopic = async (req, res, next) => {
     });
 
     if (!topics || topics.length === 0) {
-      throw new Error('This topic does not exist');
+      throw new HttpError('Topic does not exist', '404');
     }
     // deleting all topics with given id
     Promise.all(
@@ -109,8 +104,6 @@ export const deleteTopic = async (req, res, next) => {
       message: 'Topic was succesfully deleted',
     });
   } catch (error) {
-    res.status(500).json({
-      message: 'Could not delete topic',
-    });
+    next(new HttpError(error.message, error.statusCode));
   }
 };
