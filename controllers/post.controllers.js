@@ -1,72 +1,58 @@
-import { Op } from 'sequelize';
 import HttpError from '../utils/http-error.js';
 
 import {
-  createService,
-  deleteService,
-  getService,
-  updateService,
-} from '../services/services.js';
+  createPost,
+  getPosts,
+  updatePost,
+  deletePost,
+} from '../services/post.service.js';
 
-import db from '../models/index.js';
-
-const { Post } = db;
-
-export const createPost = async (req, res, next) => {
+export const createPostController = async (req, res, next) => {
   try {
-    await createService(Post, req.body);
+    const post = await createPost(req.body);
     res.status(201).json({
       message: 'Post successfully created',
+      post,
     });
   } catch (error) {
     next(new HttpError(error.message, error.statusCode));
   }
 };
 
-export const getPosts = async (req, res, next) => {
+export const getPostsController = async (req, res, next) => {
   // Receive post id from url params or query
   const id = req.params.postId || req.query.id;
 
   // Receive other parameters from url query
   const { title, slug, status } = req.query;
 
-  // If parameters was provided add it to object which will be passed as where query to sequelize
-  const whereOptions = {
-    ...(id && { id }),
-    ...(title && { title }),
-    ...(slug && { slug }),
-    ...(status && { status }),
-  };
-
   try {
     // get topics with provided parameters and response it to the client
-    const posts = await getService(Post, whereOptions);
+    const { count, rows } = await getPosts({
+      id,
+      title,
+      slug,
+      status,
+    });
     res.status(200).json({
-      posts,
+      count,
+      posts: rows,
     });
   } catch (error) {
     next(new HttpError(error.message, error.statusCode));
   }
 };
 
-export const updatePost = async (req, res, next) => {
+export const updatePostController = async (req, res, next) => {
   // Receive post id from url params or request body
   const postId = req.params.postId || req.body.id;
 
   // Divide the request body into data that will be updated and post id
-  // Post id should reamin unchanged
+  // Post id should remain unchanged
   const { id, ...toUpdate } = req.body;
 
   try {
-    // Check if post or posts with provided id are exists
-    const posts = await getService(Post, { id: postId });
-
-    if (!posts || posts.length === 0) {
-      throw new HttpError('Post does node exist', 404);
-    }
-
-    // Update existion post
-    await updateService(Post, toUpdate, { id: postId });
+    await updatePost(postId, toUpdate);
 
     res.status(200).json({
       message: 'Post successfully updated',
@@ -76,7 +62,7 @@ export const updatePost = async (req, res, next) => {
   }
 };
 
-export const deletePost = async (req, res, next) => {
+export const deletePostController = async (req, res, next) => {
   // Receive post id from url param or request body
   let postId = req.params.postId || req.body.id;
 
@@ -86,21 +72,11 @@ export const deletePost = async (req, res, next) => {
   }
 
   try {
-    // Check if post or post with provided id are exist
-    const posts = await getService(Post, {
-      id: { [Op.in]: postId },
-    });
-
-    if (!posts || posts.length === 0) {
-      throw new HttpError('Post does node exist', 404);
-    }
-    Promise.all(
-      postId.map(async (id) => {
-        await deleteService(Post, { id });
-      }),
-    );
+    // deleting all post with given id
+    const result = await deletePost(postId);
     res.status(200).json({
-      message: 'Post was successfully deleted',
+      message: result > 1 ? 'Posts were successfully deleted' : 'Post was successfully deleted',
+      count: result,
     });
   } catch (error) {
     next(new HttpError(error.message, error.statusCode));
