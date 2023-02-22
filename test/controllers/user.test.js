@@ -3,17 +3,17 @@ import request from 'supertest';
 
 import app from '../../app';
 import {
-  createService,
-  getService,
-  updateService,
-  deleteService,
-} from '../../services/services.js';
+  createUser,
+  getUsers,
+  updateUser,
+  deleteUser,
+} from '../../services/user.service.js';
 
 describe('User controller', () => {
   afterEach(() => {
     vi.resetAllMocks();
   });
-  vi.mock('../../services/services');
+  vi.mock('../../services/user.service.js');
 
   describe('Create user', () => {
     it('Should response with status code 201, when user created', async () => {
@@ -31,7 +31,7 @@ describe('User controller', () => {
         (password) => `'hashed' ${password}`
       );
 
-      createService.mockImplementationOnce();
+      createUser.mockImplementationOnce();
 
       const response = await request(app).post('/users').send(body);
       expect(response.statusCode).toBe(201);
@@ -46,13 +46,13 @@ describe('User controller', () => {
         role: 'writer',
       };
 
-      createService.mockRejectedValueOnce(new Error());
+      createUser.mockRejectedValueOnce(new Error());
 
       const response = await request(app).post('/users').send(body);
       expect(response.statusCode).toBe(500);
     });
 
-    it('Should response with text "Could not create user" if user creating fails', async () => {
+    it('Should response with error text that "createUser" service returns', async () => {
       const body = {
         firstname: 'Test firstname',
         lastname: 'Test lastname',
@@ -61,16 +61,16 @@ describe('User controller', () => {
         role: 'writer',
       };
 
-      createService.mockRejectedValueOnce(new Error());
+      createUser.mockRejectedValueOnce(new Error('Something went wrong'));
 
       const response = await request(app).post('/users').send(body);
-      expect(response.text).toContain('Could not create user');
+      expect(response.text).toContain('Something went wrong');
     });
   });
 
   describe('Get users', () => {
     it('Should response with status code 200, if successfully get users', async () => {
-      getService.mockImplementationOnce(() => [
+      getUsers.mockImplementationOnce(() => [
         {
           firstname: 'Test firstname',
           lastname: 'Test lastname',
@@ -83,60 +83,49 @@ describe('User controller', () => {
       expect(response.statusCode).toBe(200);
     });
 
-    it('Should response object with property "users"', async () => {
-      const body = [
-        {
-          firstname: 'Test firstname',
-          lastname: 'Test lastname',
-          email: 'test@test.com',
-          password: 'test',
-          role: 'writer',
-        },
-      ];
-      getService.mockResolvedValueOnce(body);
+    it('Should response object with count and users property', async () => {
+      const body = {
+        count: 1,
+        rows: [
+          {
+            firstname: 'Test firstname',
+            lastname: 'Test lastname',
+            email: 'test@test.com',
+            password: 'test',
+            role: 'writer',
+          },
+        ],
+      };
+      getUsers.mockResolvedValueOnce(body);
       const response = await request(app).get('/users');
-      expect(response.body).toHaveProperty('users');
+      expect(response.body).haveOwnProperty('count');
+      expect(response.body).haveOwnProperty('users');
     });
 
-    it('Should response array that "getService" returns', async () => {
-      const body = [
-        {
-          firstname: 'Test firstname',
-          lastname: 'Test lastname',
-          email: 'test@test.com',
-          password: 'test',
-          role: 'writer',
-        },
-      ];
-      getService.mockResolvedValueOnce(body);
+    it('Should response with status code 500 if getting users failed', async () => {
+      getUsers.mockRejectedValueOnce(new Error());
       const response = await request(app).get('/users');
-      expect(response.body.users).toEqual(body);
+      expect(response.statusCode).toBe(500);
     });
 
-    it('Should response with status code 404 if getting users failed', async () => {
-      getService.mockRejectedValueOnce(new Error());
-      const response = await request(app).get('/users');
-      expect(response.statusCode).toBe(404);
-    });
-
-    it('Should response with text "Could not find user(s)" if user does not exist', async () => {
-      getService.mockRejectedValueOnce(new Error());
+    it('Should response with error text that "getUsers" service returns', async () => {
+      getUsers.mockRejectedValueOnce(new Error('Something went wrong'));
 
       const response = await request(app).get('/users');
-      expect(response.text).toContain('Could not find user(s)');
+      expect(response.text).toContain('Something went wrong');
     });
   });
 
   describe('update user', () => {
     it('Should response with status code 200, if updating was successfully', async () => {
-      getService.mockResolvedValueOnce(true);
-      updateService.mockImplementationOnce();
+      updateUser.mockResolvedValueOnce(true);
+      updateUser.mockImplementationOnce();
       const response = await request(app).patch('/users/1');
       expect(response.statusCode).toBe(200);
     });
 
     it('Should response with status code 500, if updating was failed', async () => {
-      updateService.mockRejectedValueOnce(new Error());
+      updateUser.mockRejectedValueOnce(new Error());
       const response = await request(app).patch('/users/1');
       expect(response.statusCode).toBe(500);
     });
@@ -144,8 +133,8 @@ describe('User controller', () => {
 
   describe('delete user', () => {
     it('Should response with status code 200, if deleting was successfully and id passed as reqest body', async () => {
-      getService.mockResolvedValueOnce(true);
-      deleteService.mockImplementationOnce();
+      updateUser.mockResolvedValueOnce(true);
+      deleteUser.mockImplementationOnce();
       const response = await request(app)
         .delete('/users')
         .send({ id: [1] });
@@ -153,22 +142,22 @@ describe('User controller', () => {
     });
 
     it('Should response with status code 200, if deleting was successfully and id passed as url param', async () => {
-      getService.mockResolvedValueOnce(true);
-      deleteService.mockImplementationOnce();
+      updateUser.mockResolvedValueOnce(true);
+      deleteUser.mockImplementationOnce();
       const response = await request(app).delete('/users/1');
       expect(response.statusCode).toBe(200);
     });
 
     it('Should response with status code 500, if deleting was failed', async () => {
-      deleteService.mockRejectedValueOnce(new Error());
+      deleteUser.mockRejectedValueOnce(new Error());
       const response = await request(app).delete('/users/1');
       expect(response.statusCode).toBe(500);
     });
 
-    it('Should response with text "Could not delete post", if deleting was failed', async () => {
-      deleteService.mockRejectedValueOnce(new Error());
+    it('Should response with error text that "deleteUser" service returns', async () => {
+      deleteUser.mockRejectedValueOnce(new Error('Something went wrong'));
       const response = await request(app).delete('/users/1');
-      expect(response.text).toContain('Could not delete user');
+      expect(response.text).toContain('Something went wrong');
     });
   });
 });

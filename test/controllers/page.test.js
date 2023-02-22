@@ -45,7 +45,7 @@ describe('Page controller', () => {
       expect(response.statusCode).toBe(500);
     });
 
-    it('Should response with text "Could not create page" if page creating fails', async () => {
+    it('Should response with error text that service returns', async () => {
       const body = {
         title: 'Test title',
         content: 'slug',
@@ -54,10 +54,10 @@ describe('Page controller', () => {
         status: 'draft',
       };
 
-      createService.mockRejectedValueOnce(new Error());
+      createService.mockRejectedValueOnce(new Error('Something went wrong'));
 
       const response = await request(app).post('/pages').send(body);
-      expect(response.text).toContain('Could not create page');
+      expect(response.text).toContain('Something went wrong');
     });
   });
 
@@ -106,10 +106,10 @@ describe('Page controller', () => {
       expect(response.body.pages).toEqual(body);
     });
 
-    it('Should response with status code 404 if page does not exist', async () => {
+    it('Should response with status code 500 if getting pages failed', async () => {
       getService.mockRejectedValueOnce(new Error());
       const response = await request(app).get('/pages');
-      expect(response.statusCode).toBe(404);
+      expect(response.statusCode).toBe(500);
     });
 
     it('Should response with text "Could not find page(s)" if getting topis failed', async () => {

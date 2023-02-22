@@ -1,20 +1,10 @@
-import { Op } from 'sequelize';
 import HttpError from '../utils/http-error.js';
 
-import {
-  createService,
-  getService,
-  updateService,
-  deleteService,
-} from '../services/services.js';
-import userServices from '../services/user.service.js';
-import db from '../models/index.js';
+import { createUser, getUsers, updateUser, deleteUser } from '../services/user.service.js';
 
-const { User } = db;
-
-export const createUser = async (req, res, next) => {
+export const createUserController = async (req, res, next) => {
   try {
-    const user = await userServices.createUser(req.body);
+    const user = await createUser(req.body);
     res.status(201).json({
       message: 'User successfully created',
       user,
@@ -24,7 +14,7 @@ export const createUser = async (req, res, next) => {
   }
 };
 
-export const getUsers = async (req, res, next) => {
+export const getUsersController = async (req, res, next) => {
   // receive user id from url params or query
   const id = req.params.userId || req.query.id;
   // receive other parameters from url query
@@ -32,7 +22,7 @@ export const getUsers = async (req, res, next) => {
 
   try {
     // getting users with provided paramaters and response it to the client
-    const { count, rows } = await userServices.getUsers({
+    const { count, rows } = await getUsers({
       id,
       firstname,
       lastname,
@@ -48,7 +38,7 @@ export const getUsers = async (req, res, next) => {
   }
 };
 
-export const updateUser = async (req, res, next) => {
+export const updateUserController = async (req, res, next) => {
   // Receive user id from url params or request body
   const userId = req.params.userId || req.body.id;
 
@@ -58,7 +48,7 @@ export const updateUser = async (req, res, next) => {
 
   try {
     // Check if user or users with provided id are exists
-    await userServices.updateUser(userId, toUpdate);
+    await updateUser(userId, toUpdate);
     res.status(200).json({
       message: 'User was successfully updated',
     });
@@ -67,7 +57,7 @@ export const updateUser = async (req, res, next) => {
   }
 };
 
-export const deleteUser = async (req, res, next) => {
+export const deleteUserController = async (req, res, next) => {
   // receive user id from url params or request body
   let userId = req.params.userId || req.body.id;
 
@@ -77,7 +67,7 @@ export const deleteUser = async (req, res, next) => {
   }
   try {
     // deleting all users with given id
-    const result = await userServices.deleteUser(userId);
+    const result = await deleteUser(userId);
 
     res.status(200).json({
       message: result > 1 ? 'Users were successfully deleted' : 'User was successfully deleted',

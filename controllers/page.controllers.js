@@ -19,7 +19,7 @@ export const createPage = async (req, res, next) => {
       message: 'Page successfully created',
     });
   } catch (error) {
-    next(HttpError(error.message, error.statusCode));
+    next(new HttpError(error.message, error.statusCode));
   }
 };
 
@@ -45,7 +45,7 @@ export const getPages = async (req, res, next) => {
       pages,
     });
   } catch (error) {
-    next(HttpError(error.message, error.statusCode));
+    next(new HttpError(error.message, error.statusCode));
   }
 };
 
@@ -71,7 +71,7 @@ export const updatePage = async (req, res, next) => {
       message: 'Page successfully updated',
     });
   } catch (error) {
-    next(HttpError(error.message, error.statusCode));
+    next(new HttpError(error.message, error.statusCode));
   }
 };
 
@@ -103,6 +103,6 @@ export const deletePage = async (req, res, next) => {
       message: 'Page was successfully deleted',
     });
   } catch (error) {
-    next(HttpError(error.message, error.statusCode));
+    next(new HttpError(error.message, error.statusCode));
   }
 };
