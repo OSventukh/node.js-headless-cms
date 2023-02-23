@@ -5,7 +5,7 @@ import {
   getPagesController,
   updatePageController,
   deletePageController,
-} from '../controllers/page.controllers.js';
+} from '../controllers/pages.controllers.js';
 
 const router = express.Router();
 

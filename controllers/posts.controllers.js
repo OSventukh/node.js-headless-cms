@@ -23,16 +23,11 @@ export const getPostsController = async (req, res, next) => {
   // Receive post id from url params or query
   const id = req.params.postId || req.query.id;
 
-  // Receive other parameters from url query
-  const { title, slug, status } = req.query;
-
   try {
     // get topics with provided parameters and response it to the client
     const { count, rows } = await getPosts({
       id,
-      title,
-      slug,
-      status,
+      ...req.query,
     });
     res.status(200).json({
       count,

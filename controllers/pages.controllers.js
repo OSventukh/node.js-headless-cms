@@ -23,16 +23,11 @@ export const getPagesController = async (req, res, next) => {
   // Receive page id from url params or query
   const id = req.params.pageId || req.query.id;
 
-  // Receive other parameters from url query
-  const { title, slug, status } = req.query;
-
   try {
     // get topics with provided parameters and response it to the client
     const { count, rows } = await getPages({
       id,
-      title,
-      slug,
-      status,
+      ...req.query,
     });
     res.status(200).json({
       count,

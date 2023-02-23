@@ -17,17 +17,12 @@ export const createUserController = async (req, res, next) => {
 export const getUsersController = async (req, res, next) => {
   // receive user id from url params or query
   const id = req.params.userId || req.query.id;
-  // receive other parameters from url query
-  const { firstname, lastname, email, role } = req.query;
 
   try {
     // getting users with provided paramaters and response it to the client
     const { count, rows } = await getUsers({
       id,
-      firstname,
-      lastname,
-      email,
-      role,
+      ...req.query,
     });
     res.status(200).json({
       count,
@@ -47,7 +42,6 @@ export const updateUserController = async (req, res, next) => {
   const { id, ...toUpdate } = req.body;
 
   try {
-    // Check if user or users with provided id are exists
     await updateUser(userId, toUpdate);
     res.status(200).json({
       message: 'User was successfully updated',
