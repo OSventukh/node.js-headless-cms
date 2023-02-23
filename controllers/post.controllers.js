@@ -5,7 +5,7 @@ import {
   getPosts,
   updatePost,
   deletePost,
-} from '../services/post.service.js';
+} from '../services/posts.services.js';
 
 export const createPostController = async (req, res, next) => {
   try {

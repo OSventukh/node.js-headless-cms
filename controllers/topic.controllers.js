@@ -1,55 +1,44 @@
-import { Op } from 'sequelize';
 import HttpError from '../utils/http-error.js';
 
 import {
-  createService,
-  getService,
-  updateService,
-  deleteService,
-} from '../services/services.js';
+  createTopic,
+  getTopics,
+  updateTopic,
+  deleteTopic,
+} from '../services/topics.services.js';
 
-import db from '../models/index.js';
-
-const { Topic } = db;
-
-export const createTopic = async (req, res, next) => {
+export const createTopicController = async (req, res, next) => {
   try {
-    await createService(Topic, req.body);
+    const topic = await createTopic(req.body);
     res.status(201).json({
       message: 'Topic successfully created',
+      topic,
     });
   } catch (error) {
     next(new HttpError(error.message, error.statusCode));
   }
 };
 
-export const getTopics = async (req, res, next) => {
+export const getTopicsController = async (req, res, next) => {
   // receive topic id from url params or query
-  const id = req.params.topicId || req.query.id;
-  // receive other parameters from url query
-  const { title, slug, description, status } = req.query;
-
-  // If parameter was provided add it to object which will be passed as where query to sequelize
-  const whereOptions = {
-    ...(id && { id }),
-    ...(title && { title }),
-    ...(slug && { slug }),
-    ...(description && { description }),
-    ...(status && { status }),
-  };
+  const id = req.params.topicId;
 
   try {
     // getting topics with provided paramaters and response it to the client
-    const topics = await getService(Topic, whereOptions);
+    const { count, rows } = await getTopics({
+      id,
+      ...req.query,
+    });
     res.status(200).json({
-      topics,
+      count,
+      topics: rows,
     });
   } catch (error) {
     next(new HttpError(error.message, error.statusCode));
   }
 };
 
-export const updateTopic = async (req, res, next) => {
+export const updateTopicController = async (req, res, next) => {
   // Receive topic id from url params or request body
   const topicId = req.params.topicId || req.body.id;
 
@@ -58,15 +47,7 @@ export const updateTopic = async (req, res, next) => {
   const { id, ...toUpdate } = req.body;
 
   try {
-    // Check if topic or topics with provided id are exists
-    const topic = await getService(Topic, { id: topicId });
-
-    if (!topic || topic.length === 0) {
-      throw new HttpError('Topic does not exist', '404');
-    }
-
-    // update existing topic
-    await updateService(Topic, toUpdate, { id: topicId });
+    await updateTopic(topicId, toUpdate);
 
     res.status(200).json({
       message: 'Topic was successfully updated',
@@ -76,7 +57,7 @@ export const updateTopic = async (req, res, next) => {
   }
 };
 
-export const deleteTopic = async (req, res, next) => {
+export const deleteTopicController = async (req, res, next) => {
   // receive topic id from url params or request body
   let topicId = req.params.topicId || req.body.id;
 
@@ -86,22 +67,12 @@ export const deleteTopic = async (req, res, next) => {
   }
 
   try {
-    // Checking if topic or topics with passed id(s) is exists
-    const topics = await getService(Topic, {
-      id: { [Op.in]: topicId },
-    });
+    // deleting all users with given id
+    const result = await deleteTopic(topicId);
 
-    if (!topics || topics.length === 0) {
-      throw new HttpError('Topic does not exist', '404');
-    }
-    // deleting all topics with given id
-    Promise.all(
-      topicId.map(async (id) => {
-        await deleteService(Topic, { id });
-      }),
-    );
     res.status(200).json({
-      message: 'Topic was succesfully deleted',
+      message: result > 1 ? 'Topics were successfully deleted' : 'Topic was successfully deleted',
+      count: result,
     });
   } catch (error) {
     next(new HttpError(error.message, error.statusCode));

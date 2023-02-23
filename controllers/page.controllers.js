@@ -1,55 +1,49 @@
-import { Op } from 'sequelize';
 import HttpError from '../utils/http-error.js';
 
 import {
-  createService,
-  deleteService,
-  getService,
-  updateService,
-} from '../services/services.js';
+  createPage,
+  getPages,
+  updatePage,
+  deletePage,
+} from '../services/pages.services.js';
 
-import db from '../models/index.js';
-
-const { Page } = db;
-
-export const createPage = async (req, res, next) => {
+export const createPageController = async (req, res, next) => {
   try {
-    await createService(Page, req.body);
+    const page = await createPage(req.body);
     res.status(201).json({
       message: 'Page successfully created',
+      page,
     });
   } catch (error) {
     next(new HttpError(error.message, error.statusCode));
   }
 };
 
-export const getPages = async (req, res, next) => {
+export const getPagesController = async (req, res, next) => {
   // Receive page id from url params or query
   const id = req.params.pageId || req.query.id;
 
   // Receive other parameters from url query
   const { title, slug, status } = req.query;
 
-  // If parameters was provided add it to object which will be passed as where query to sequelize
-  const whereOptions = {
-    ...(id && { id }),
-    ...(title && { title }),
-    ...(slug && { slug }),
-    ...(status && { status }),
-  };
-
   try {
     // get topics with provided parameters and response it to the client
-    const pages = await getService(Page, whereOptions);
+    const { count, rows } = await getPages({
+      id,
+      title,
+      slug,
+      status,
+    });
     res.status(200).json({
-      pages,
+      count,
+      pages: rows,
     });
   } catch (error) {
     next(new HttpError(error.message, error.statusCode));
   }
 };
 
-export const updatePage = async (req, res, next) => {
+export const updatePageController = async (req, res, next) => {
   // Receive page id from url params or request body
   const pageId = req.params.pageId || req.body.id;
 
@@ -58,24 +52,17 @@ export const updatePage = async (req, res, next) => {
   const { id, ...toUpdate } = req.body;
 
   try {
-    // Check if page or pages with provided id are exists
-    const pages = await getService(Page, { id: pageId });
-    if (!pages || pages.length === 0) {
-      throw new HttpError('This pages does not exist', 404);
-    }
-
-    // Update existion page
-    await updateService(Page, toUpdate, { id: pageId });
+    await updatePage(pageId, toUpdate);
 
     res.status(200).json({
-      message: 'Page successfully updated',
+      message: 'Page was successfully updated',
     });
   } catch (error) {
     next(new HttpError(error.message, error.statusCode));
   }
 };
 
-export const deletePage = async (req, res, next) => {
+export const deletePageController = async (req, res, next) => {
   // Receive page id from url param or request body
   let pageId = req.params.pageId || req.body.id;
 
@@ -85,22 +72,12 @@ export const deletePage = async (req, res, next) => {
   }
 
   try {
-    // Check if page or page with provided id are exist
-    const pages = await getService(Page, {
-      id: { [Op.in]: pageId },
-    });
+    // deleting all pages with given id
+    const result = await deletePage(pageId);
 
-    if (!pages || pages.length === 0) {
-      throw new HttpError('This page does not exist', 404);
-    }
-
-    Promise.all(
-      pageId.map(async (id) => {
-        await deleteService(Page, { id });
-      }),
-    );
     res.status(200).json({
-      message: 'Page was successfully deleted',
+      message: result > 1 ? 'Pages were successfully deleted' : 'Page was successfully deleted',
+      count: result,
     });
   } catch (error) {
     next(new HttpError(error.message, error.statusCode));

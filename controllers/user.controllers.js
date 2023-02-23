@@ -1,6 +1,6 @@
 import HttpError from '../utils/http-error.js';
 
-import { createUser, getUsers, updateUser, deleteUser } from '../services/user.service.js';
+import { createUser, getUsers, updateUser, deleteUser } from '../services/users.services.js';
 
 export const createUserController = async (req, res, next) => {
   try {
