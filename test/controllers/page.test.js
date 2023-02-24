@@ -3,17 +3,17 @@ import request from 'supertest';
 
 import app from '../../app';
 import {
-  createService,
-  getService,
-  updateService,
-  deleteService,
-} from '../../services/services.js';
+  createPage,
+  getPages,
+  updatePage,
+  deletePage,
+} from '../../services/pages.services.js';
 
 describe('Page controller', () => {
   afterEach(() => {
     vi.resetAllMocks();
   });
-  vi.mock('../../services/services');
+  vi.mock('../../services/pages.services.js');
 
   describe('Create page', () => {
     it('Should response with status code 201, when page created', async () => {
@@ -24,7 +24,7 @@ describe('Page controller', () => {
         description: 'test',
       };
 
-      createService.mockImplementationOnce();
+      createPage.mockImplementationOnce();
 
       const response = await request(app).post('/pages').send(body);
       expect(response.statusCode).toBe(201);
@@ -39,7 +39,7 @@ describe('Page controller', () => {
         status: 'draft',
       };
 
-      createService.mockRejectedValueOnce(new Error());
+      createPage.mockRejectedValueOnce(new Error());
 
       const response = await request(app).post('/pages').send(body);
       expect(response.statusCode).toBe(500);
@@ -54,7 +54,7 @@ describe('Page controller', () => {
         status: 'draft',
       };
 
-      createService.mockRejectedValueOnce(new Error('Something went wrong'));
+      createPage.mockRejectedValueOnce(new Error('Something went wrong'));
 
       const response = await request(app).post('/pages').send(body);
       expect(response.text).toContain('Something went wrong');
@@ -63,7 +63,7 @@ describe('Page controller', () => {
 
   describe('Get pages', () => {
     it('Should response with status code 200, if successfully get pages', async () => {
-      getService.mockImplementationOnce(() => [
+      getPages.mockImplementationOnce(() => [
         {
           id: '1',
           title: 'Test title',
@@ -76,60 +76,49 @@ describe('Page controller', () => {
       expect(response.statusCode).toBe(200);
     });
 
-    it('Should response object with property "pages"', async () => {
-      const body = [
-        {
-          id: '1',
-          title: 'Test title',
-          slug: 'test-slug',
-          description: 'Test description',
-          status: 'active',
-        },
-      ];
-      getService.mockResolvedValueOnce(body);
+    it('Should response object with count and pages properties', async () => {
+      const body = {
+        count: 1,
+        rows: [
+          {
+            id: '1',
+            title: 'Test title',
+            slug: 'test-slug',
+            description: 'Test description',
+            status: 'active',
+          },
+        ],
+      };
+      getPages.mockResolvedValueOnce(body);
       const response = await request(app).get('/pages');
+      expect(response.body).toHaveProperty('count');
       expect(response.body).toHaveProperty('pages');
     });
 
-    it('Should response array that "getService" returns', async () => {
-      const body = [
-        {
-          id: '1',
-          title: 'Test title',
-          slug: 'test-slug',
-          description: 'Test description',
-          status: 'active',
-        },
-      ];
-      getService.mockResolvedValueOnce(body);
-      const response = await request(app).get('/pages');
-      expect(response.body.pages).toEqual(body);
-    });
-
     it('Should response with status code 500 if getting pages failed', async () => {
-      getService.mockRejectedValueOnce(new Error());
+      getPages.mockRejectedValueOnce(new Error());
       const response = await request(app).get('/pages');
       expect(response.statusCode).toBe(500);
     });
 
-    it('Should response with text "Could not find page(s)" if getting topis failed', async () => {
-      getService.mockRejectedValueOnce(new Error());
+    it('Should response with error text that service returns', async () => {
+      getPages.mockRejectedValueOnce(new Error('Something went wrong'));
 
       const response = await request(app).get('/pages');
-      expect(response.text).toContain('Could not find page(s)');
+      expect(response.text).toContain('Something went wrong');
     });
   });
 
   describe('update page', () => {
     it('Should response with status code 200, if updating was successfully', async () => {
-      getService.mockResolvedValueOnce(true);
-      updateService.mockImplementationOnce();
+      getPages.mockResolvedValueOnce(true);
+      updatePage.mockImplementationOnce();
       const response = await request(app).patch('/pages/1');
       expect(response.statusCode).toBe(200);
     });
 
     it('Should response with status code 500, if updating was failed', async () => {
-      updateService.mockRejectedValueOnce(new Error());
+      updatePage.mockRejectedValueOnce(new Error());
       const response = await request(app).patch('/pages/1');
       expect(response.statusCode).toBe(500);
     });
@@ -137,8 +126,8 @@ describe('Page controller', () => {
 
   describe('delete page', () => {
     it('Should response with status code 200, if deleting was successfully and id passed as reqest body', async () => {
-      getService.mockResolvedValueOnce(true);
-      deleteService.mockImplementationOnce();
+      getPages.mockResolvedValueOnce(true);
+      deletePage.mockImplementationOnce();
       const response = await request(app)
         .delete('/pages')
         .send({ id: [1] });
@@ -146,22 +135,22 @@ describe('Page controller', () => {
     });
 
     it('Should response with status code 200, if deleting was successfully and id passed as url param', async () => {
-      getService.mockResolvedValueOnce(true);
-      deleteService.mockImplementationOnce();
+      getPages.mockResolvedValueOnce(true);
+      deletePage.mockImplementationOnce();
       const response = await request(app).delete('/pages/1');
       expect(response.statusCode).toBe(200);
     });
 
     it('Should response with status code 500, if deleting was failed', async () => {
-      deleteService.mockRejectedValueOnce(new Error());
+      deletePage.mockRejectedValueOnce(new Error());
       const response = await request(app).delete('/pages/1');
       expect(response.statusCode).toBe(500);
     });
 
-    it('Should response with text "Could not delete page", if deleting was failed', async () => {
-      deleteService.mockRejectedValueOnce(new Error());
+    it('Should response with error text that service returns', async () => {
+      deletePage.mockRejectedValueOnce(new Error('Something went wrong'));
       const response = await request(app).delete('/pages/1');
-      expect(response.text).toContain('Could not delete page');
+      expect(response.text).toContain('Something went wrong');
     });
   });
 });

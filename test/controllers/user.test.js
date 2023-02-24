@@ -7,13 +7,13 @@ import {
   getUsers,
   updateUser,
   deleteUser,
-} from '../../services/user.service.js';
+} from '../../services/users.services.js';
 
 describe('User controller', () => {
   afterEach(() => {
     vi.resetAllMocks();
   });
-  vi.mock('../../services/user.service.js');
+  vi.mock('../../services/users.services.js');
 
   describe('Create user', () => {
     it('Should response with status code 201, when user created', async () => {
@@ -52,7 +52,7 @@ describe('User controller', () => {
       expect(response.statusCode).toBe(500);
     });
 
-    it('Should response with error text that "createUser" service returns', async () => {
+    it('Should response with error text that service returns', async () => {
       const body = {
         firstname: 'Test firstname',
         lastname: 'Test lastname',
@@ -83,7 +83,7 @@ describe('User controller', () => {
       expect(response.statusCode).toBe(200);
     });
 
-    it('Should response object with count and users property', async () => {
+    it('Should response object with count and users properties', async () => {
       const body = {
         count: 1,
         rows: [
@@ -108,7 +108,7 @@ describe('User controller', () => {
       expect(response.statusCode).toBe(500);
     });
 
-    it('Should response with error text that "getUsers" service returns', async () => {
+    it('Should response with error text that service returns', async () => {
       getUsers.mockRejectedValueOnce(new Error('Something went wrong'));
 
       const response = await request(app).get('/users');
@@ -154,7 +154,7 @@ describe('User controller', () => {
       expect(response.statusCode).toBe(500);
     });
 
-    it('Should response with error text that "deleteUser" service returns', async () => {
+    it('Should response with error text that service returns', async () => {
       deleteUser.mockRejectedValueOnce(new Error('Something went wrong'));
       const response = await request(app).delete('/users/1');
       expect(response.text).toContain('Something went wrong');

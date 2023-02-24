@@ -3,17 +3,17 @@ import request from 'supertest';
 
 import app from '../../app';
 import {
-  createService,
-  getService,
-  updateService,
-  deleteService,
-} from '../../services/services.js';
+  createPost,
+  getPosts,
+  updatePost,
+  deletePost,
+} from '../../services/posts.services.js';
 
 describe('Post controller', () => {
   afterEach(() => {
     vi.resetAllMocks();
   });
-  vi.mock('../../services/services');
+  vi.mock('../../services/posts.services.js');
 
   describe('Create post', () => {
     it('Should response with status code 201, when post created', async () => {
@@ -24,7 +24,7 @@ describe('Post controller', () => {
         description: 'test',
       };
 
-      createService.mockImplementationOnce();
+      createPost.mockImplementationOnce();
 
       const response = await request(app).post('/posts').send(body);
       expect(response.statusCode).toBe(201);
@@ -38,13 +38,13 @@ describe('Post controller', () => {
         description: 'test',
       };
 
-      createService.mockRejectedValueOnce(new Error());
+      createPost.mockRejectedValueOnce(new Error());
 
       const response = await request(app).post('/posts').send(body);
       expect(response.statusCode).toBe(500);
     });
 
-    it('Should response with text "Could not create post" if post creating fails', async () => {
+    it('Should response with error text that service returns', async () => {
       const body = {
         title: 'Test title',
         content: 'slug',
@@ -53,16 +53,16 @@ describe('Post controller', () => {
         status: 'draft',
       };
 
-      createService.mockRejectedValueOnce(new Error());
+      createPost.mockRejectedValueOnce(new Error('Something went wrong'));
 
       const response = await request(app).post('/posts').send(body);
-      expect(response.text).toContain('Could not create post');
+      expect(response.text).toContain('Something went wrong');
     });
   });
 
   describe('Get posts', () => {
     it('Should response with status code 200, if successfully get posts', async () => {
-      getService.mockImplementationOnce(() => [
+      getPosts.mockImplementationOnce(() => [
         {
           id: '1',
           title: 'Test title',
@@ -75,60 +75,49 @@ describe('Post controller', () => {
       expect(response.statusCode).toBe(200);
     });
 
-    it('Should response object with property "posts"', async () => {
-      const body = [
-        {
-          id: '1',
-          title: 'Test title',
-          slug: 'test-slug',
-          description: 'Test description',
-          status: 'active',
-        },
-      ];
-      getService.mockResolvedValueOnce(body);
+    it('Should response object with count and posts properties', async () => {
+      const body = {
+        count: 1,
+        rows: [
+          {
+            id: '1',
+            title: 'Test title',
+            slug: 'test-slug',
+            description: 'Test description',
+            status: 'active',
+          },
+        ],
+      };
+      getPosts.mockResolvedValueOnce(body);
       const response = await request(app).get('/posts');
-      expect(response.body).toHaveProperty('posts');
+      expect(response.body).haveOwnProperty('count');
+      expect(response.body).haveOwnProperty('posts');
     });
 
-    it('Should response array that "getService" returns', async () => {
-      const body = [
-        {
-          id: '1',
-          title: 'Test title',
-          slug: 'test-slug',
-          description: 'Test description',
-          status: 'active',
-        },
-      ];
-      getService.mockResolvedValueOnce(body);
+    it('Should response with status code 500 if getting post failed', async () => {
+      getPosts.mockRejectedValueOnce(new Error());
       const response = await request(app).get('/posts');
-      expect(response.body.posts).toEqual(body);
+      expect(response.statusCode).toBe(500);
     });
 
-    it('Should response with status code 404 if post does not exist', async () => {
-      getService.mockRejectedValueOnce(new Error());
-      const response = await request(app).get('/posts');
-      expect(response.statusCode).toBe(404);
-    });
-
-    it('Should response with text "Could not find post(s)" if getting topis failed', async () => {
-      getService.mockRejectedValueOnce(new Error());
+    it('Should response with error text that service returns', async () => {
+      getPosts.mockRejectedValueOnce(new Error('Something went wrong'));
 
       const response = await request(app).get('/posts');
-      expect(response.text).toContain('Could not find post(s)');
+      expect(response.text).toContain('Something went wrong');
     });
   });
 
   describe('update post', () => {
     it('Should response with status code 200, if updating was successfully', async () => {
-      getService.mockResolvedValueOnce(true);
-      updateService.mockImplementationOnce();
+      getPosts.mockResolvedValueOnce(true);
+      updatePost.mockImplementationOnce();
       const response = await request(app).patch('/posts/1');
       expect(response.statusCode).toBe(200);
     });
 
     it('Should response with status code 500, if updating was failed', async () => {
-      updateService.mockRejectedValueOnce(new Error());
+      updatePost.mockRejectedValueOnce(new Error());
       const response = await request(app).patch('/posts/1');
       expect(response.statusCode).toBe(500);
     });
@@ -136,8 +125,8 @@ describe('Post controller', () => {
 
   describe('delete post', () => {
     it('Should response with status code 200, if deleting was successfully and id passed as reqest body', async () => {
-      getService.mockResolvedValueOnce(true);
-      deleteService.mockImplementationOnce();
+      getPosts.mockResolvedValueOnce(true);
+      deletePost.mockImplementationOnce();
       const response = await request(app)
         .delete('/posts')
         .send({ id: [1] });
@@ -145,22 +134,22 @@ describe('Post controller', () => {
     });
 
     it('Should response with status code 200, if deleting was successfully and id passed as url param', async () => {
-      getService.mockResolvedValueOnce(true);
-      deleteService.mockImplementationOnce();
+      getPosts.mockResolvedValueOnce(true);
+      deletePost.mockImplementationOnce();
       const response = await request(app).delete('/posts/1');
       expect(response.statusCode).toBe(200);
     });
 
     it('Should response with status code 500, if deleting was failed', async () => {
-      deleteService.mockRejectedValueOnce(new Error());
+      deletePost.mockRejectedValueOnce(new Error());
       const response = await request(app).delete('/posts/1');
       expect(response.statusCode).toBe(500);
     });
 
-    it('Should response with text "Could not delete post", if deleting was failed', async () => {
-      deleteService.mockRejectedValueOnce(new Error());
+    it('Should response with error text that service returns', async () => {
+      deletePost.mockRejectedValueOnce(new Error('Something went wrong'));
       const response = await request(app).delete('/posts/1');
-      expect(response.text).toContain('Could not delete post');
+      expect(response.text).toContain('Something went wrong');
     });
   });
 });
