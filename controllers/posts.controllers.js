@@ -59,12 +59,7 @@ export const updatePostController = async (req, res, next) => {
 
 export const deletePostController = async (req, res, next) => {
   // Receive post id from url param or request body
-  let postId = req.params.postId || req.body.id;
-
-  // Transform post id to array if it is not
-  if (postId && !Array.isArray(postId)) {
-    postId = [postId];
-  }
+  const postId = req.params.postId || req.body.id;
 
   try {
     // deleting all post with given id

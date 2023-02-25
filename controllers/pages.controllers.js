@@ -59,12 +59,7 @@ export const updatePageController = async (req, res, next) => {
 
 export const deletePageController = async (req, res, next) => {
   // Receive page id from url param or request body
-  let pageId = req.params.pageId || req.body.id;
-
-  // Transform page id to array if it is not
-  if (pageId && !Array.isArray(pageId)) {
-    pageId = [pageId];
-  }
+  const pageId = req.params.pageId || req.body.id;
 
   try {
     // deleting all pages with given id

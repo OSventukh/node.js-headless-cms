@@ -16,7 +16,7 @@ export const createPage = async (pageData) => {
       const fieldName = Object.entries(error.fields)[0][0];
       const fieldValue = Object.entries(error.fields)[0][1];
       const errorMessage = `The ${fieldName} should be an unique. Value ${fieldValue} is already in use`;
-      throw new HttpError(errorMessage || error.message, 409);
+      throw new HttpError(errorMessage, 409);
     }
     throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
   }
@@ -73,25 +73,25 @@ export const updatePage = async (id, toUpdate) => {
 
 export const deletePage = async (id) => {
   try {
-    const pageId = Array.of(id).flat();
+    const pagesId = Array.of(id).flat();
 
     const page = await Page.findAll({
       where: {
         id: {
-          [Op.in]: pageId,
+          [Op.in]: pagesId,
         },
       },
     });
 
     if (!page || page.length === 0) {
-      const errorMessage = pageId.length > 1 ? 'Pages not found' : 'Page not found';
+      const errorMessage = pagesId.length > 1 ? 'Pages not found' : 'Page not found';
       throw new HttpError(errorMessage, 404);
     }
 
     const result = await Page.destroy({
       where: {
         id: {
-          [Op.in]: pageId,
+          [Op.in]: pagesId,
         },
       },
     });
@@ -99,6 +99,7 @@ export const deletePage = async (id) => {
     if (result === 0) {
       throw new HttpError('Page was not deleted', 400);
     }
+
     return result;
   } catch (error) {
     throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);

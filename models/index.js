@@ -7,9 +7,9 @@ import database from '../config/database.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
+const env = process.env.NODE_ENV || 'development';
 const db = {};
-const sequelize = new Sequelize(database.development);
+const sequelize = new Sequelize(database[env]);
 
 (async () => {
   const files = readdirSync(__dirname).filter(

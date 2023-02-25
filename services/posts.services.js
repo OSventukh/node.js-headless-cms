@@ -16,18 +16,18 @@ export const createPost = async (postData) => {
       const fieldName = Object.entries(error.fields)[0][0];
       const fieldValue = Object.entries(error.fields)[0][1];
       const errorMessage = `The ${fieldName} should be an unique. Value ${fieldValue} is already in use`;
-      throw new HttpError(errorMessage || error.message, 409);
+      throw new HttpError(errorMessage, 409);
     }
     throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
   }
 };
 
 export const getPosts = async (
-  whereQuery,
+  whereQuery = {},
   includeQuery,
   orderQuery,
   offset,
-  limit
+  limit,
 ) => {
   try {
     // If parameter was provided, add it to sequelize where query
@@ -41,6 +41,8 @@ export const getPosts = async (
       },
       include: [],
       order: [],
+      offset,
+      limit,
     });
 
     return result;
@@ -71,26 +73,33 @@ export const updatePost = async (id, toUpdate) => {
 
 export const deletePost = async (id) => {
   try {
+    const postsId = Array.of(id).flat();
+
     const posts = await Post.findAll({
       where: {
         id: {
-          [Op.in]: id,
+          [Op.in]: postsId,
         },
       },
     });
 
     if (!posts || posts.length === 0) {
-      const errorMessage = id.length > 1 ? 'Posts not found' : 'Post not found';
+      const errorMessage = postsId.length > 1 ? 'Posts not found' : 'Post not found';
       throw new HttpError(errorMessage, 404);
     }
 
     const result = await Post.destroy({
       where: {
         id: {
-          [Op.in]: id,
+          [Op.in]: postsId,
         },
       },
     });
+
+    if (result === 0) {
+      throw new HttpError('Post was not deleted', 400);
+    }
+
     return result;
   } catch (error) {
     throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
