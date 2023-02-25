@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, afterAll } from 'vitest';
 import request from 'supertest';
 
 import app from '../../app';
@@ -10,10 +10,17 @@ import {
 } from '../../services/pages.services.js';
 
 describe('Page controller', () => {
+  beforeEach(() => {
+    vi.mock('../../services/pages.services.js');
+  });
+
   afterEach(() => {
     vi.resetAllMocks();
   });
-  vi.mock('../../services/pages.services.js');
+
+  afterAll(() => {
+    vi.clearAllMocks();
+  });
 
   describe('Create page', () => {
     it('Should response with status code 201, when page created', async () => {

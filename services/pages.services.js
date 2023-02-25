@@ -23,11 +23,11 @@ export const createPage = async (pageData) => {
 };
 
 export const getPages = async (
-  whereQuery,
+  whereQuery = {},
   includeQuery,
   orderQuery,
   offset,
-  limit
+  limit,
 ) => {
   try {
     // If parameter was provided, add it to sequelize where query
@@ -41,6 +41,8 @@ export const getPages = async (
       },
       include: [],
       order: [],
+      offset,
+      limit,
     });
 
     return result;
@@ -71,26 +73,32 @@ export const updatePage = async (id, toUpdate) => {
 
 export const deletePage = async (id) => {
   try {
+    const pageId = Array.of(id).flat();
+
     const page = await Page.findAll({
       where: {
         id: {
-          [Op.in]: id,
+          [Op.in]: pageId,
         },
       },
     });
 
     if (!page || page.length === 0) {
-      const errorMessage = id.length > 1 ? 'Pages not found' : 'Page not found';
+      const errorMessage = pageId.length > 1 ? 'Pages not found' : 'Page not found';
       throw new HttpError(errorMessage, 404);
     }
 
     const result = await Page.destroy({
       where: {
         id: {
-          [Op.in]: id,
+          [Op.in]: pageId,
         },
       },
     });
+
+    if (result === 0) {
+      throw new HttpError('Page was not deleted', 400);
+    }
     return result;
   } catch (error) {
     throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
