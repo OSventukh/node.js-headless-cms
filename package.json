@@ -5,7 +5,7 @@
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
-    "test": "cross-env NODE_ENV=test vitest",
+    "test": "cross-env NODE_ENV=test vitest --no-threads",
     "test:coverage": "cross-env NODE_ENV=test vitest run --coverage",
     "start": "node server.js",
     "dev": "cross-env NODE_ENV=development nodemon server.js"

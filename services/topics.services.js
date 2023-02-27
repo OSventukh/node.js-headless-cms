@@ -16,18 +16,18 @@ export const createTopic = async (topicDate) => {
       const fieldName = Object.entries(error.fields)[0][0];
       const fieldValue = Object.entries(error.fields)[0][1];
       const errorMessage = `The ${fieldName} should be an unique. Value ${fieldValue} is already in use`;
-      throw new HttpError(errorMessage || error.message, 409);
+      throw new HttpError(errorMessage, 409);
     }
     throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
   }
 };
 
 export const getTopics = async (
-  whereQuery,
+  whereQuery = {},
   includeQuery,
   orderQuery,
   offset,
-  limit
+  limit,
 ) => {
   try {
     // If parameter was provided, add it to sequelize where query
@@ -41,6 +41,8 @@ export const getTopics = async (
       },
       include: [],
       order: [],
+      offset,
+      limit,
     });
 
     return result;
@@ -71,26 +73,32 @@ export const updateTopic = async (id, toUpdate) => {
 
 export const deleteTopic = async (id) => {
   try {
+    const topicsId = Array.of(id).flat();
     const topics = await Topic.findAll({
       where: {
         id: {
-          [Op.in]: id,
+          [Op.in]: topicsId,
         },
       },
     });
 
     if (!topics || topics.length === 0) {
-      const errorMessage = id.length > 1 ? 'Topics not found' : 'Topic not found';
+      const errorMessage = topicsId.length > 1 ? 'Topics not found' : 'Topic not found';
       throw new HttpError(errorMessage, 404);
     }
 
     const result = await Topic.destroy({
       where: {
         id: {
-          [Op.in]: id,
+          [Op.in]: topicsId,
         },
       },
     });
+
+    if (result === 0) {
+      throw new HttpError('Topic was not deleted', 400);
+    }
+
     return result;
   } catch (error) {
     throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);

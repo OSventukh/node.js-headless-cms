@@ -13,6 +13,9 @@ export default (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
         unique: false,
+        validate: {
+          notEmpty: true,
+        },
       },
       lastname: {
         type: DataTypes.STRING,
@@ -22,15 +25,31 @@ export default (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,
+        validate: {
+          notEmpty: true,
+        },
       },
       password: {
         type: DataTypes.STRING,
         allowNull: false,
+        validate: {
+          notEmpty: true,
+        },
       },
       role: {
         type: DataTypes.STRING,
         allowNull: false,
         defaultValue: 'writer',
+      },
+      status: {
+        type: DataTypes.STRING,
+        defaultValue: 'pending',
+        validate: {
+          isIn: {
+            args: [['pending', 'active', 'deleted']],
+            msg: 'Incorect user status value',
+          },
+        },
       },
     },
     {

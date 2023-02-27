@@ -59,12 +59,7 @@ export const updateTopicController = async (req, res, next) => {
 
 export const deleteTopicController = async (req, res, next) => {
   // receive topic id from url params or request body
-  let topicId = req.params.topicId || req.body.id;
-
-  // transform topic id to array if it is not
-  if (topicId && !Array.isArray(topicId)) {
-    topicId = [topicId];
-  }
+  const topicId = req.params.topicId || req.body.id;
 
   try {
     // deleting all users with given id

@@ -20,6 +20,8 @@ describe('Posts serviсes', () => {
   });
 
   afterEach(async () => {
+    vi.clearAllMocks();
+    vi.resetAllMocks();
     await sequelize.truncate();
   });
 

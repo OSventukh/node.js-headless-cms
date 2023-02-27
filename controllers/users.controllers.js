@@ -53,19 +53,14 @@ export const updateUserController = async (req, res, next) => {
 
 export const deleteUserController = async (req, res, next) => {
   // receive user id from url params or request body
-  let userId = req.params.userId || req.body.id;
+  const userId = req.params.userId || req.body.id;
 
-  // transform user id to array if it is not
-  if (userId && !Array.isArray(userId)) {
-    userId = [userId];
-  }
   try {
     // deleting all users with given id
-    const result = await deleteUser(userId);
+    await deleteUser(userId);
 
     res.status(200).json({
-      message: result > 1 ? 'Users were successfully deleted' : 'User was successfully deleted',
-      count: result,
+      message: 'User was successfully deleted',
     });
   } catch (error) {
     next(new HttpError(error.message, error.statusCode));

@@ -10,7 +10,9 @@ describe('Pages serviсes', () => {
   let getPages = null;
   let deletePage = null;
   beforeAll(async () => {
-    await sequelize.sync({ force: true });
+    await sequelize.sync();
+    vi.clearAllMocks();
+    vi.resetAllMocks();
     // import services after sequelize run
     const pagesServices = await import('../../services/pages.services.js');
     createPage = pagesServices.createPage;

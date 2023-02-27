@@ -23,16 +23,17 @@ export const createUser = async (data) => {
     throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
   }
 };
+
 export const getUsers = async (
-  whereQuery,
+  whereQuery = {},
   includeQuery,
   orderQuery,
   offset,
-  limit
+  limit,
 ) => {
   try {
     // If parameter was provided, add it to sequelize where query
-    const { id, firstname, lastname, email, role } = whereQuery;
+    const { id, firstname, lastname, email, role, status } = whereQuery;
     const result = await User.findAndCountAll({
       where: {
         ...(id && { id }),
@@ -40,9 +41,12 @@ export const getUsers = async (
         ...(lastname && { lastname }),
         ...(email && { email }),
         ...(role && { role }),
+        ...(status && { status }),
       },
       include: [],
       order: [],
+      offset,
+      limit,
     });
 
     return result;
@@ -50,6 +54,7 @@ export const getUsers = async (
     throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
   }
 };
+
 export const updateUser = async (id, toUpdate) => {
   try {
     const user = await User.findByPk(id);
@@ -62,6 +67,7 @@ export const updateUser = async (id, toUpdate) => {
         id,
       },
     });
+
     if (result[0] === 0) {
       throw new HttpError('User was not updated', 400);
     }
@@ -69,29 +75,32 @@ export const updateUser = async (id, toUpdate) => {
     throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
   }
 };
+
 export const deleteUser = async (id) => {
   try {
-    const users = await User.findAll({
-      where: {
-        id: {
-          [Op.in]: id,
-        },
-      },
-    });
-
-    if (!users || users.length === 0) {
-      const errorMessage = id.length > 1 ? 'Users not found' : 'User not found';
-      throw new HttpError(errorMessage, 404);
+    const user = await User.findByPk(id);
+    if (!user) {
+      throw new HttpError('User not found', 404);
+    }
+    // Prevent deleting administrator
+    if (user.id === 1 || user.role === 'admin') {
+      throw new HttpError('This user cannot be deleted', 403);
     }
 
-    const result = await User.destroy({
-      where: {
-        id: {
-          [Op.in]: id,
+    // Deleting a user is not permanent, a user can be restored
+    const result = await User.update(
+      {
+        status: 'deleted',
+      },
+      {
+        where: {
+          id,
         },
       },
-    });
-    return result;
+    );
+    if (result[0] === 0) {
+      throw new HttpError('User was not deleted', 400);
+    }
   } catch (error) {
     throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
   }

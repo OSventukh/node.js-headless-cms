@@ -44,7 +44,6 @@ export const getPages = async (
       offset,
       limit,
     });
-
     return result;
   } catch (error) {
     throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);

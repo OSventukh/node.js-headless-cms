@@ -32,12 +32,6 @@ describe('User controller', () => {
         role: 'writer',
       };
 
-      const hashedPassword = vi.fn();
-
-      hashedPassword.mockImplementationOnce(
-        (password) => `'hashed' ${password}`
-      );
-
       createUser.mockImplementationOnce();
 
       const response = await request(app).post('/users').send(body);
