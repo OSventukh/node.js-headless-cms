@@ -16,6 +16,9 @@ export default (sequelize, DataTypes) => {
       title: {
         allowNull: false,
         type: DataTypes.TEXT,
+        validate: {
+          notEmpty: true,
+        },
       },
       content: {
         type: DataTypes.TEXT,
@@ -35,7 +38,7 @@ export default (sequelize, DataTypes) => {
         defaultValue: 'draft',
         validate: {
           isIn: {
-            args: [['draft', 'publish']],
+            args: [['draft', 'published']],
             msg: 'Incorect value',
           },
         },

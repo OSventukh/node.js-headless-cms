@@ -16,6 +16,9 @@ export default (sequelize, DataTypes) => {
       title: {
         type: DataTypes.TEXT,
         allowNull: false,
+        validate: {
+          notEmpty: true,
+        }
       },
       content: {
         type: DataTypes.TEXT,

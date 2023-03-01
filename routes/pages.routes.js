@@ -1,26 +1,26 @@
 import express from 'express';
 
 import {
-  createPage,
-  getPages,
-  updatePage,
-  deletePage,
-} from '../controllers/page.controllers.js';
+  createPageController,
+  getPagesController,
+  updatePageController,
+  deletePageController,
+} from '../controllers/pages.controllers.js';
 
 const router = express.Router();
 
-router.get('/pages/:pageId', getPages);
+router.get('/pages/:pageId', getPagesController);
 
-router.get('/pages', getPages);
+router.get('/pages', getPagesController);
 
-router.post('/pages', createPage);
+router.post('/pages', createPageController);
 
-router.patch('/pages/:pageId', updatePage);
+router.patch('/pages/:pageId', updatePageController);
 
-router.patch('/pages', updatePage);
+router.patch('/pages', updatePageController);
 
-router.delete('/pages/:pageId', deletePage);
+router.delete('/pages/:pageId', deletePageController);
 
-router.delete('/pages', deletePage);
+router.delete('/pages', deletePageController);
 
 export default router;

@@ -1,26 +1,26 @@
 import express from 'express';
 
 import {
-  createTopic,
-  getTopics,
-  updateTopic,
-  deleteTopic,
-} from '../controllers/topic.controllers.js';
+  createTopicController,
+  getTopicsController,
+  updateTopicController,
+  deleteTopicController,
+} from '../controllers/topics.controllers.js';
 
 const router = express.Router();
 
-router.get('/topics/:topicId', getTopics);
+router.get('/topics/:topicId', getTopicsController);
 
-router.get('/topics', getTopics);
+router.get('/topics', getTopicsController);
 
-router.post('/topics', createTopic);
+router.post('/topics', createTopicController);
 
-router.patch('/topics/:topicId', updateTopic);
+router.patch('/topics/:topicId', updateTopicController);
 
-router.patch('/topics', updateTopic);
+router.patch('/topics', updateTopicController);
 
-router.delete('/topics/:topicId', deleteTopic);
+router.delete('/topics/:topicId', deleteTopicController);
 
-router.delete('/topics', deleteTopic);
+router.delete('/topics', deleteTopicController);
 
 export default router;
