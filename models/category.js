@@ -12,12 +12,14 @@ export default (sequelize, DataTypes) => {
     }
   }
 
-  Category.init({
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
+  Category.init(
+    {
+      name: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+          notEmpty: true,
+        },
       },
       slug: {
         type: DataTypes.STRING,
@@ -25,10 +27,11 @@ export default (sequelize, DataTypes) => {
         allowNull: false,
       },
     },
-  }, {
-    sequelize,
-    modelName: 'Category',
-  });
+    {
+      sequelize,
+      modelName: 'Category',
+    },
+  );
 
   return Category;
 };

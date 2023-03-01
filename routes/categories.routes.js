@@ -19,8 +19,8 @@ router.patch('/categories/:categoryId', updateCategoryController);
 
 router.patch('/categories', updateCategoryController);
 
-router.delete('/category/:categoryId', deleteCategoryController);
+router.delete('/categories/:categoryId', deleteCategoryController);
 
-router.delete('/category', deleteCategoryController);
+router.delete('/categories', deleteCategoryController);
 
 export default router;
