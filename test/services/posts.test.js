@@ -1,8 +1,14 @@
-import { describe, it, vi, expect, beforeAll, afterEach, afterAll } from 'vitest';
-import db from '../../models/index.js';
+import {
+  describe,
+  it,
+  vi,
+  expect,
+  beforeAll,
+  afterEach,
+  afterAll,
+} from 'vitest';
+import { sequelize, Post } from '../../models/index.js';
 import HttpError from '../../utils/http-error.js';
-
-const { sequelize } = db;
 
 describe('Posts serviсes', () => {
   let createPost = null;
@@ -21,13 +27,13 @@ describe('Posts serviсes', () => {
 
   afterEach(async () => {
     vi.clearAllMocks();
-    vi.resetAllMocks();
     await sequelize.truncate();
   });
 
   afterAll(async () => {
     await sequelize.close();
   });
+
   describe('createPost', () => {
     it('Should create a new post', async () => {
       const postData = {
@@ -86,7 +92,9 @@ describe('Posts serviсes', () => {
       try {
         await createPost(postData2);
       } catch (error) {
-        expect(error.message).toBe('The slug should be an unique. Value test-post is already in use');
+        expect(error.message).toBe(
+          'The slug should be an unique. Value test-post is already in use'
+        );
         expect(error.statusCode).toBe(409);
       }
     });
@@ -137,7 +145,6 @@ describe('Posts serviсes', () => {
         excerpt: 'Lorem ipsum dolor sit amet',
         status: 'draft',
       };
-      const { Post } = db;
 
       await Post.bulkCreate([postData1, postData2, postData3]);
 
@@ -149,7 +156,6 @@ describe('Posts serviсes', () => {
     });
 
     it('Should throw an error with message that sequelize provide and status code 500 if sequelize failed', async () => {
-      const { Post } = db;
       vi.spyOn(Post, 'findAndCountAll');
       const errorMessage = 'Could not get posts';
       Post.findAndCountAll.mockRejectedValueOnce(new Error(errorMessage));
@@ -163,7 +169,6 @@ describe('Posts serviсes', () => {
     });
 
     it('Should throw an error with message "Something went wrong" and statusCode 500 if unknown error occurred', async () => {
-      const { Post } = db;
       vi.spyOn(Post, 'findAndCountAll');
       Post.findAndCountAll.mockRejectedValueOnce(new Error());
       expect.assertions(2);
@@ -185,7 +190,12 @@ describe('Posts serviсes', () => {
         excerpt: 'Old Excerpt',
       });
 
-      const toUpdate = { title: 'New Title', content: 'New Content', slug: 'new-title', excerpt: 'New Excerpt' };
+      const toUpdate = {
+        title: 'New Title',
+        content: 'New Content',
+        slug: 'new-title',
+        excerpt: 'New Excerpt',
+      };
       await updatePost(post.id, toUpdate);
       const result = await getPosts({ id: post.id });
       expect(result.rows[0].title).toBe(toUpdate.title);
@@ -194,24 +204,24 @@ describe('Posts serviсes', () => {
       expect(result.rows[0].excerpt).toBe(toUpdate.excerpt);
     });
 
-    it('Should call Post.fingByPk() and Post.update functions with arguments', async () => {
-      const { Post } = db;
+    it('Should call Post.findByPk() and Post.update functions with arguments', async () => {
       vi.spyOn(Post, 'findByPk');
       vi.spyOn(Post, 'update');
 
       const mockPost = { id: 1, title: 'Old Title', content: 'Old Content' };
+
       Post.findByPk.mockResolvedValue(mockPost);
       Post.update.mockResolvedValue([1]);
-
       const updatedPost = { title: 'New Title', content: 'New Content' };
       await updatePost(mockPost.id, updatedPost);
 
       expect(Post.findByPk).toHaveBeenCalledWith(mockPost.id);
-      expect(Post.update).toHaveBeenCalledWith(updatedPost, { where: { id: mockPost.id } });
+      expect(Post.update).toHaveBeenCalledWith(updatedPost, {
+        where: { id: mockPost.id },
+      });
     });
 
     it('Should throw an error if post to update is not found', async () => {
-      const { Post } = db;
       vi.spyOn(Post, 'findByPk');
 
       Post.findByPk.mockResolvedValue(null);
@@ -220,10 +230,10 @@ describe('Posts serviсes', () => {
     });
 
     it('Sould throw an error with message "Post with this id not found" and status code 404 if post to update is not found', async () => {
-      const { Post } = db;
       vi.spyOn(Post, 'findByPk');
       Post.findByPk.mockResolvedValue(null);
       expect.assertions(2);
+
       try {
         await updatePost(1, {});
       } catch (error) {
@@ -234,7 +244,6 @@ describe('Posts serviсes', () => {
 
     it('Should throw an error with message "Post was not updated" and status code 400 if post was not updated', async () => {
       expect.assertions(2);
-      const { Post } = db;
       vi.spyOn(Post, 'findByPk');
       vi.spyOn(Post, 'update');
 
@@ -250,7 +259,6 @@ describe('Posts serviсes', () => {
     });
 
     it('Should throw an error that sequelize provide and status code 500 if sequelized failed', async () => {
-      const { Post } = db;
       vi.spyOn(Post, 'findByPk');
       const errorMessage = 'Sequelize error';
       Post.findByPk.mockRejectedValue(new Error(errorMessage));
@@ -264,7 +272,6 @@ describe('Posts serviсes', () => {
     });
 
     it('Sould throw an error with message "Something went wrong" and status code 500 if unknown error occured', async () => {
-      const { Post } = db;
       vi.spyOn(Post, 'findByPk');
       Post.findByPk.mockRejectedValue(new Error());
 
@@ -306,6 +313,7 @@ describe('Posts serviсes', () => {
         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
         excerpt: 'Lorem ipsum dolor sit amet',
       });
+
       const result = await deletePost([post1.id, post2.id]);
       const posts = await getPosts();
       expect(result).toBe(2);
@@ -333,7 +341,6 @@ describe('Posts serviсes', () => {
 
     it('Should throw an error with message "Post was not deleted" and statusCode 400 if post was not deleted', async () => {
       expect.assertions(2);
-      const { Post } = db;
 
       const post = await createPost({
         title: 'Test post',
@@ -353,7 +360,6 @@ describe('Posts serviсes', () => {
     });
 
     it('Should throw an error with provided message and statusCode 500 if sequelize failed', async () => {
-      const { Post } = db;
       expect.assertions(2);
       const post = await createPost({
         title: 'Test post',
@@ -373,7 +379,6 @@ describe('Posts serviсes', () => {
     });
 
     it('Should throw an error with message "Something went wrong" and statusCode 500 if unknown error occurred', async () => {
-      const { Post } = db;
       expect.assertions(2);
       const post = await createPost({
         title: 'Test post',

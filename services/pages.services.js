@@ -1,8 +1,6 @@
 import { Op } from 'sequelize';
-import db from '../models/index.js';
+import { Page } from '../models/index.js';
 import HttpError from '../utils/http-error.js';
-
-const { Page } = db;
 
 export const createPage = async (pageData) => {
   try {

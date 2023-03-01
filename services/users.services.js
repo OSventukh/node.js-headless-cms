@@ -1,9 +1,7 @@
 import { Op } from 'sequelize';
-import db from '../models/index.js';
+import { User } from '../models/index.js';
 import { hashPassword } from '../utils/hash.js';
 import HttpError from '../utils/http-error.js';
-
-const { User } = db;
 
 export const createUser = async (data) => {
   try {

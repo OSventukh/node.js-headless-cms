@@ -1,8 +1,6 @@
 import { Op } from 'sequelize';
-import db from '../models/index.js';
+import { Post } from '../models/index.js';
 import HttpError from '../utils/http-error.js';
-
-const { Post } = db;
 
 export const createPost = async (postData) => {
   try {
@@ -44,7 +42,6 @@ export const getPosts = async (
       offset,
       limit,
     });
-
     return result;
   } catch (error) {
     throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);

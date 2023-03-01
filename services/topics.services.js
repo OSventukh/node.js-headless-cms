@@ -1,8 +1,6 @@
 import { Op } from 'sequelize';
-import db from '../models/index.js';
+import { Topic } from '../models/index.js';
 import HttpError from '../utils/http-error.js';
-
-const { Topic } = db;
 
 export const createTopic = async (topicDate) => {
   try {

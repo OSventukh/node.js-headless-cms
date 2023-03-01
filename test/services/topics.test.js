@@ -1,8 +1,14 @@
-import { describe, it, vi, expect, beforeAll, afterEach, afterAll } from 'vitest';
-import db from '../../models/index.js';
+import {
+  describe,
+  it,
+  vi,
+  expect,
+  beforeAll,
+  afterEach,
+  afterAll,
+} from 'vitest';
+import { sequelize, Topic } from '../../models/index.js';
 import HttpError from '../../utils/http-error.js';
-
-const { sequelize } = db;
 
 describe('Topics serviсes', () => {
   let createTopic = null;
@@ -20,8 +26,6 @@ describe('Topics serviсes', () => {
   });
 
   afterEach(async () => {
-    vi.clearAllMocks();
-    vi.resetAllMocks();
     await sequelize.truncate();
   });
 
@@ -87,7 +91,9 @@ describe('Topics serviсes', () => {
       try {
         await createTopic(topicData2);
       } catch (error) {
-        expect(error.message).toBe('The slug should be an unique. Value test-topic is already in use');
+        expect(error.message).toBe(
+          'The slug should be an unique. Value test-topic is already in use'
+        );
         expect(error.statusCode).toBe(409);
       }
     });
@@ -138,7 +144,6 @@ describe('Topics serviсes', () => {
         image: 'test.jpg',
         status: 'inactive',
       };
-      const { Topic } = db;
 
       await Topic.bulkCreate([topicData1, topicData2, topicData3]);
 
@@ -150,7 +155,6 @@ describe('Topics serviсes', () => {
     });
 
     it('Should throw an error with message that sequelize provide and status code 500 if sequelize failed', async () => {
-      const { Topic } = db;
       vi.spyOn(Topic, 'findAndCountAll');
       const errorMessage = 'Could not get topics';
       Topic.findAndCountAll.mockRejectedValueOnce(new Error(errorMessage));
@@ -164,7 +168,6 @@ describe('Topics serviсes', () => {
     });
 
     it('Should throw an error with message "Something went wrong" and statusCode 500 if unknown error occurred', async () => {
-      const { Topic } = db;
       vi.spyOn(Topic, 'findAndCountAll');
       Topic.findAndCountAll.mockRejectedValueOnce(new Error());
       expect.assertions(2);
@@ -186,7 +189,12 @@ describe('Topics serviсes', () => {
         image: 'old-image.jpg',
       });
 
-      const toUpdate = { title: 'New Title', description: 'New Description', slug: 'new-title', image: 'new-image.jpg' };
+      const toUpdate = {
+        title: 'New Title',
+        description: 'New Description',
+        slug: 'new-title',
+        image: 'new-image.jpg',
+      };
       await updateTopic(topic.id, toUpdate);
       const result = await getTopics({ id: topic.id });
       expect(result.rows[0].title).toBe(toUpdate.title);
@@ -196,23 +204,30 @@ describe('Topics serviсes', () => {
     });
 
     it('Should call Topic.fingByPk() and Topic.update functions with arguments', async () => {
-      const { Topic } = db;
       vi.spyOn(Topic, 'findByPk');
       vi.spyOn(Topic, 'update');
 
-      const mockTopic = { id: 1, title: 'Old Title', description: 'Old Description' };
+      const mockTopic = {
+        id: 1,
+        title: 'Old Title',
+        description: 'Old Description',
+      };
       Topic.findByPk.mockResolvedValue(mockTopic);
       Topic.update.mockResolvedValue([1]);
 
-      const updatedTopic = { title: 'New Title', description: 'New Description' };
+      const updatedTopic = {
+        title: 'New Title',
+        description: 'New Description',
+      };
       await updateTopic(mockTopic.id, updatedTopic);
 
       expect(Topic.findByPk).toHaveBeenCalledWith(mockTopic.id);
-      expect(Topic.update).toHaveBeenCalledWith(updatedTopic, { where: { id: mockTopic.id } });
+      expect(Topic.update).toHaveBeenCalledWith(updatedTopic, {
+        where: { id: mockTopic.id },
+      });
     });
 
     it('Should throw an error if topic to update is not found', async () => {
-      const { Topic } = db;
       vi.spyOn(Topic, 'findByPk');
 
       Topic.findByPk.mockResolvedValue(null);
@@ -221,7 +236,6 @@ describe('Topics serviсes', () => {
     });
 
     it('Sould throw an error with message "Topic with this id not found" and status code 404 if topic to update is not found', async () => {
-      const { Topic } = db;
       vi.spyOn(Topic, 'findByPk');
       Topic.findByPk.mockResolvedValue(null);
       expect.assertions(2);
@@ -235,7 +249,7 @@ describe('Topics serviсes', () => {
 
     it('Should throw an error with message "Topic was not updated" and status code 400 if topic was not updated', async () => {
       expect.assertions(2);
-      const { Topic } = db;
+
       vi.spyOn(Topic, 'findByPk');
       vi.spyOn(Topic, 'update');
 
@@ -251,7 +265,6 @@ describe('Topics serviсes', () => {
     });
 
     it('Should throw an error that sequelize provide and status code 500 if sequelized failed', async () => {
-      const { Topic } = db;
       vi.spyOn(Topic, 'findByPk');
       const errorMessage = 'Sequelize error';
       Topic.findByPk.mockRejectedValue(new Error(errorMessage));
@@ -265,7 +278,6 @@ describe('Topics serviсes', () => {
     });
 
     it('Sould throw an error with message "Something went wrong" and status code 500 if unknown error occured', async () => {
-      const { Topic } = db;
       vi.spyOn(Topic, 'findByPk');
       Topic.findByPk.mockRejectedValue(new Error());
 
@@ -334,7 +346,6 @@ describe('Topics serviсes', () => {
 
     it('Should throw an error with message "Topic was not deleted" and statusCode 400 if topic was not deleted', async () => {
       expect.assertions(2);
-      const { Topic } = db;
 
       const topic = await createTopic({
         title: 'Test Topic',
@@ -354,7 +365,6 @@ describe('Topics serviсes', () => {
     });
 
     it('Should throw an error with provided message and statusCode 500 if sequelize failed', async () => {
-      const { Topic } = db;
       expect.assertions(2);
       const topic = await createTopic({
         title: 'Test Topic',
@@ -374,7 +384,6 @@ describe('Topics serviсes', () => {
     });
 
     it('Should throw an error with message "Something went wrong" and statusCode 500 if unknown error occurred', async () => {
-      const { Topic } = db;
       expect.assertions(2);
       const topic = await createTopic({
         title: 'Test Topic',

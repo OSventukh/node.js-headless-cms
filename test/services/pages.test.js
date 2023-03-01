@@ -1,8 +1,6 @@
 import { describe, it, vi, expect, beforeAll, afterEach, afterAll } from 'vitest';
-import db from '../../models/index.js';
+import { sequelize, Page } from '../../models/index.js';
 import HttpError from '../../utils/http-error.js';
-
-const { sequelize } = db;
 
 describe('Pages serviсes', () => {
   let createPage = null;
@@ -137,7 +135,6 @@ describe('Pages serviсes', () => {
         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
         status: 'draft',
       };
-      const { Page } = db;
 
       await Page.bulkCreate([pageData1, pageData2, pageData3]);
 
@@ -149,7 +146,6 @@ describe('Pages serviсes', () => {
     });
 
     it('Should throw an error with message that sequelize provide and status code 500 if sequelize failed', async () => {
-      const { Page } = db;
       vi.spyOn(Page, 'findAndCountAll');
       const errorMessage = 'Could not get pages';
       Page.findAndCountAll.mockRejectedValueOnce(new Error(errorMessage));
@@ -163,7 +159,6 @@ describe('Pages serviсes', () => {
     });
 
     it('Should throw an error with message "Something went wrong" and statusCode 500 if unknown error occurred', async () => {
-      const { Page } = db;
       vi.spyOn(Page, 'findAndCountAll');
       Page.findAndCountAll.mockRejectedValueOnce(new Error());
       expect.assertions(2);
@@ -195,7 +190,6 @@ describe('Pages serviсes', () => {
     });
 
     it('Should call Page.fingByPk() and Page.update functions with arguments', async () => {
-      const { Page } = db;
       vi.spyOn(Page, 'findByPk');
       vi.spyOn(Page, 'update');
 
@@ -211,7 +205,6 @@ describe('Pages serviсes', () => {
     });
 
     it('Should throw an error if page to update is not found', async () => {
-      const { Page } = db;
       vi.spyOn(Page, 'findByPk');
 
       Page.findByPk.mockResolvedValue(null);
@@ -220,7 +213,6 @@ describe('Pages serviсes', () => {
     });
 
     it('Sould throw an error with message "Page with this id not found" and status code 404 if page to update is not found', async () => {
-      const { Page } = db;
       vi.spyOn(Page, 'findByPk');
       Page.findByPk.mockResolvedValue(null);
       expect.assertions(2);
@@ -234,7 +226,6 @@ describe('Pages serviсes', () => {
 
     it('Should throw an error with message "Page was not updated" and status code 400 if page was not updated', async () => {
       expect.assertions(2);
-      const { Page } = db;
       vi.spyOn(Page, 'findByPk');
       vi.spyOn(Page, 'update');
 
@@ -250,7 +241,6 @@ describe('Pages serviсes', () => {
     });
 
     it('Should throw an error that sequelize provide and status code 500 if sequelized failed', async () => {
-      const { Page } = db;
       vi.spyOn(Page, 'findByPk');
       const errorMessage = 'Sequelize error';
       Page.findByPk.mockRejectedValue(new Error(errorMessage));
@@ -264,7 +254,6 @@ describe('Pages serviсes', () => {
     });
 
     it('Sould throw an error with message "Something went wrong" and status code 500 if unknown error occured', async () => {
-      const { Page } = db;
       vi.spyOn(Page, 'findByPk');
       Page.findByPk.mockRejectedValue(new Error());
 
@@ -333,7 +322,6 @@ describe('Pages serviсes', () => {
 
     it('Should throw an error with message "Page was not deleted" and statusCode 400 if page was not deleted', async () => {
       expect.assertions(2);
-      const { Page } = db;
 
       const page = await createPage({
         title: 'Test page',
@@ -353,7 +341,6 @@ describe('Pages serviсes', () => {
     });
 
     it('Should throw an error with provided message and statusCode 500 if sequelize failed', async () => {
-      const { Page } = db;
       expect.assertions(2);
       const page = await createPage({
         title: 'Test page',
@@ -373,7 +360,6 @@ describe('Pages serviсes', () => {
     });
 
     it('Should throw an error with message "Something went wrong" and statusCode 500 if unknown error occurred', async () => {
-      const { Page } = db;
       expect.assertions(2);
       const page = await createPage({
         title: 'Test page',
