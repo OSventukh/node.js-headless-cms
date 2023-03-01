@@ -19,6 +19,11 @@ export default (sequelize, DataTypes) => {
       validate: {
         notEmpty: true,
       },
+      slug: {
+        type: DataTypes.STRING,
+        unique: true,
+        allowNull: false,
+      },
     },
   }, {
     sequelize,

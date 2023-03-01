@@ -5,19 +5,19 @@ import {
   getCategoriesController,
   updateCategoryController,
   deleteCategoryController,
-} from '../controllers/categories.controllers';
+} from '../controllers/categories.controllers.js';
 
 const router = express.Router();
 
-router.get('/category/:categoryId', getCategoriesController);
+router.get('/categories/:categoryId', getCategoriesController);
 
-router.get('/category', getCategoriesController);
+router.get('/categories', getCategoriesController);
 
-router.post('/category', createCategoryController);
+router.post('/categories', createCategoryController);
 
-router.patch('/category/:categoryId', updateCategoryController);
+router.patch('/categories/:categoryId', updateCategoryController);
 
-router.patch('/category', updateCategoryController);
+router.patch('/categories', updateCategoryController);
 
 router.delete('/category/:categoryId', deleteCategoryController);
 
