@@ -29,13 +29,12 @@ export const getCategories = async (
 ) => {
   try {
     // If parameter was provided, add it to sequelize where query
-    const { id, title, slug, status } = whereQuery;
+    const { id, name, slug } = whereQuery;
     const result = await Category.findAndCountAll({
       where: {
         ...(id && { id }),
-        ...(title && { title }),
+        ...(name && { name }),
         ...(slug && { slug }),
-        ...(status && { status }),
       },
       include: [],
       order: [],
