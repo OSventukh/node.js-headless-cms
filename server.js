@@ -3,11 +3,9 @@ import { sequelize } from './models/index.js';
 
 const PORT = process.env.PORT || 3000;
 
-async function server() {
+((async function server() {
   // connnecting database
   await sequelize.sync();
   // running server
   app.listen(PORT);
-}
-
-await server();
+})());
