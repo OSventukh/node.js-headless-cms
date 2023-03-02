@@ -1,4 +1,4 @@
-import { login } from '../services/auth.services';
+import { login } from '../services/auth.services.js';
 import HttpError from '../utils/http-error.js';
 
 export const loginController = async (req, res, next) => {

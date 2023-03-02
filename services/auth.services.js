@@ -4,12 +4,16 @@ import HttpError from '../utils/http-error.js';
 
 export const login = async (email, password) => {
   try {
-    const user = await User.findOne(email);
+    const user = await User.findOne({
+      where: {
+        email,
+      },
+    });
     if (!user) {
       throw new HttpError('Invalid email or password', 401);
     }
 
-    const isMatchPassword = comparePassword(password, user.password);
+    const isMatchPassword = await comparePassword(password, user.password);
 
     if (!isMatchPassword) {
       throw new HttpError('Invalid email or password', 401);

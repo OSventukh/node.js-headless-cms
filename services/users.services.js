@@ -41,6 +41,7 @@ export const getUsers = async (
         ...(role && { role }),
         ...(status && { status }),
       },
+      attributes: { exclude: ['password'] },
       include: [],
       order: [],
       offset,
