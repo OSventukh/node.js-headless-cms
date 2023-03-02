@@ -1,26 +1,18 @@
 import express from 'express';
 
 import {
-  createOptionController,
   getOptionsController,
   updateOptionController,
-  deleteOptionController,
 } from '../controllers/options.controllers.js';
 
 const router = express.Router();
 
-router.get('/:optionName', getOptionsController);
+router.get('/site/:optionName', getOptionsController);
 
-router.get('/', getOptionsController);
+router.get('/site', getOptionsController);
 
-router.post('/', createOptionController);
+router.patch('/site/:optionName', updateOptionController);
 
-router.patch('/:optionName', updateOptionController);
-
-router.patch('/', updateOptionController);
-
-router.delete('/:optionName', deleteOptionController);
-
-router.delete('/', deleteOptionController);
+router.patch('/site/', updateOptionController);
 
 export default router;

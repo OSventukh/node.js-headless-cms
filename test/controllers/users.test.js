@@ -71,15 +71,21 @@ describe('User controller', () => {
 
   describe('Get users', () => {
     it('Should response with status code 200, if successfully get users', async () => {
-      getUsers.mockImplementationOnce(() => [
+      getUsers.mockResolvedValueOnce(
         {
-          firstname: 'Test firstname',
-          lastname: 'Test lastname',
-          email: 'test@test.com',
-          password: 'test',
-          role: 'writer',
+          count: 1,
+          rows: [
+            {
+              id: 1,
+              firstname: 'Test firstname',
+              lastname: 'Test lastname',
+              email: 'test@test.com',
+              password: 'test',
+              role: 'writer',
+            },
+          ],
         },
-      ]);
+      );
       const response = await request(app).get('/users');
       expect(response.statusCode).toBe(200);
     });
@@ -89,6 +95,7 @@ describe('User controller', () => {
         count: 1,
         rows: [
           {
+            id: 1,
             firstname: 'Test firstname',
             lastname: 'Test lastname',
             email: 'test@test.com',

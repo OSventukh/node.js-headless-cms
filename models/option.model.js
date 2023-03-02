@@ -24,10 +24,6 @@ export default (sequelize, DataTypes) => {
       },
       value: {
         type: DataTypes.STRING,
-        allowNull: false,
-        validate: {
-          notEmpty: true,
-        },
       },
     },
     {
