@@ -1,11 +1,3 @@
-import fs from 'fs';
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
 export default {
   development: {
     username: 'database_dev',
@@ -15,8 +7,8 @@ export default {
     port: 3306,
     dialect: 'mysql',
     dialectOptions: {
-      bigNumberStrings: true
-    }
+      bigNumberStrings: true,
+    },
   },
   test: {
     username: process.env.CI_DB_USERNAME,
@@ -26,7 +18,7 @@ export default {
     port: 3306,
     dialect: 'mysql',
     dialectOptions: {
-      bigNumberStrings: true
+      bigNumberStrings: true,
     }
   },
   production: {
@@ -38,9 +30,6 @@ export default {
     dialect: 'mysql',
     dialectOptions: {
       bigNumberStrings: true,
-      ssl: {
-        ca: fs.readFileSync(__dirname + '/mysql-ca-main.crt')
-      }
-    }
-  }
+    },
+  },
 };

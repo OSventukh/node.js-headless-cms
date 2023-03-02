@@ -1,4 +1,3 @@
-import { Op } from 'sequelize';
 import { User } from '../models/index.js';
 import { hashPassword } from '../utils/hash.js';
 import HttpError from '../utils/http-error.js';
