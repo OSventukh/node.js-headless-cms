@@ -1,0 +1,15 @@
+import { login } from '../services/auth.services';
+import HttpError from '../utils/http-error.js';
+
+export const loginController = async (req, res, next) => {
+  const { email, password } = req.body;
+  try {
+    await login(email, password);
+  } catch (error) {
+    next(new HttpError(error.message, error.statusCode));
+  }
+};
+
+export const resetPasswordController = async (req, res, next) => {};
+
+export const createAdminController = async (req, res, next) => {};
