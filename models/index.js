@@ -7,6 +7,7 @@ import TopicModel from './topic.model.js';
 import UserModel from './user.model.js';
 import CategoryModel from './category.js';
 import OptionModel from './option.model.js';
+import UserTokenModel from './user-token.model.js';
 
 const env = process.env.NODE_ENV || 'development';
 const sequelize = new Sequelize(database[env]);
@@ -17,5 +18,6 @@ const User = UserModel(sequelize, DataTypes);
 const Post = PostModel(sequelize, DataTypes);
 const Category = CategoryModel(sequelize, DataTypes);
 const Option = OptionModel(sequelize, DataTypes);
+const UserToken = UserTokenModel(sequelize, DataTypes);
 
-export { sequelize, Sequelize, Page, Topic, User, Post, Category, Option };
+export { sequelize, Sequelize, Page, Topic, User, Post, Category, Option, UserToken };
