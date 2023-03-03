@@ -1,4 +1,4 @@
-import { User } from '../models/index.js';
+import { User, UserToken } from '../models/index.js';
 import { comparePassword } from '../utils/hash.js';
 import { generateAccessToken, generateRefreshToken } from '../utils/token.js';
 import HttpError from '../utils/http-error.js';
@@ -10,12 +10,12 @@ export const login = async (email, password) => {
         email,
       },
     });
+    console.log(user)
     if (!user) {
       throw new HttpError('Invalid email or password', 401);
     }
 
     const isMatchPassword = await comparePassword(password, user.password);
-
     if (!isMatchPassword) {
       throw new HttpError('Invalid email or password', 401);
     }
@@ -23,8 +23,14 @@ export const login = async (email, password) => {
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
 
+    await UserToken.create({
+      user: user.id,
+      token: refreshToken,
+      expiresIn: Date.now(),
+    });
+
     return {
-      id: user.id,
+      userId: user.id,
       accessToken,
       refreshToken,
     };
@@ -33,6 +39,4 @@ export const login = async (email, password) => {
   }
 };
 
-export const logout = async () => {
-  
-}
+export const logout = async () => {};

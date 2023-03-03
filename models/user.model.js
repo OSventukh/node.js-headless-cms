@@ -4,7 +4,7 @@ export default (sequelize, DataTypes) => {
   class User extends Model {
     static associate(models) {
       // define association here
-      this.hasMany(models.UserToken, { foreignKey: 'tokens' });
+      this.hasMany(models.UserToken, { foreignKey: 'user' });
     }
   }
 
