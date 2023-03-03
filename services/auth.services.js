@@ -1,6 +1,6 @@
-import { jwt } from 'jsonwebtoken';
 import { User } from '../models/index.js';
 import { comparePassword } from '../utils/hash.js';
+import { generateAccessToken, generateRefreshToken } from '../utils/token.js';
 import HttpError from '../utils/http-error.js';
 
 export const login = async (email, password) => {
@@ -20,20 +20,19 @@ export const login = async (email, password) => {
       throw new HttpError('Invalid email or password', 401);
     }
 
-    const token = jwt.sign(
-      {
-        userId: user.id,
-        email: user.email,
-        role: user.role,
-      },
-      process.env.TOKEN_SECRET_KEY,
-    );
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    return {
+      id: user.id,
+      accessToken,
+      refreshToken,
+    };
   } catch (error) {
-    throw new HttpError(
-      error.message || 'Something went wrong',
-      error.statusCode || 500
-    );
+    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
   }
 };
 
-export const resetPassword = async () => {};
+export const logout = async () => {
+  
+}
