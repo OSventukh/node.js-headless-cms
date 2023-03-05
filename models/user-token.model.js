@@ -18,7 +18,7 @@ export default (sequelize, DataTypes) => {
         unique: true,
       },
       expiresIn: {
-        type: DataTypes.STRING,
+        type: DataTypes.DATE,
         allowNull: false,
       },
       ip: {

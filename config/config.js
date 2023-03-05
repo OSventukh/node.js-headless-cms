@@ -1,4 +1,4 @@
 export default {
-  accessTokenExpiresIn: '15min',
+  accessTokenExpiresIn: '1min',
   refreshTokenExpiresIn: '30d',
 };

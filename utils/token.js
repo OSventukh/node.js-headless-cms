@@ -25,3 +25,13 @@ export const generateRefreshToken = (user) => (
     { expiresIn: config.refreshTokenExpiresIn },
   )
 );
+
+export const verifyAccessToken = (token) => {
+  const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET_KEY);
+  return decoded;
+};
+
+export const verifyRefreshToken = (token) => {
+  const decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET_KEY);
+  return decoded;
+};
