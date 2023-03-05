@@ -1,11 +1,14 @@
 import ms from 'ms';
-import { login, refreshTokens } from '../services/auth.services.js';
+import { login, refreshTokens, checkUserLoggedIn, logout } from '../services/auth.services.js';
 import HttpError from '../utils/http-error.js';
 import config from '../config/config.js';
 
 export const loginController = async (req, res, next) => {
   const { email, password } = req.body;
+  const userRefreshToken = req.cookies?.refreshToken;
   try {
+    // Check if user already logged in;
+    userRefreshToken && checkUserLoggedIn(userRefreshToken);
     const { userId, accessToken, refreshToken } = await login(email, password);
     res
       .status(200)
@@ -39,6 +42,22 @@ export const refreshTokenController = async (req, res, next) => {
       })
       .json({
         accessToken: newAccessToken,
+      });
+  } catch (error) {
+    next(new HttpError(error.message, error.statusCode));
+  }
+};
+
+export const logoutController = async (req, res, next) => {
+  const userRefreshToken = req.cookies?.refreshToken;
+  const userAccessToken = req.get('authorization').split(' ')[1];
+  try {
+    await logout(userRefreshToken, userAccessToken);
+    res
+      .status(200)
+      .clearCookie('refreshToken')
+      .json({
+        message: 'You have successfully logged out',
       });
   } catch (error) {
     next(new HttpError(error.message, error.statusCode));

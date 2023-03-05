@@ -1,5 +1,5 @@
 import ms from 'ms';
-import { User, UserToken } from '../models/index.js';
+import { User, UserToken, UserBlockedToken } from '../models/index.js';
 import { comparePassword } from '../utils/hash.js';
 import {
   generateAccessToken,
@@ -33,7 +33,7 @@ export const login = async (email, password) => {
     await UserToken.create({
       user: user.id,
       token: refreshToken,
-      expiresIn: new Date(Date.now() + ms(config.accessTokenExpiresIn)),
+      expiresIn: new Date(Date.now() + ms(config.refreshTokenExpiresIn)),
     });
 
     return {
@@ -71,7 +71,7 @@ export const refreshTokens = async (oldRefreshToken) => {
     await UserToken.create({
       user: user.id,
       token: newRefreshToken,
-      expiresIn: new Date(Date.now() + ms(config.accessTokenExpiresIn)),
+      expiresIn: new Date(Date.now() + ms(config.refreshTokenExpiresIn)),
     });
 
     return { newAccessToken, newRefreshToken };
@@ -80,4 +80,34 @@ export const refreshTokens = async (oldRefreshToken) => {
   }
 };
 
-export const logout = async () => {};
+export const checkUserLoggedIn = (refreshToken) => {
+  try {
+    verifyRefreshToken(refreshToken);
+    UserToken.findOne({
+      where: {
+        token: refreshToken,
+      },
+    });
+    throw new HttpError('User already authenticated', 409);
+  } catch (error) {
+    throw new HttpError(error.message, error.statusCode);
+  }
+};
+
+export const logout = async (refreshToken, accessToken) => {
+  try {
+    // Block the access token for users who still have a valid token, preventing them from accessing
+    // the system even if they still have a valid access token.
+    await UserBlockedToken.create({
+      token: accessToken,
+    });
+    // Delete refreshToken of the user that logging out from database
+    await UserToken.destroy({
+      where: {
+        token: refreshToken,
+      },
+    });
+  } catch (error) {
+    throw new HttpError(error.message, error.statusCode);
+  }
+};
