@@ -4,7 +4,6 @@ import { comparePassword } from '../utils/hash.js';
 import {
   generateAccessToken,
   generateRefreshToken,
-  verifyAccessToken,
   verifyRefreshToken,
 } from '../utils/token.js';
 import HttpError from '../utils/http-error.js';
@@ -18,15 +17,14 @@ export const login = async (email, password) => {
       },
     });
     if (!user) {
-      throw new HttpError('Invalid email or password', 401);
+      throw new HttpError('Invalid email or password', 403);
     }
 
     const isMatchPassword = await comparePassword(password, user.password);
 
     if (!isMatchPassword) {
-      throw new HttpError('Invalid email or password', 401);
+      throw new HttpError('Invalid email or password', 403);
     }
-
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
 
@@ -44,7 +42,7 @@ export const login = async (email, password) => {
   } catch (error) {
     throw new HttpError(
       error.message || 'Something went wrong',
-      error.statusCode || 500
+      error.statusCode || 500,
     );
   }
 };
@@ -52,7 +50,6 @@ export const login = async (email, password) => {
 export const refreshTokens = async (oldRefreshToken) => {
   try {
     const { userId } = verifyRefreshToken(oldRefreshToken);
-    console.log(oldRefreshToken);
     const userToken = await UserToken.findOne({
       where: {
         token: oldRefreshToken,
@@ -66,31 +63,29 @@ export const refreshTokens = async (oldRefreshToken) => {
     const newRefreshToken = generateRefreshToken(user);
     const newAccessToken = generateAccessToken(user);
 
-    await userToken.destroy();
-
+    await UserToken.destroy({ where: { id: userToken.id } });
     await UserToken.create({
       user: user.id,
       token: newRefreshToken,
       expiresIn: new Date(Date.now() + ms(config.refreshTokenExpiresIn)),
     });
-
     return { newAccessToken, newRefreshToken };
   } catch (error) {
     throw new HttpError('Not Authenticated', 401);
   }
 };
 
-export const checkUserLoggedIn = (refreshToken) => {
+export const isUserLoggedIn = (refreshToken) => {
   try {
     verifyRefreshToken(refreshToken);
-    UserToken.findOne({
+    const savedToken = UserToken.findOne({
       where: {
         token: refreshToken,
       },
     });
-    throw new HttpError('User already authenticated', 409);
+    return savedToken && true;
   } catch (error) {
-    throw new HttpError(error.message, error.statusCode);
+    return false;
   }
 };
 

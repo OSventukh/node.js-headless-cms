@@ -92,7 +92,7 @@ describe('Topics serviсes', () => {
         await createTopic(topicData2);
       } catch (error) {
         expect(error.message).toBe(
-          'The slug should be an unique. Value test-topic is already in use'
+          'The slug should be an unique. Value test-topic is already in use',
         );
         expect(error.statusCode).toBe(409);
       }

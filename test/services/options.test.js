@@ -180,7 +180,9 @@ describe('Options serviсes', () => {
       await updateOption(mockOption.name, updatedOption.value);
 
       expect(Option.findOne).toHaveBeenCalledWith({ where: { name: mockOption.name } });
-      expect(Option.update).toHaveBeenCalledWith({ value: updatedOption.value }, { where: { name: mockOption.name } });
+      expect(Option.update).toHaveBeenCalledWith({
+        value: updatedOption.value }, { where: { name: mockOption.name },
+      });
     });
 
     it('Should throw an error if option to update is not found', async () => {

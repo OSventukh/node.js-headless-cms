@@ -1,5 +1,5 @@
 import ms from 'ms';
-import { login, refreshTokens, checkUserLoggedIn, logout } from '../services/auth.services.js';
+import { login, refreshTokens, isUserLoggedIn, logout } from '../services/auth.services.js';
 import HttpError from '../utils/http-error.js';
 import config from '../config/config.js';
 
@@ -8,7 +8,9 @@ export const loginController = async (req, res, next) => {
   const userRefreshToken = req.cookies?.refreshToken;
   try {
     // Check if user already logged in;
-    userRefreshToken && checkUserLoggedIn(userRefreshToken);
+    if (isUserLoggedIn(userRefreshToken)) {
+      throw new HttpError('User already authenticated', 409); 
+    }
     const { userId, accessToken, refreshToken } = await login(email, password);
     res
       .status(200)
@@ -63,7 +65,3 @@ export const logoutController = async (req, res, next) => {
     next(new HttpError(error.message, error.statusCode));
   }
 };
-
-export const resetPasswordController = async (req, res, next) => {};
-
-export const createAdminController = async (req, res, next) => {};
