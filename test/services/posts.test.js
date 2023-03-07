@@ -93,7 +93,7 @@ describe('Posts serviсes', () => {
         await createPost(postData2);
       } catch (error) {
         expect(error.message).toBe(
-          'The slug should be an unique. Value test-post is already in use'
+          'The slug should be an unique. Value test-post is already in use',
         );
         expect(error.statusCode).toBe(409);
       }
@@ -271,7 +271,7 @@ describe('Posts serviсes', () => {
       }
     });
 
-    it('Sould throw an error with message "Something went wrong" and status code 500 if unknown error occured', async () => {
+    it('Should throw an error with message "Something went wrong" and status code 500 if unknown error occured', async () => {
       vi.spyOn(Post, 'findByPk');
       Post.findByPk.mockRejectedValue(new Error());
 

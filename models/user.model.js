@@ -4,6 +4,7 @@ export default (sequelize, DataTypes) => {
   class User extends Model {
     static associate(models) {
       // define association here
+      this.hasMany(models.UserToken, { foreignKey: 'user' });
     }
   }
 
@@ -55,20 +56,7 @@ export default (sequelize, DataTypes) => {
     {
       sequelize,
       modelName: 'User',
-      defaultScope: {
-        attributes: {
-          exclude: ['password'],
-        },
-      },
-      hooks: {
-        afterCreate: (record) => {
-          delete record.dataValues.password;
-        },
-        afterUpdate: (record) => {
-          delete record.dataValues.password;
-        },
-      },
-    }
+    },
   );
   return User;
 };

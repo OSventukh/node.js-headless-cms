@@ -1,3 +1,4 @@
 node_modules
 coverage
 database.js
+.env

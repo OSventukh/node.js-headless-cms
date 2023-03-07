@@ -173,7 +173,9 @@ describe('Categories serviсes', () => {
       await updateCategory(mockCategory.id, updatedCategory);
 
       expect(Category.findByPk).toHaveBeenCalledWith(mockCategory.id);
-      expect(Category.update).toHaveBeenCalledWith(updatedCategory, { where: { id: mockCategory.id } });
+      expect(Category.update).toHaveBeenCalledWith(updatedCategory, {
+        where: { id: mockCategory.id },
+      });
     });
 
     it('Should throw an error if category to update is not found', async () => {
