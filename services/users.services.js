@@ -1,4 +1,4 @@
-import { User } from '../models/index.js';
+import { User, UserToken } from '../models/index.js';
 import { hashPassword } from '../utils/hash.js';
 import HttpError from '../utils/http-error.js';
 
@@ -34,14 +34,14 @@ export const getUsers = async (
     const result = await User.findAndCountAll({
       where: {
         ...(id && { id }),
-        ...(firstname && { lastname }),
+        ...(firstname && { firstname }),
         ...(lastname && { lastname }),
         ...(email && { email }),
         ...(role && { role }),
         ...(status && { status }),
       },
       attributes: { exclude: ['password'] },
-      include: [],
+      include: ['topics'],
       order: [],
       offset,
       limit,
