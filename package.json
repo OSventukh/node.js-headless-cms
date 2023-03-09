@@ -6,20 +6,20 @@
   "main": "app.js",
   "scripts": {
     "test": "cross-env NODE_ENV=test vitest --no-threads",
-    "test:coverage": "cross-env NODE_ENV=test vitest run --coverage",
+    "test:coverage": "cross-env NODE_ENV=test vitest --no-threads --coverage",
     "start": "node server.js",
     "dev": "cross-env NODE_ENV=development nodemon -r dotenv/config server.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/OSventukh/node.js-headless-cms.git"
+    "url": "git+https://github.com/OSventukh/vethealth-backend.git"
   },
   "author": "Oleksandr Sventukh",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/OSventukh/node.js-headless-cms/issues"
+    "url": "https://github.com/OSventukh/vethealth-backend/issues"
   },
-  "homepage": "https://github.com/OSventukh/node.js-headless-cms#readme",
+  "homepage": "https://github.com/OSventukh/vethealth-backend#readme",
   "dependencies": {
     "bcrypt": "^5.1.0",
     "cookie-parser": "^1.4.6",

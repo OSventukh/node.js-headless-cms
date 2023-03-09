@@ -4,12 +4,14 @@ import app from '../../app';
 
 import { login, logout, refreshTokens } from '../../services/auth.services.js';
 import { verifyRefreshToken } from '../../utils/token';
-import HttpError from '../../utils/http-error';
+import auth from '../../middlewares/auth';
 
 describe('Auth controllers', () => {
   beforeEach(() => {
     vi.mock('../../services/auth.services.js');
     vi.mock('../../utils/token');
+    vi.mock('../../middlewares/auth');
+    auth.mockImplementationOnce((req, res, next) => next());
   });
   afterEach(() => {
     vi.restoreAllMocks();

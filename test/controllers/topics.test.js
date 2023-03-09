@@ -8,10 +8,13 @@ import {
   updateTopic,
   deleteTopic,
 } from '../../services/topics.services.js';
+import auth from '../../middlewares/auth';
 
 describe('Topic controller', () => {
   beforeEach(() => {
     vi.mock('../../services/topics.services.js');
+    vi.mock('../../middlewares/auth');
+    auth.mockImplementationOnce((req, res, next) => next());
   });
 
   afterEach(() => {

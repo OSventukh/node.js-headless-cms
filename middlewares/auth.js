@@ -16,7 +16,6 @@ export default async (req, res, next) => {
         token,
       },
     });
-    console.log('token', authHeader)
     if (blockedToken) {
       throw new HttpError('Not Authenticated', 401);
     }

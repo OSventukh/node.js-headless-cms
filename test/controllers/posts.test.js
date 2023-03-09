@@ -8,10 +8,13 @@ import {
   updatePost,
   deletePost,
 } from '../../services/posts.services.js';
+import auth from '../../middlewares/auth';
 
 describe('Post controller', () => {
   beforeEach(() => {
     vi.mock('../../services/posts.services.js');
+    vi.mock('../../middlewares/auth');
+    auth.mockImplementationOnce((req, res, next) => next());
   });
 
   afterEach(() => {

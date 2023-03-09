@@ -14,6 +14,7 @@ import {
   UserBlockedToken,
 } from '../../models/index.js';
 import { hashPassword } from '../../utils/hash.js';
+import HttpError from '../../utils/http-error.js';
 
 describe('auth services', () => {
   let login;
@@ -172,6 +173,56 @@ describe('auth services', () => {
       expect(User.findByPk).toHaveBeenCalled();
     });
 
+    it('Should throw an error with message "Not Authenticated" and status code 401 if refreshToken not find in database', async () => {
+      const userCredentials = {
+        firstname: 'Test',
+        email: 'test@test.com',
+        password: '12345',
+      };
+      await User.create({
+        firstname: userCredentials.firstname,
+        email: userCredentials.email,
+        password: await hashPassword(userCredentials.password),
+      });
+      const { refreshToken } = await login(
+        userCredentials.email,
+        userCredentials.password,
+      );
+
+      UserToken.findOne.mockResolvedValueOnce(1);
+      try {
+        await refreshTokens(refreshToken);
+      } catch (error) {
+        expect(error.message).toBe('Not Authenticated');
+        expect(error.statusCode).toBe(401);
+      }
+    });
+
+    it('Should throw an error with message "Not Authenticated" and status code 401 if refreshToken return userId that not registered', async () => {
+      const userCredentials = {
+        firstname: 'Test',
+        email: 'test@test.com',
+        password: '12345',
+      };
+      await User.create({
+        firstname: userCredentials.firstname,
+        email: userCredentials.email,
+        password: await hashPassword(userCredentials.password),
+      });
+      const { refreshToken } = await login(
+        userCredentials.email,
+        userCredentials.password,
+      );
+
+      User.findByPk.mockResolvedValueOnce(null);
+      try {
+        await refreshTokens(refreshToken);
+      } catch (error) {
+        expect(error.message).toBe('Not Authenticated');
+        expect(error.statusCode).toBe(401);
+      }
+    });
+
     it('Should delete provided refreshToken from database', async () => {
       const userCredentials = {
         firstname: 'Test',
@@ -263,6 +314,13 @@ describe('auth services', () => {
       expect(UserBlockedToken.create).toHaveBeenCalledWith({
         token: accessToken,
       });
+    });
+    it('Should throw an HttpError if sequelize failed', async () => {
+      const refreshToken = 12345;
+      const accessToken = 1234;
+
+      UserBlockedToken.create.mockRejectedValueOnce(new Error());
+      expect(await logout(refreshToken, accessToken)).toThrow(new HttpError('sd'));
     });
   });
 });

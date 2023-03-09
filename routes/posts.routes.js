@@ -1,4 +1,7 @@
 import express from 'express';
+
+import auth from '../middlewares/auth.js';
+
 import {
   createPostController,
   getPostsController,
@@ -12,14 +15,14 @@ router.get('/posts/:postId', getPostsController);
 
 router.get('/posts', getPostsController);
 
-router.post('/posts', createPostController);
+router.post('/posts', auth, createPostController);
 
-router.patch('/posts/:postId', updatePostController);
+router.patch('/posts/:postId', auth, updatePostController);
 
-router.patch('/posts', updatePostController);
+router.patch('/posts', auth, updatePostController);
 
-router.delete('/posts/:postId', deletePostController);
+router.delete('/posts/:postId', auth, deletePostController);
 
-router.delete('/posts', deletePostController);
+router.delete('/posts', auth, deletePostController);
 
 export default router;

@@ -8,10 +8,13 @@ import {
   updateCategory,
   deleteCategory,
 } from '../../services/categories.services.js';
+import auth from '../../middlewares/auth.js';
 
 describe('Category controller', () => {
   beforeEach(() => {
     vi.mock('../../services/categories.services.js');
+    vi.mock('../../middlewares/auth');
+    auth.mockImplementationOnce((req, res, next) => next());
   });
 
   afterEach(() => {

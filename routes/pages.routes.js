@@ -1,5 +1,7 @@
 import express from 'express';
 
+import auth from '../middlewares/auth.js';
+
 import {
   createPageController,
   getPagesController,
@@ -13,14 +15,14 @@ router.get('/pages/:pageId', getPagesController);
 
 router.get('/pages', getPagesController);
 
-router.post('/pages', createPageController);
+router.post('/pages', auth, createPageController);
 
-router.patch('/pages/:pageId', updatePageController);
+router.patch('/pages/:pageId', auth, updatePageController);
 
-router.patch('/pages', updatePageController);
+router.patch('/pages', auth, updatePageController);
 
-router.delete('/pages/:pageId', deletePageController);
+router.delete('/pages/:pageId', auth, deletePageController);
 
-router.delete('/pages', deletePageController);
+router.delete('/pages', auth, deletePageController);
 
 export default router;
