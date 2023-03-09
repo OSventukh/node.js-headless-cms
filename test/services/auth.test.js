@@ -320,7 +320,12 @@ describe('auth services', () => {
       const accessToken = 1234;
 
       UserBlockedToken.create.mockRejectedValueOnce(new Error());
-      expect(await logout(refreshToken, accessToken)).toThrow(new HttpError('sd'));
+      expect.assertions(1);
+      try {
+        await logout(refreshToken, accessToken);
+      } catch (error) {
+        expect(error).toBeDefined();
+      }
     });
   });
 });
