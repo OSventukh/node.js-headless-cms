@@ -8,10 +8,13 @@ import {
   updatePage,
   deletePage,
 } from '../../services/pages.services.js';
+import auth from '../../middlewares/auth';
 
 describe('Page controller', () => {
   beforeEach(() => {
     vi.mock('../../services/pages.services.js');
+    vi.mock('../../middlewares/auth');
+    auth.mockImplementationOnce((req, res, next) => next());
   });
 
   afterEach(() => {

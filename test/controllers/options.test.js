@@ -6,10 +6,13 @@ import {
   getOptions,
   updateOption,
 } from '../../services/options.services.js';
+import auth from '../../middlewares/auth';
 
 describe('Option controller', () => {
   beforeEach(() => {
     vi.mock('../../services/options.services.js');
+    vi.mock('../../middlewares/auth');
+    auth.mockImplementationOnce((req, res, next) => next());
   });
 
   afterEach(() => {

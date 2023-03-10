@@ -1,5 +1,7 @@
 import express from 'express';
 
+import auth from '../middlewares/auth.js';
+
 import {
   createCategoryController,
   getCategoriesController,
@@ -13,14 +15,14 @@ router.get('/categories/:categoryId', getCategoriesController);
 
 router.get('/categories', getCategoriesController);
 
-router.post('/categories', createCategoryController);
+router.post('/categories', auth, createCategoryController);
 
-router.patch('/categories/:categoryId', updateCategoryController);
+router.patch('/categories/:categoryId', auth, updateCategoryController);
 
-router.patch('/categories', updateCategoryController);
+router.patch('/categories', auth, updateCategoryController);
 
-router.delete('/categories/:categoryId', deleteCategoryController);
+router.delete('/categories/:categoryId', auth, deleteCategoryController);
 
-router.delete('/categories', deleteCategoryController);
+router.delete('/categories', auth, deleteCategoryController);
 
 export default router;

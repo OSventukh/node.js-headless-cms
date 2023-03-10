@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeAll, afterEach, afterAll } from 'vitest';
+import { describe, it, expect, vi, beforeAll, afterEach, afterAll, beforeEach } from 'vitest';
 import request from 'supertest';
 
 import app from '../../app';
@@ -8,10 +8,13 @@ import {
   updateUser,
   deleteUser,
 } from '../../services/users.services.js';
+import auth from '../../middlewares/auth';
 
 describe('User controller', () => {
-  beforeAll(() => {
+  beforeEach(() => {
     vi.mock('../../services/users.services.js');
+    vi.mock('../../middlewares/auth');
+    auth.mockImplementationOnce((req, res, next) => next());
   });
 
   afterEach(() => {
