@@ -59,12 +59,12 @@ describe('Auth middleware', () => {
       },
     };
     await auth(req2, res, next);
-    expect(next).toHaveBeenCalledWith(new HttpError('Not Authenticated', 401))   
+    expect(next).toHaveBeenCalledWith(new HttpError('Not Authenticated', 401));
   });
 
   it('Should call next() with an error with message "Not Authenticated" and status code 401 if token blocked', async () => {
     vi.spyOn(UserBlockedToken, 'findOne').mockResolvedValue(true);
     await auth(req, res, next);
-    expect(next).toHaveBeenCalledWith(new HttpError('Not Authenticated', 401));   
+    expect(next).toHaveBeenCalledWith(new HttpError('Not Authenticated', 401));
   });
 });

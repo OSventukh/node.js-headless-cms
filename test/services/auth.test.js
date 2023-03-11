@@ -14,7 +14,6 @@ import {
   UserBlockedToken,
 } from '../../models/index.js';
 import { hashPassword } from '../../utils/hash.js';
-import HttpError from '../../utils/http-error.js';
 
 describe('auth services', () => {
   let login;
@@ -22,7 +21,12 @@ describe('auth services', () => {
   let logout;
   let isUserLoggedIn;
   beforeAll(async () => {
-    await sequelize.sync({ force: true });
+    Promise.all([
+      User.sync(),
+      UserToken.sync(),
+      UserBlockedToken.sync(),
+    ]);
+
     vi.clearAllMocks();
     vi.resetAllMocks();
     // import services after sequelize run
@@ -36,8 +40,10 @@ describe('auth services', () => {
     vi.stubEnv('ACCESS_TOKEN_SECRET_KEY', '12345');
     vi.stubEnv('REFRESH_TOKEN_SECRET_KEY', '12345');
   });
-  afterEach(() => {
-    sequelize.truncate();
+  afterEach(async () => {
+    await User.destroy({ where: {}, force: true });
+    await UserToken.destroy({ where: {}, force: true });
+    await UserBlockedToken.destroy({ where: {}, force: true });
   });
 
   describe('login', () => {

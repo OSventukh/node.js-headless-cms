@@ -29,7 +29,7 @@ export const login = async (email, password) => {
     const refreshToken = generateRefreshToken(user);
 
     await UserToken.create({
-      user: user.id,
+      userId: user.id,
       token: refreshToken,
       expiresIn: new Date(Date.now() + ms(config.refreshTokenExpiresIn)),
     });
