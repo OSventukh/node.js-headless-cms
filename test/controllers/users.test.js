@@ -31,7 +31,7 @@ describe('User controller', () => {
         firstname: 'Test firstname',
         lastname: 'Test lastname',
         email: 'test@test.com',
-        password: 'test',
+        password: '12345',
         role: 'writer',
       };
 
@@ -46,7 +46,7 @@ describe('User controller', () => {
         firstname: 'Test firstname',
         lastname: 'Test lastname',
         email: 'test@test.com',
-        password: 'test',
+        password: '12345',
         role: 'writer',
       };
 
@@ -61,7 +61,7 @@ describe('User controller', () => {
         firstname: 'Test firstname',
         lastname: 'Test lastname',
         email: 'test@test.com',
-        password: 'test',
+        password: '12345',
         role: 'writer',
       };
 

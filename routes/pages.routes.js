@@ -9,19 +9,22 @@ import {
   deletePageController,
 } from '../controllers/pages.controllers.js';
 
+import { pageValidator, idValidator } from '../utils/validators.js';
+import checkValidation from '../middlewares/validation.js';
+
 const router = express.Router();
 
-router.get('/pages/:pageId', getPagesController);
+router.get('/pages/:pageId', idValidator(), checkValidation, getPagesController);
 
 router.get('/pages', getPagesController);
 
-router.post('/pages', auth, createPageController);
+router.post('/pages', auth, pageValidator(), checkValidation, createPageController);
 
-router.patch('/pages/:pageId', auth, updatePageController);
+router.patch('/pages/:pageId', auth, idValidator(), checkValidation, updatePageController);
 
-router.patch('/pages', auth, updatePageController);
+router.patch('/pages', auth, pageValidator(), checkValidation, updatePageController);
 
-router.delete('/pages/:pageId', auth, deletePageController);
+router.delete('/pages/:pageId', auth, pageValidator(), checkValidation, deletePageController);
 
 router.delete('/pages', auth, deletePageController);
 

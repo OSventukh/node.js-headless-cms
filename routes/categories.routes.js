@@ -9,19 +9,22 @@ import {
   deleteCategoryController,
 } from '../controllers/categories.controllers.js';
 
+import { categoryValidator, idValidator } from '../utils/validators.js';
+import checkValidation from '../middlewares/validation.js';
+
 const router = express.Router();
 
-router.get('/categories/:categoryId', getCategoriesController);
+router.get('/categories/:categoryId', idValidator(), checkValidation, getCategoriesController);
 
 router.get('/categories', getCategoriesController);
 
-router.post('/categories', auth, createCategoryController);
+router.post('/categories', auth, categoryValidator(), checkValidation, createCategoryController);
 
-router.patch('/categories/:categoryId', auth, updateCategoryController);
+router.patch('/categories/:categoryId', auth, idValidator(), categoryValidator(), checkValidation, updateCategoryController);
 
-router.patch('/categories', auth, updateCategoryController);
+router.patch('/categories', auth, categoryValidator(), checkValidation, updateCategoryController);
 
-router.delete('/categories/:categoryId', auth, deleteCategoryController);
+router.delete('/categories/:categoryId', auth, idValidator(), checkValidation, deleteCategoryController);
 
 router.delete('/categories', auth, deleteCategoryController);
 

@@ -9,19 +9,22 @@ import {
   deleteTopicController,
 } from '../controllers/topics.controllers.js';
 
+import { topicValidator, idValidator } from '../utils/validators.js';
+import checkValidation from '../middlewares/validation.js';
+
 const router = express.Router();
 
-router.get('/topics/:topicId', getTopicsController);
+router.get('/topics/:topicId', idValidator(), checkValidation, getTopicsController);
 
 router.get('/topics', getTopicsController);
 
-router.post('/topics', auth, createTopicController);
+router.post('/topics', auth, topicValidator(), checkValidation, createTopicController);
 
-router.patch('/topics/:topicId', auth, updateTopicController);
+router.patch('/topics/:topicId', auth, topicValidator(), idValidator(), checkValidation, updateTopicController);
 
-router.patch('/topics', auth, updateTopicController);
+router.patch('/topics', auth, topicValidator(), checkValidation, updateTopicController);
 
-router.delete('/topics/:topicId', auth, deleteTopicController);
+router.delete('/topics/:topicId', auth, idValidator(), checkValidation, deleteTopicController);
 
 router.delete('/topics', auth, deleteTopicController);
 
