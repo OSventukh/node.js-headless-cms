@@ -20,7 +20,7 @@ router.get('/users', getUsersController);
 
 router.post('/users', userValidator(), checkValidation, createUserController);
 
-router.patch('/users/:userId', auth, userValidator(), idValidator(), checkValidation,updateUserController);
+router.patch('/users/:userId', auth, userValidator(), idValidator(), checkValidation, updateUserController);
 
 router.patch('/users', auth, userValidator(), checkValidation, updateUserController);
 

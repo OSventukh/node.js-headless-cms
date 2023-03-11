@@ -4,6 +4,7 @@ import {
   vi,
   expect,
   beforeAll,
+  beforeEach,
   afterEach,
   afterAll,
 } from 'vitest';
@@ -16,7 +17,8 @@ describe('Posts serviсes', () => {
   let getPosts = null;
   let deletePost = null;
   beforeAll(async () => {
-    await sequelize.sync({ force: true });
+    await Post.sync();
+    // await sequelize.sync({ force: true });
     // import services after sequelize run
     const postsServices = await import('../../services/posts.services.js');
     createPost = postsServices.createPost;
@@ -26,8 +28,8 @@ describe('Posts serviсes', () => {
   });
 
   afterEach(async () => {
+    await Post.destroy({ where: {}, force: true });
     vi.clearAllMocks();
-    await sequelize.truncate();
   });
 
   afterAll(async () => {

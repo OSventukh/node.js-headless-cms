@@ -8,7 +8,7 @@ describe('Pages serviсes', () => {
   let getPages = null;
   let deletePage = null;
   beforeAll(async () => {
-    await sequelize.sync();
+    await Page.sync();
     vi.clearAllMocks();
     vi.resetAllMocks();
     // import services after sequelize run
@@ -20,7 +20,7 @@ describe('Pages serviсes', () => {
   });
 
   afterEach(async () => {
-    await sequelize.truncate();
+    await Page.destroy({ where: {}, force: true });
   });
 
   afterAll(async () => {

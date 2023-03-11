@@ -16,7 +16,7 @@ describe('Users serviсes', async () => {
   let getUsers = null;
   let deleteUser = null;
   beforeAll(async () => {
-    await sequelize.sync({ force: true });
+    await sequelize.sync();
     // import services after sequelize run
     const usersServices = await import('../../services/users.services.js');
     createUser = usersServices.createUser;
@@ -28,7 +28,7 @@ describe('Users serviсes', async () => {
   afterEach(async () => {
     vi.clearAllMocks();
     vi.restoreAllMocks();
-    await sequelize.truncate();
+    await User.destroy({ where: {}, force: true });
   });
 
   afterAll(async () => {

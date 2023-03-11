@@ -16,7 +16,7 @@ describe('Topics serviсes', () => {
   let getTopics = null;
   let deleteTopic = null;
   beforeAll(async () => {
-    await sequelize.sync({ force: true });
+    await Topic.sync();
     // import services after sequelize run
     const topicsServices = await import('../../services/topics.services.js');
     createTopic = topicsServices.createTopic;
@@ -26,7 +26,7 @@ describe('Topics serviсes', () => {
   });
 
   afterEach(async () => {
-    await sequelize.truncate();
+    await Topic.destroy({ where: {}, force: true });
   });
 
   afterAll(async () => {
