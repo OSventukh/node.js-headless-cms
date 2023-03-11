@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import HttpError from '../utils/http-error.js';
 import { UserBlockedToken } from '../models/index.js';
 
-export default async (req, res, next) => {
+export default async function auth(req, res, next) {
   try {
     const authHeader = req.get('authorization');
     const token = authHeader?.split(' ')[1];
@@ -25,4 +25,4 @@ export default async (req, res, next) => {
   } catch (error) {
     return next(new HttpError('Not Authenticated', 401));
   }
-};
+}

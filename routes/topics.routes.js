@@ -14,17 +14,17 @@ import checkValidation from '../middlewares/validation.js';
 
 const router = express.Router();
 
-router.get('/topics/:topicId', idValidator(), checkValidation, getTopicsController);
+router.get('/topics/:topicId', idValidator('topicId'), checkValidation, getTopicsController);
 
 router.get('/topics', getTopicsController);
 
 router.post('/topics', auth, topicValidator(), checkValidation, createTopicController);
 
-router.patch('/topics/:topicId', auth, topicValidator(), idValidator(), checkValidation, updateTopicController);
+router.patch('/topics/:topicId', auth, topicValidator(), idValidator('topicId'), checkValidation, updateTopicController);
 
 router.patch('/topics', auth, topicValidator(), checkValidation, updateTopicController);
 
-router.delete('/topics/:topicId', auth, idValidator(), checkValidation, deleteTopicController);
+router.delete('/topics/:topicId', auth, idValidator('topicId'), checkValidation, deleteTopicController);
 
 router.delete('/topics', auth, deleteTopicController);
 

@@ -14,17 +14,17 @@ import checkValidation from '../middlewares/validation.js';
 
 const router = express.Router();
 
-router.get('/posts/:postId', idValidator(), checkValidation, getPostsController);
+router.get('/posts/:postId', idValidator('postId'), checkValidation, getPostsController);
 
 router.get('/posts', getPostsController);
 
 router.post('/posts', auth, postValidator(), checkValidation, createPostController);
 
-router.patch('/posts/:postId', auth, postValidator(), idValidator(), checkValidation, updatePostController);
+router.patch('/posts/:postId', auth, postValidator(), idValidator('postId'), checkValidation, updatePostController);
 
 router.patch('/posts', auth, postValidator(), checkValidation, updatePostController);
 
-router.delete('/posts/:postId', auth, idValidator(), checkValidation, deletePostController);
+router.delete('/posts/:postId', auth, idValidator('postId'), checkValidation, deletePostController);
 
 router.delete('/posts', auth, deletePostController);
 

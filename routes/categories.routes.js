@@ -14,17 +14,17 @@ import checkValidation from '../middlewares/validation.js';
 
 const router = express.Router();
 
-router.get('/categories/:categoryId', idValidator(), checkValidation, getCategoriesController);
+router.get('/categories/:categoryId', idValidator('categoryId'), checkValidation, getCategoriesController);
 
 router.get('/categories', getCategoriesController);
 
 router.post('/categories', auth, categoryValidator(), checkValidation, createCategoryController);
 
-router.patch('/categories/:categoryId', auth, idValidator(), categoryValidator(), checkValidation, updateCategoryController);
+router.patch('/categories/:categoryId', auth, idValidator('categoryId'), categoryValidator(), checkValidation, updateCategoryController);
 
 router.patch('/categories', auth, categoryValidator(), checkValidation, updateCategoryController);
 
-router.delete('/categories/:categoryId', auth, idValidator(), checkValidation, deleteCategoryController);
+router.delete('/categories/:categoryId', auth, idValidator('categoryId'), checkValidation, deleteCategoryController);
 
 router.delete('/categories', auth, deleteCategoryController);
 

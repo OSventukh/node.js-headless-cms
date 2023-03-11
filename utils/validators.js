@@ -39,6 +39,6 @@ export function topicValidator() {
   return [body('title').optional().trim().not().isEmpty()];
 }
 
-export function idValidator() {
-  return [param('id').optional().optional().isInt().escape()];
+export function idValidator(id) {
+  return [param(id).optional().optional().isInt().escape()];
 }
