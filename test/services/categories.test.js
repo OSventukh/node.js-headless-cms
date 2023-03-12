@@ -1,5 +1,5 @@
 import { describe, it, vi, expect, beforeAll, afterEach, afterAll } from 'vitest';
-import { sequelize, Category } from '../../models/index.js';
+import { sequelize, Category, Post } from '../../models/index.js';
 import HttpError from '../../utils/http-error.js';
 
 describe('Categories serviсes', () => {
@@ -8,7 +8,7 @@ describe('Categories serviсes', () => {
   let getCategories = null;
   let deleteCategory = null;
   beforeAll(async () => {
-    await sequelize.sync();
+    await Category.sync();
     vi.clearAllMocks();
     vi.resetAllMocks();
     // import services after sequelize run
@@ -20,7 +20,7 @@ describe('Categories serviсes', () => {
   });
 
   afterEach(async () => {
-    await sequelize.truncate();
+    await Category.destroy({ where: {}, force: true });
   });
 
   afterAll(async () => {

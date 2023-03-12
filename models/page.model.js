@@ -9,6 +9,8 @@ export default (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      this.belongsTo(models.User, { foreignKey: 'userId', as: 'author' });
+      this.belongsToMany(models.Topic, { foreignKey: 'topicId', as: 'topics', through: 'PageTopic' });
     }
   }
   Page.init(

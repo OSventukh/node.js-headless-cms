@@ -4,7 +4,10 @@ export default (sequelize, DataTypes) => {
   class User extends Model {
     static associate(models) {
       // define association here
-      this.hasMany(models.UserToken, { foreignKey: 'user' });
+      this.hasMany(models.UserToken, { foreignKey: 'userId', as: 'tokens' });
+      this.hasMany(models.Post, { foreignKey: 'userId', as: 'posts' });
+      this.hasMany(models.Page, { foreignKey: 'userId', as: 'pages' });
+      this.belongsToMany(models.Topic, { foreignKey: 'topicId', as: 'topics', through: 'TopicUsers' });
     }
   }
 

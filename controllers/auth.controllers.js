@@ -9,8 +9,9 @@ export const loginController = async (req, res, next) => {
   try {
     // Check if user already logged in;
     if (isUserLoggedIn(userRefreshToken)) {
-      throw new HttpError('User already authenticated', 409); 
+      throw new HttpError('User already authenticated', 409);
     }
+
     const { userId, accessToken, refreshToken } = await login(email, password);
     res
       .status(200)

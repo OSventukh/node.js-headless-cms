@@ -13,24 +13,33 @@ import UserBlockedTokenModel from './user-blocked-token.model.js';
 const env = process.env.NODE_ENV || 'development';
 const sequelize = new Sequelize(database[env]);
 
-const Page = PageModel(sequelize, DataTypes);
-const Topic = TopicModel(sequelize, DataTypes);
-const User = UserModel(sequelize, DataTypes);
-const Post = PostModel(sequelize, DataTypes);
-const Category = CategoryModel(sequelize, DataTypes);
-const Option = OptionModel(sequelize, DataTypes);
-const UserToken = UserTokenModel(sequelize, DataTypes);
-const UserBlockedToken = UserBlockedTokenModel(sequelize, DataTypes);
+const models = {
+  Page: PageModel(sequelize, DataTypes),
+  Topic: TopicModel(sequelize, DataTypes),
+  User: UserModel(sequelize, DataTypes),
+  Post: PostModel(sequelize, DataTypes),
+  Category: CategoryModel(sequelize, DataTypes),
+  Option: OptionModel(sequelize, DataTypes),
+  UserToken: UserTokenModel(sequelize, DataTypes),
+  UserBlockedToken: UserBlockedTokenModel(sequelize, DataTypes),
+};
+
+Object.keys(models).forEach((modelName) => {
+  if (models[modelName].associate) {
+    models[modelName].associate(models);
+  }
+});
+
+export const { Page } = models;
+export const { Topic } = models;
+export const { User } = models;
+export const { Post } = models;
+export const { Category } = models;
+export const { Option } = models;
+export const { UserToken } = models;
+export const { UserBlockedToken } = models;
 
 export {
   sequelize,
   Sequelize,
-  Page,
-  Topic,
-  User,
-  Post,
-  Category,
-  Option,
-  UserToken,
-  UserBlockedToken,
 };

@@ -7,7 +7,7 @@ describe('Options serviсes', () => {
   let updateOption = null;
   let getOptions = null;
   beforeAll(async () => {
-    await sequelize.sync();
+    await Option.sync();
     vi.clearAllMocks();
     vi.resetAllMocks();
     // import services after sequelize run
@@ -18,7 +18,7 @@ describe('Options serviсes', () => {
   });
 
   afterEach(async () => {
-    await sequelize.truncate();
+    await Option.destroy({ where: {}, force: true });
   });
 
   afterAll(async () => {

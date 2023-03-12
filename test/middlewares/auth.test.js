@@ -12,7 +12,7 @@ describe('Auth middleware', () => {
   vi.stubEnv('ACCESS_TOKEN_SECRET_KEY', 'secret');
   const mockToken = jwt.sign(
     { userId: mockUser.id },
-    process.env.ACCESS_TOKEN_SECRET_KEY
+    process.env.ACCESS_TOKEN_SECRET_KEY,
   );
 
   const req = {
@@ -27,15 +27,18 @@ describe('Auth middleware', () => {
   const next = vi.fn();
 
   beforeEach(() => {
+    vi.restoreAllMocks();
     vi.clearAllMocks();
   });
 
   it('Should return next() function without arguments if accessToken is valid', async () => {
+    vi.spyOn(UserBlockedToken, 'findOne').mockResolvedValue(false);
     await auth(req, res, next);
     expect(next).toHaveBeenCalledWith();
   });
 
   it('Should add auth property with user id to request object if accessToken is valid', async () => {
+    vi.spyOn(UserBlockedToken, 'findOne').mockResolvedValue(false);
     await auth(req, res, next);
     expect(req).haveOwnProperty('auth');
     expect(req.auth.userId).toBe(mockUser.id);
@@ -59,12 +62,12 @@ describe('Auth middleware', () => {
       },
     };
     await auth(req2, res, next);
-    expect(next).toHaveBeenCalledWith(new HttpError('Not Authenticated', 401))   
+    expect(next).toHaveBeenCalledWith(new HttpError('Not Authenticated', 401));
   });
 
   it('Should call next() with an error with message "Not Authenticated" and status code 401 if token blocked', async () => {
     vi.spyOn(UserBlockedToken, 'findOne').mockResolvedValue(true);
     await auth(req, res, next);
-    expect(next).toHaveBeenCalledWith(new HttpError('Not Authenticated', 401));   
+    expect(next).toHaveBeenCalledWith(new HttpError('Not Authenticated', 401));
   });
 });
