@@ -8,7 +8,6 @@ import {
   beforeEach,
 } from 'vitest';
 import {
-  sequelize,
   User,
   UserToken,
   UserBlockedToken,
@@ -62,6 +61,7 @@ describe('auth services', () => {
         userCredentials.email,
         userCredentials.password,
       );
+      console.log('loginData', loginData)
       expect(loginData).haveOwnProperty('userId');
       expect(loginData).haveOwnProperty('accessToken');
       expect(loginData).haveOwnProperty('refreshToken');
