@@ -22,7 +22,7 @@ describe('auth services', () => {
   beforeAll(async () => {
     Promise.all([
       User.sync(),
-      UserToken.sync(),
+      UserToken.sync({ force: true }),
       UserBlockedToken.sync(),
     ]);
 
@@ -61,7 +61,6 @@ describe('auth services', () => {
         userCredentials.email,
         userCredentials.password,
       );
-      console.log('loginData', loginData)
       expect(loginData).haveOwnProperty('userId');
       expect(loginData).haveOwnProperty('accessToken');
       expect(loginData).haveOwnProperty('refreshToken');
