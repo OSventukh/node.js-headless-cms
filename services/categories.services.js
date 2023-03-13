@@ -22,7 +22,7 @@ export const createCategory = async (categoryData) => {
 
 export const getCategories = async (
   whereQuery = {},
-  includeQuery,
+  includeQuery = [],
   orderQuery,
   offset,
   limit,
@@ -36,7 +36,7 @@ export const getCategories = async (
         ...(name && { name }),
         ...(slug && { slug }),
       },
-      include: [],
+      include: includeQuery === 'posts' ? [includeQuery] : [],
       order: [],
       offset,
       limit,

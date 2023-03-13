@@ -4,11 +4,11 @@ import {
   vi,
   expect,
   beforeAll,
-  beforeEach,
   afterEach,
   afterAll,
+  beforeEach,
 } from 'vitest';
-import { sequelize, Post } from '../../models/index.js';
+import { sequelize, Post, Category, Topic } from '../../models/index.js';
 import HttpError from '../../utils/http-error.js';
 
 describe('Posts serviсes', () => {
@@ -16,19 +16,42 @@ describe('Posts serviсes', () => {
   let updatePost = null;
   let getPosts = null;
   let deletePost = null;
+  let topic;
+  let category;
   beforeAll(async () => {
     await Post.sync();
-    // await sequelize.sync({ force: true });
+    await Topic.sync();
+    await Category.sync();
     // import services after sequelize run
     const postsServices = await import('../../services/posts.services.js');
     createPost = postsServices.createPost;
     updatePost = postsServices.updatePost;
     getPosts = postsServices.getPosts;
     deletePost = postsServices.deletePost;
+
   });
 
+  beforeEach(async () => {
+    const [newTopic, newCategory] = await Promise.all(
+      [
+        Topic.create({
+          title: 'Test topic',
+          slug: 'test-topic',
+        }),
+        Category.create({
+          name: 'Test category',
+          slug: 'test-category',
+        }),
+      ],
+    );
+    topic = newTopic;
+    category = newCategory;
+  });
   afterEach(async () => {
     await Post.destroy({ where: {}, force: true });
+    await Topic.destroy({ where: {}, force: true });
+    await Category.destroy({ where: {}, force: true });
+
     vi.clearAllMocks();
   });
 
@@ -43,7 +66,10 @@ describe('Posts serviсes', () => {
         slug: 'test-post',
         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
         excerpt: 'Lorem ipsum dolor sit amet',
+        topicId: topic.id,
+        categoryId: category.id,
       };
+
       const post = await createPost(postData);
       expect(post.title).toBe(postData.title);
       expect(post.slug).toBe(postData.slug);
@@ -56,16 +82,20 @@ describe('Posts serviсes', () => {
         slug: 'test-post',
         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
         excerpt: 'Lorem ipsum dolor sit amet',
+        topicId: topic.id,
+        categoryId: category.id,
       };
       await expect(createPost(postData)).rejects.toThrow(HttpError);
     });
 
-    it('should throw a 400 error if validation fails', async () => {
+    it('Should throw a 400 error if validation fails', async () => {
       const postData = {
         title: '',
         slug: 'test-post',
         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
         excerpt: 'Lorem ipsum dolor sit amet',
+        topicId: topic.id,
+        categoryId: category.id,
       };
       expect.assertions(1);
       try {
@@ -75,18 +105,22 @@ describe('Posts serviсes', () => {
       }
     });
 
-    it('should throw a message error "The slug should be an unique. Value [valueName] is already in use" and statusCode 409 if slug not unique', async () => {
+    it('Should throw a message error "The slug should be an unique. Value [valueName] is already in use" and statusCode 409 if slug not unique', async () => {
       const postData1 = {
         title: 'Test Post 1',
         slug: 'test-post',
         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
         excerpt: 'Lorem ipsum dolor sit amet',
+        topicId: topic.id,
+        categoryId: category.id,
       };
       const postData2 = {
         title: 'Test Post 2',
         slug: 'test-post',
         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
         excerpt: 'Lorem ipsum dolor sit amet',
+        topicId: topic.id,
+        categoryId: category.id,
       };
 
       expect.assertions(2);
@@ -109,12 +143,16 @@ describe('Posts serviсes', () => {
         slug: 'test-post-1',
         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
         excerpt: 'Lorem ipsum dolor sit amet',
+        topicId: topic.id,
+        categoryId: category.id,
       };
       const postData2 = {
         title: 'Test Post 2',
         slug: 'test-post-2',
         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
         excerpt: 'Lorem ipsum dolor sit amet',
+        topicId: topic.id,
+        categoryId: category.id,
       };
 
       await createPost(postData1);
@@ -132,6 +170,8 @@ describe('Posts serviсes', () => {
         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
         excerpt: 'Lorem ipsum dolor sit amet',
         status: 'published',
+        topicId: topic.id,
+        categoryId: category.id,
       };
       const postData2 = {
         title: 'Test Post 2',
@@ -139,6 +179,8 @@ describe('Posts serviсes', () => {
         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
         excerpt: 'Lorem ipsum dolor sit amet',
         status: 'published',
+        topicId: topic.id,
+        categoryId: category.id,
       };
       const postData3 = {
         title: 'Test Post 3',
@@ -146,6 +188,8 @@ describe('Posts serviсes', () => {
         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
         excerpt: 'Lorem ipsum dolor sit amet',
         status: 'draft',
+        topicId: topic.id,
+        categoryId: category.id,
       };
 
       await Post.bulkCreate([postData1, postData2, postData3]);
@@ -190,6 +234,8 @@ describe('Posts serviсes', () => {
         slug: 'old-title',
         content: 'Old Content',
         excerpt: 'Old Excerpt',
+        topicId: topic.id,
+        categoryId: category.id,
       });
 
       const toUpdate = {
@@ -197,6 +243,8 @@ describe('Posts serviсes', () => {
         content: 'New Content',
         slug: 'new-title',
         excerpt: 'New Excerpt',
+        topicId: topic.id,
+        categoryId: category.id,
       };
       await updatePost(post.id, toUpdate);
       const result = await getPosts({ id: post.id });
@@ -293,6 +341,8 @@ describe('Posts serviсes', () => {
         slug: 'test-post',
         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
         excerpt: 'Lorem ipsum dolor sit amet',
+        topicId: topic.id,
+        categoryId: category.id,
       });
       const result = await deletePost(post.id);
       const posts = await getPosts();
@@ -307,6 +357,8 @@ describe('Posts serviсes', () => {
         slug: 'test-post-1',
         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
         excerpt: 'Lorem ipsum dolor sit amet',
+        topicId: topic.id,
+        categoryId: category.id,
       });
 
       const post2 = await createPost({
@@ -314,6 +366,8 @@ describe('Posts serviсes', () => {
         slug: 'test-post-2',
         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
         excerpt: 'Lorem ipsum dolor sit amet',
+        topicId: topic.id,
+        categoryId: category.id,
       });
 
       const result = await deletePost([post1.id, post2.id]);
@@ -349,6 +403,8 @@ describe('Posts serviсes', () => {
         slug: 'test-post',
         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
         excerpt: 'Lorem ipsum dolor sit amet',
+        topicId: topic.id,
+        categoryId: category.id,
       });
 
       vi.spyOn(Post, 'destroy').mockResolvedValueOnce(0);
@@ -368,6 +424,8 @@ describe('Posts serviсes', () => {
         slug: 'test-post',
         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
         excerpt: 'Lorem ipsum dolor sit amet',
+        topicId: topic.id,
+        categoryId: category.id,
       });
       const errorMessage = 'Sequelize error';
       vi.spyOn(Post, 'destroy').mockRejectedValueOnce(new Error(errorMessage));
@@ -387,6 +445,8 @@ describe('Posts serviсes', () => {
         slug: 'test-post',
         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
         excerpt: 'Lorem ipsum dolor sit amet',
+        topicId: topic.id,
+        categoryId: category.id,
       });
       const errorMessage = 'Something went wrong';
       vi.spyOn(Post, 'destroy').mockRejectedValueOnce(new Error(errorMessage));

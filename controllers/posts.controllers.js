@@ -9,7 +9,7 @@ import {
 
 export const createPostController = async (req, res, next) => {
   try {
-    const post = await createPost(req.body);
+    const post = await createPost({ ...req.body, userId: req.auth.userId });
     res.status(201).json({
       message: 'Post successfully created',
       post,
@@ -22,13 +22,16 @@ export const createPostController = async (req, res, next) => {
 export const getPostsController = async (req, res, next) => {
   // Receive post id from url params or query
   const id = req.params.postId || req.query.id;
-
+  const { include, ...whereQuery } = req.query;
   try {
     // get topics with provided parameters and response it to the client
-    const { count, rows } = await getPosts({
-      id,
-      ...req.query,
-    });
+    const { count, rows } = await getPosts(
+      {
+        id,
+        ...whereQuery,
+      },
+      include,
+    );
     res.status(200).json({
       count,
       posts: rows,

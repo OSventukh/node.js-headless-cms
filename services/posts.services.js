@@ -1,10 +1,20 @@
 import { Op } from 'sequelize';
-import { Post } from '../models/index.js';
+import { Post, Topic, Category } from '../models/index.js';
 import HttpError from '../utils/http-error.js';
+
+const posibleIncludes = ['topics', 'categories', 'author'];
 
 export const createPost = async (postData) => {
   try {
-    const post = await Post.create(postData);
+    const [post, topic, category] = await Promise.all([
+      Post.create(postData),
+      Topic.findByPk(postData.topicId),
+      Category.findByPk(postData.categoryId),
+    ]);
+    await Promise.all([
+      post.addCategory(category?.id || 1),
+      post.addTopic(topic?.id || 1),
+    ]);
     return post;
   } catch (error) {
     if (error.name === 'SequelizeValidationError') {
@@ -22,7 +32,7 @@ export const createPost = async (postData) => {
 
 export const getPosts = async (
   whereQuery = {},
-  includeQuery,
+  includeQuery = '',
   orderQuery,
   offset,
   limit,
@@ -30,6 +40,8 @@ export const getPosts = async (
   try {
     // If parameter was provided, add it to sequelize where query
     const { id, title, slug, status } = whereQuery;
+    const includeArr = includeQuery.split(',');
+    const include = includeArr.filter((item) => posibleIncludes.includes(item));
     const result = await Post.findAndCountAll({
       where: {
         ...(id && { id }),
@@ -37,7 +49,7 @@ export const getPosts = async (
         ...(slug && { slug }),
         ...(status && { status }),
       },
-      include: [],
+      include,
       order: [],
       offset,
       limit,
