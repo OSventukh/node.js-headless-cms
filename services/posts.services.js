@@ -1,6 +1,7 @@
 import { Op } from 'sequelize';
 import { Post, Topic, Category } from '../models/index.js';
 import HttpError from '../utils/http-error.js';
+import { checkIncludes } from '../utils/models.js';
 
 const avaibleIncludes = ['topics', 'categories', 'author'];
 
@@ -43,8 +44,7 @@ export const getPosts = async (
   try {
     const { id, title, slug, status } = whereQuery;
     // Convert provided include query to array and check if it avaible for this model
-    const includeArr = includeQuery.split(',');
-    const include = includeArr.filter((item) => avaibleIncludes.includes(item));
+    const include = checkIncludes(includeQuery, avaibleIncludes);
     const result = await Post.findAndCountAll({
       where: {
         ...(id && { id }),

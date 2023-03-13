@@ -1,6 +1,9 @@
 import { Op } from 'sequelize';
 import { Topic } from '../models/index.js';
 import HttpError from '../utils/http-error.js';
+import { checkIncludes } from '../utils/models.js';
+
+const avaibleIncludes = ['users', 'pages', 'posts', 'categories'];
 
 export const createTopic = async (topicDate) => {
   try {
@@ -28,8 +31,9 @@ export const getTopics = async (
   limit,
 ) => {
   try {
-    // If parameter was provided, add it to sequelize where query
     const { id, title, slug, status } = whereQuery;
+    // Convert provided include query to array and check if it avaible for this model
+    const include = checkIncludes(includeQuery, avaibleIncludes);
     const result = await Topic.findAndCountAll({
       where: {
         ...(id && { id }),
@@ -37,7 +41,7 @@ export const getTopics = async (
         ...(slug && { slug }),
         ...(status && { status }),
       },
-      include: [],
+      include,
       order: [],
       offset,
       limit,

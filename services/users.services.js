@@ -1,6 +1,9 @@
 import { User, UserToken } from '../models/index.js';
 import { hashPassword } from '../utils/hash.js';
 import HttpError from '../utils/http-error.js';
+import { checkIncludes } from '../utils/models.js';
+
+const avaibleIncludes = ['posts', 'pages', 'topics'];
 
 export const createUser = async (data) => {
   try {
@@ -29,8 +32,9 @@ export const getUsers = async (
   limit,
 ) => {
   try {
-    // If parameter was provided, add it to sequelize where query
     const { id, firstname, lastname, email, role, status } = whereQuery;
+    // Convert provided include query to array and check if it avaible for this model
+    const include = checkIncludes(includeQuery, avaibleIncludes);
     const result = await User.findAndCountAll({
       where: {
         ...(id && { id }),
@@ -41,7 +45,7 @@ export const getUsers = async (
         ...(status && { status }),
       },
       attributes: { exclude: ['password'] },
-      include: ['topics'],
+      include,
       order: [],
       offset,
       limit,
