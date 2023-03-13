@@ -12,7 +12,10 @@ describe('Option controller', () => {
   beforeEach(() => {
     vi.mock('../../services/options.services.js');
     vi.mock('../../middlewares/auth');
-    auth.mockImplementationOnce((req, res, next) => next());
+    auth.mockImplementationOnce((req, res, next) => {
+      req.auth = { userId: '1' };
+      next();
+    });
   });
 
   afterEach(() => {

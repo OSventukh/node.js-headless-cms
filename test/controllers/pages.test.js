@@ -14,7 +14,10 @@ describe('Page controller', () => {
   beforeEach(() => {
     vi.mock('../../services/pages.services.js');
     vi.mock('../../middlewares/auth');
-    auth.mockImplementationOnce((req, res, next) => next());
+    auth.mockImplementationOnce((req, res, next) => {
+      req.auth = { userId: '1' };
+      next();
+    });
   });
 
   afterEach(() => {

@@ -7,18 +7,35 @@ const avaibleIncludes = ['topics', 'categories', 'author'];
 
 export const createPost = async (postData) => {
   try {
+    // TopicsIds and categoriesIds should be arrays
+    const topicsIds = Array.isArray(postData.topicIds)
+      ? postData.topicsIds
+      : [postData.topicsIds];
+    const categoriesIds = Array.isArray(postData.categoriesIds)
+      ? postData.categoriesIds
+      : [postData.categoriesIds];
+
     // Create post and find topic and category that provided in data form client
-    const [post, topic, category] = await Promise.all([
+    const [post, topics, categories] = await Promise.all([
       Post.create(postData),
-      Topic.findByPk(postData.topicId),
-      Category.findByPk(postData.categoryId),
+      Topic.findAll({
+        where: {
+          id: {
+            [Op.in]: topicsIds,
+          },
+        },
+      }),
+      Category.findAll({
+        where: {
+          id: {
+            [Op.in]: categoriesIds,
+          },
+        },
+      }),
     ]);
 
-    // Add category and topic to post
-    await Promise.all([
-      post.addCategory(category?.id || 1),
-      post.addTopic(topic?.id || 1),
-    ]);
+    // Add categories and topics to post
+    await Promise.all([post.addCategories(categories), post.addTopics(topics)]);
     return post;
   } catch (error) {
     if (error.name === 'SequelizeValidationError') {
@@ -30,16 +47,19 @@ export const createPost = async (postData) => {
       const errorMessage = `The ${fieldName} should be an unique. Value ${fieldValue} is already in use`;
       throw new HttpError(errorMessage, 409);
     }
-    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+    throw new HttpError(
+      error.message || 'Something went wrong',
+      error.statusCode || 500
+    );
   }
 };
 
 export const getPosts = async (
   whereQuery = {},
-  includeQuery = '',
+  includeQuery,
   orderQuery,
   offset,
-  limit,
+  limit
 ) => {
   try {
     const { id, title, slug, status } = whereQuery;
@@ -59,7 +79,10 @@ export const getPosts = async (
     });
     return result;
   } catch (error) {
-    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+    throw new HttpError(
+      error.message || 'Something went wrong',
+      error.statusCode || 500
+    );
   }
 };
 
@@ -79,7 +102,10 @@ export const updatePost = async (id, toUpdate) => {
       throw new HttpError('Post was not updated', 400);
     }
   } catch (error) {
-    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+    throw new HttpError(
+      error.message || 'Something went wrong',
+      error.statusCode || 500
+    );
   }
 };
 
@@ -96,7 +122,8 @@ export const deletePost = async (id) => {
     });
 
     if (!posts || posts.length === 0) {
-      const errorMessage = postsId.length > 1 ? 'Posts not found' : 'Post not found';
+      const errorMessage =
+        postsId.length > 1 ? 'Posts not found' : 'Post not found';
       throw new HttpError(errorMessage, 404);
     }
 
@@ -114,6 +141,9 @@ export const deletePost = async (id) => {
 
     return result;
   } catch (error) {
-    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+    throw new HttpError(
+      error.message || 'Something went wrong',
+      error.statusCode || 500
+    );
   }
 };
