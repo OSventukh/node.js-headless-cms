@@ -2,15 +2,18 @@ import { Op } from 'sequelize';
 import { Post, Topic, Category } from '../models/index.js';
 import HttpError from '../utils/http-error.js';
 
-const posibleIncludes = ['topics', 'categories', 'author'];
+const avaibleIncludes = ['topics', 'categories', 'author'];
 
 export const createPost = async (postData) => {
   try {
+    // Create post and find topic and category that provided in data form client
     const [post, topic, category] = await Promise.all([
       Post.create(postData),
       Topic.findByPk(postData.topicId),
       Category.findByPk(postData.categoryId),
     ]);
+
+    // Add category and topic to post
     await Promise.all([
       post.addCategory(category?.id || 1),
       post.addTopic(topic?.id || 1),
@@ -38,10 +41,10 @@ export const getPosts = async (
   limit,
 ) => {
   try {
-    // If parameter was provided, add it to sequelize where query
     const { id, title, slug, status } = whereQuery;
+    // Convert provided include query to array and check if it avaible for this model
     const includeArr = includeQuery.split(',');
-    const include = includeArr.filter((item) => posibleIncludes.includes(item));
+    const include = includeArr.filter((item) => avaibleIncludes.includes(item));
     const result = await Post.findAndCountAll({
       where: {
         ...(id && { id }),
