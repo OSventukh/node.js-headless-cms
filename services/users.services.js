@@ -3,8 +3,6 @@ import { hashPassword } from '../utils/hash.js';
 import HttpError from '../utils/http-error.js';
 import { checkIncludes } from '../utils/models.js';
 
-const avaibleIncludes = ['posts', 'pages', 'topics'];
-
 export const createUser = async (data) => {
   try {
     const userData = {
@@ -33,8 +31,11 @@ export const getUsers = async (
 ) => {
   try {
     const { id, firstname, lastname, email, role, status } = whereQuery;
+
     // Convert provided include query to array and check if it avaible for this model
+    const avaibleIncludes = ['posts', 'pages', 'topics'];
     const include = checkIncludes(includeQuery, avaibleIncludes);
+
     const result = await User.findAndCountAll({
       where: {
         ...(id && { id }),

@@ -3,8 +3,6 @@ import { Category } from '../models/index.js';
 import HttpError from '../utils/http-error.js';
 import { checkIncludes } from '../utils/models.js';
 
-const avaibleIncludes = ['posts'];
-
 export const createCategory = async (categoryData) => {
   try {
     const category = await Category.create(categoryData);
@@ -32,8 +30,11 @@ export const getCategories = async (
 ) => {
   try {
     const { id, name, slug } = whereQuery;
+
     // Convert provided include query to array and check if it avaible for this model
+    const avaibleIncludes = ['posts'];
     const include = checkIncludes(includeQuery, avaibleIncludes);
+
     const result = await Category.findAndCountAll({
       where: {
         ...(id && { id }),

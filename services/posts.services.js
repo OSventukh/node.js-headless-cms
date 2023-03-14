@@ -3,11 +3,9 @@ import { Post, Topic, Category } from '../models/index.js';
 import HttpError from '../utils/http-error.js';
 import { checkIncludes } from '../utils/models.js';
 
-const avaibleIncludes = ['topics', 'categories', 'author'];
-
 export const createPost = async (postData) => {
   try {
-    // TopicsIds and categoriesIds should be arrays
+    // Сheck whether the given ids is an array, and if it is not, it converts it into an array.
     const topicsIds = Array.isArray(postData.topicIds)
       ? postData.topicsIds
       : [postData.topicsIds];
@@ -47,10 +45,7 @@ export const createPost = async (postData) => {
       const errorMessage = `The ${fieldName} should be an unique. Value ${fieldValue} is already in use`;
       throw new HttpError(errorMessage, 409);
     }
-    throw new HttpError(
-      error.message || 'Something went wrong',
-      error.statusCode || 500
-    );
+    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
   }
 };
 
@@ -63,8 +58,11 @@ export const getPosts = async (
 ) => {
   try {
     const { id, title, slug, status } = whereQuery;
+
     // Convert provided include query to array and check if it avaible for this model
+    const avaibleIncludes = ['topics', 'categories', 'author'];
     const include = checkIncludes(includeQuery, avaibleIncludes);
+
     const result = await Post.findAndCountAll({
       where: {
         ...(id && { id }),
@@ -79,10 +77,7 @@ export const getPosts = async (
     });
     return result;
   } catch (error) {
-    throw new HttpError(
-      error.message || 'Something went wrong',
-      error.statusCode || 500
-    );
+    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
   }
 };
 
@@ -102,10 +97,7 @@ export const updatePost = async (id, toUpdate) => {
       throw new HttpError('Post was not updated', 400);
     }
   } catch (error) {
-    throw new HttpError(
-      error.message || 'Something went wrong',
-      error.statusCode || 500
-    );
+    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
   }
 };
 
@@ -122,8 +114,7 @@ export const deletePost = async (id) => {
     });
 
     if (!posts || posts.length === 0) {
-      const errorMessage =
-        postsId.length > 1 ? 'Posts not found' : 'Post not found';
+      const errorMessage = postsId.length > 1 ? 'Posts not found' : 'Post not found';
       throw new HttpError(errorMessage, 404);
     }
 
@@ -141,9 +132,6 @@ export const deletePost = async (id) => {
 
     return result;
   } catch (error) {
-    throw new HttpError(
-      error.message || 'Something went wrong',
-      error.statusCode || 500
-    );
+    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
   }
 };
