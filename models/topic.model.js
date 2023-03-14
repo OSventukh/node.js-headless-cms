@@ -5,7 +5,7 @@ export default (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       this.belongsToMany(models.User, { foreignKey: 'userId', as: 'users', through: 'TopicUsers' });
-      this.belongsToMany(models.Post, { foreignKey: 'postId', as: 'posts', through: 'PostTopic' });
+      this.hasMany(models.Post, { foreignKey: 'topicId', as: 'posts' });
       this.belongsToMany(models.Page, { foreignKey: 'pageId', as: 'pages', through: 'PageTopic' });
       this.hasMany(models.Category, { foreignKey: 'topicId', as: 'categories' });
     }
