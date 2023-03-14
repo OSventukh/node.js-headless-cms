@@ -111,7 +111,7 @@ export const updatePost = async (id, toUpdate) => {
     }
     // Update post, and set new categories and topics
     const result = await sequelize.transaction(async (transaction) => {
-      const updated = await Promise.all([
+      const updatedData = await Promise.all([
         post.setCategories(categories, { transaction }),
         post.setTopics(topics, { transaction }),
         Post.update(toUpdate, {
@@ -121,7 +121,7 @@ export const updatePost = async (id, toUpdate) => {
           transaction,
         }),
       ]);
-      return updated[2];
+      return updatedData[2];
     });
     if (result[0] === 0) {
       throw new HttpError('Post was not updated', 400);

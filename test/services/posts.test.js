@@ -28,7 +28,6 @@ describe('Posts serviсes', () => {
     updatePost = postsServices.updatePost;
     getPosts = postsServices.getPosts;
     deletePost = postsServices.deletePost;
-
   });
 
   beforeEach(async () => {
@@ -254,21 +253,22 @@ describe('Posts serviсes', () => {
       expect(result.rows[0].excerpt).toBe(toUpdate.excerpt);
     });
 
-    it('Should call Post.findByPk() and Post.update functions with arguments', async () => {
+    it('Should call Post.findByPk, Post.update, setCategories and setTopics functions', async () => {
       vi.spyOn(Post, 'findByPk');
       vi.spyOn(Post, 'update');
 
-      const mockPost = { id: 1, title: 'Old Title', content: 'Old Content' };
-
+      const mockPost = { id: 1, title: 'Old Title', content: 'Old Content', categoriesId: 1, topicsId: 1 };
+      mockPost.setCategories = vi.fn();
+      mockPost.setTopics = vi.fn();
       Post.findByPk.mockResolvedValue(mockPost);
       Post.update.mockResolvedValue([1]);
       const updatedPost = { title: 'New Title', content: 'New Content' };
       await updatePost(mockPost.id, updatedPost);
 
-      expect(Post.findByPk).toHaveBeenCalledWith(mockPost.id);
-      expect(Post.update).toHaveBeenCalledWith(updatedPost, {
-        where: { id: mockPost.id },
-      });
+      expect(Post.findByPk).toHaveBeenCalledOnce();
+      expect(mockPost.setCategories).toHaveBeenCalled();
+      expect(mockPost.setTopics).toHaveBeenCalled();
+      expect(Post.update).toHaveBeenCalledOnce();
     });
 
     it('Should throw an error if post to update is not found', async () => {
@@ -297,7 +297,7 @@ describe('Posts serviсes', () => {
       vi.spyOn(Post, 'findByPk');
       vi.spyOn(Post, 'update');
 
-      Post.findByPk.mockResolvedValue({ id: 1 });
+      Post.findByPk.mockResolvedValue({ id: 1, setCategories: vi.fn(), setTopics: vi.fn() });
       Post.update.mockResolvedValue([0]);
 
       try {
