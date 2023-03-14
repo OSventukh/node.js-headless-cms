@@ -14,9 +14,9 @@ import checkValidation from '../middlewares/validation.js';
 
 const router = express.Router();
 
-router.get('/categories/:categoryId', idValidator('categoryId'), checkValidation, getCategoriesController);
-
 router.get('/categories', getCategoriesController);
+
+router.get('/categories/:categoryId', idValidator('categoryId'), checkValidation, getCategoriesController);
 
 router.post('/categories', auth, categoryValidator(), checkValidation, createCategoryController);
 

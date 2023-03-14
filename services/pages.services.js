@@ -1,7 +1,7 @@
 import { Op } from 'sequelize';
 import { Page } from '../models/index.js';
 import HttpError from '../utils/http-error.js';
-import { checkIncludes } from '../utils/models.js';
+import { checkIncludes, buildWhereObject } from '../utils/models.js';
 
 export const createPage = async (pageData) => {
   try {
@@ -29,20 +29,16 @@ export const getPages = async (
   limit,
 ) => {
   try {
-    // If parameter was provided, add it to sequelize where query
-    const { id, title, slug, status } = whereQuery;
-
     // Convert provided include query to array and check if it avaible for this model
     const avaibleIncludes = ['topics', 'author'];
     const include = checkIncludes(includeQuery, avaibleIncludes);
 
+    // Check if provided query avaible for filtering this model
+    const avaibleWheres = ['id', 'name', 'slug'];
+    const whereObj = buildWhereObject(whereQuery, avaibleWheres);
+
     const result = await Page.findAndCountAll({
-      where: {
-        ...(id && { id }),
-        ...(title && { title }),
-        ...(slug && { slug }),
-        ...(status && { status }),
-      },
+      where: whereObj,
       include,
       order: [],
       offset,

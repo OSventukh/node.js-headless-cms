@@ -15,7 +15,6 @@ export const createPostController = async (req, res, next) => {
       post,
     });
   } catch (error) {
-    console.log('service', error.message);
     next(new HttpError(error.message, error.statusCode));
   }
 };

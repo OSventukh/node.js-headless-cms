@@ -3,3 +3,11 @@ export function checkIncludes(includeQuery = '', avaibleIncludes = []) {
   const include = includeArr.filter((item) => avaibleIncludes.includes(item));
   return include;
 }
+
+export function buildWhereObject(whereQuery = {}, avaibleWheres = []) {
+  return Object.fromEntries(
+    Object.entries(whereQuery).filter(
+      ([key, value]) => avaibleWheres.includes(key) && value !== undefined,
+    ),
+  );
+}

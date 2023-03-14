@@ -1,7 +1,7 @@
-import { User, UserToken } from '../models/index.js';
+import { User } from '../models/index.js';
 import { hashPassword } from '../utils/hash.js';
 import HttpError from '../utils/http-error.js';
-import { checkIncludes } from '../utils/models.js';
+import { checkIncludes, buildWhereObject } from '../utils/models.js';
 
 export const createUser = async (data) => {
   try {
@@ -30,21 +30,16 @@ export const getUsers = async (
   limit,
 ) => {
   try {
-    const { id, firstname, lastname, email, role, status } = whereQuery;
-
     // Convert provided include query to array and check if it avaible for this model
     const avaibleIncludes = ['posts', 'pages', 'topics'];
     const include = checkIncludes(includeQuery, avaibleIncludes);
 
+    // Check if provided query avaible for filtering this model
+    const avaibleWheres = ['id', 'name', 'slug'];
+    const whereObj = buildWhereObject(whereQuery, avaibleWheres);
+
     const result = await User.findAndCountAll({
-      where: {
-        ...(id && { id }),
-        ...(firstname && { firstname }),
-        ...(lastname && { lastname }),
-        ...(email && { email }),
-        ...(role && { role }),
-        ...(status && { status }),
-      },
+      where: whereObj,
       attributes: { exclude: ['password'] },
       include,
       order: [],

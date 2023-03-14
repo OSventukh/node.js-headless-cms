@@ -23,7 +23,6 @@ export const getCategoriesController = async (req, res, next) => {
   // Receive category id from url params or query
   const id = req.params.categoryId || req.query.id;
   const { include, ...whereQuery } = req.query;
-  console.log('Include', [include]);
   try {
     // get topics with provided parameters and response it to the client
     const { count, rows } = await getCategories(

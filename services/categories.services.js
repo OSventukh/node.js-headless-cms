@@ -1,7 +1,7 @@
 import { Op } from 'sequelize';
 import { Category } from '../models/index.js';
 import HttpError from '../utils/http-error.js';
-import { checkIncludes } from '../utils/models.js';
+import { checkIncludes, buildWhereObject } from '../utils/models.js';
 
 export const createCategory = async (categoryData) => {
   try {
@@ -23,24 +23,20 @@ export const createCategory = async (categoryData) => {
 
 export const getCategories = async (
   whereQuery = {},
-  includeQuery = [],
+  includeQuery,
   orderQuery,
   offset,
   limit,
 ) => {
   try {
-    const { id, name, slug } = whereQuery;
-
     // Convert provided include query to array and check if it avaible for this model
     const avaibleIncludes = ['posts'];
+    const avaibleWheres = ['id', 'name', 'slug'];
     const include = checkIncludes(includeQuery, avaibleIncludes);
-
+    const whereObj = buildWhereObject(whereQuery, avaibleWheres);
+    console.log(whereQuery, whereObj)
     const result = await Category.findAndCountAll({
-      where: {
-        ...(id && { id }),
-        ...(name && { name }),
-        ...(slug && { slug }),
-      },
+      where: whereObj,
       include,
       order: [],
       offset,
