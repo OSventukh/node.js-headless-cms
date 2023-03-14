@@ -6,7 +6,7 @@ import { checkIncludes, buildWhereObject } from '../utils/models.js';
 export const createPost = async (postData) => {
   try {
     // Сheck whether the given ids is an array, and if it is not, it converts it into an array.
-    const topicsIds = Array.isArray(postData.topicIds)
+    const topicsIds = Array.isArray(postData.topicsIds)
       ? postData.topicsIds
       : [postData.topicsIds];
     const categoriesIds = Array.isArray(postData.categoriesIds)
@@ -79,20 +79,29 @@ export const getPosts = async (
 };
 
 export const updatePost = async (id, toUpdate) => {
+  // Сheck whether the given ids is an array, and if it is not, it converts it into an array.
+  const topicsIds = Array.isArray(toUpdate.topicsIds)
+    ? toUpdate.topicsIds
+    : [toUpdate.topicsIds];
+  const categoriesIds = Array.isArray(toUpdate.categoriesIds)
+    ? toUpdate.categoriesIds
+    : [toUpdate.categoriesIds];
+
   try {
+    // Find if exist post, categories and topics with provided id
     const [post, topics, categories] = await Promise.all([
       Post.findByPk(id),
       Topic.findAll({
         where: {
           id: {
-            [Op.in]: toUpdate.topicsIds || [],
+            [Op.in]: topicsIds,
           },
         },
       }),
       Category.findAll({
         where: {
           id: {
-            [Op.in]: toUpdate.categoriesIds || [],
+            [Op.in]: categoriesIds,
           },
         },
       }),
@@ -100,6 +109,7 @@ export const updatePost = async (id, toUpdate) => {
     if (!post) {
       throw new HttpError('Post with this id not found', 404);
     }
+    // Update post, and set new categories and topics
     const result = await sequelize.transaction(async (transaction) => {
       const updated = await Promise.all([
         post.setCategories(categories, { transaction }),
@@ -113,7 +123,6 @@ export const updatePost = async (id, toUpdate) => {
       ]);
       return updated[2];
     });
-    console.log(result)
     if (result[0] === 0) {
       throw new HttpError('Post was not updated', 400);
     }
