@@ -1,5 +1,5 @@
 import { Op } from 'sequelize';
-import { Post, Topic, Category } from '../models/index.js';
+import { sequelize, Post, Topic, Category } from '../models/index.js';
 import HttpError from '../utils/http-error.js';
 import { checkIncludes, buildWhereObject } from '../utils/models.js';
 
@@ -80,16 +80,40 @@ export const getPosts = async (
 
 export const updatePost = async (id, toUpdate) => {
   try {
-    const post = await Post.findByPk(id);
+    const [post, topics, categories] = await Promise.all([
+      Post.findByPk(id),
+      Topic.findAll({
+        where: {
+          id: {
+            [Op.in]: toUpdate.topicsIds || [],
+          },
+        },
+      }),
+      Category.findAll({
+        where: {
+          id: {
+            [Op.in]: toUpdate.categoriesIds || [],
+          },
+        },
+      }),
+    ]);
     if (!post) {
       throw new HttpError('Post with this id not found', 404);
     }
-
-    const result = await Post.update(toUpdate, {
-      where: {
-        id,
-      },
+    const result = await sequelize.transaction(async (transaction) => {
+      const updated = await Promise.all([
+        post.setCategories(categories, { transaction }),
+        post.setTopics(topics, { transaction }),
+        Post.update(toUpdate, {
+          where: {
+            id,
+          },
+          transaction,
+        }),
+      ]);
+      return updated[2];
     });
+    console.log(result)
     if (result[0] === 0) {
       throw new HttpError('Post was not updated', 400);
     }

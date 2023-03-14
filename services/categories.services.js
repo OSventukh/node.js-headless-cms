@@ -31,10 +31,12 @@ export const getCategories = async (
   try {
     // Convert provided include query to array and check if it avaible for this model
     const avaibleIncludes = ['posts'];
-    const avaibleWheres = ['id', 'name', 'slug'];
     const include = checkIncludes(includeQuery, avaibleIncludes);
+
+    // Check if provided query avaible for filtering this model
+    const avaibleWheres = ['id', 'name', 'slug'];
     const whereObj = buildWhereObject(whereQuery, avaibleWheres);
-    console.log(whereQuery, whereObj)
+
     const result = await Category.findAndCountAll({
       where: whereObj,
       include,
