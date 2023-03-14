@@ -1,5 +1,6 @@
 import { Option } from '../models/index.js';
 import HttpError from '../utils/http-error.js';
+import { buildWhereObject } from '../utils/models.js';
 
 export const createOption = async (optionData) => {
   try {
@@ -20,13 +21,12 @@ export const createOption = async (optionData) => {
 
 export const getOptions = async (whereQuery = {}) => {
   try {
-    // If parameter was provided, add it to sequelize where query
-    const { id, name } = whereQuery;
+    // Check if provided query avaible for filtering this model
+    const avaibleWheres = ['id', 'name'];
+    const whereObj = buildWhereObject(whereQuery, avaibleWheres);
+
     const result = await Option.findAll({
-      where: {
-        ...(id && { id }),
-        ...(name && { name }),
-      },
+      where: whereObj,
     });
     return result;
   } catch (error) {

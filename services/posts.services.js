@@ -62,7 +62,7 @@ export const getPosts = async (
     const include = checkIncludes(includeQuery, avaibleIncludes);
 
     // Check if provided query avaible for filtering this model
-    const avaibleWheres = ['id', 'name', 'slug'];
+    const avaibleWheres = ['id', 'title', 'slug', 'status'];
     const whereObj = buildWhereObject(whereQuery, avaibleWheres);
 
     const result = await Post.findAndCountAll({
