@@ -1,10 +1,37 @@
 import { Op } from 'sequelize';
-import { Post } from '../models/index.js';
+import { sequelize, Post, Topic, Category } from '../models/index.js';
 import HttpError from '../utils/http-error.js';
+import { checkIncludes, buildWhereObject } from '../utils/models.js';
 
-export const createPost = async (postData) => {
+export const createPost = async ({ topicId, categoryId, ...postData }) => {
   try {
-    const post = await Post.create(postData);
+    // Сheck whether the given ids is an array, and if it is not, it converts it into an array.
+    const topicsIds = Array.isArray(topicId)
+      ? topicId
+      : [topicId];
+    const categoriesIds = Array.isArray(categoryId)
+      ? categoryId
+      : [categoryId];
+    // Create post and find topic and category that provided in data form client
+    const [post, topics, categories] = await Promise.all([
+      Post.create(postData),
+      Topic.findAll({
+        where: {
+          id: {
+            [Op.in]: topicsIds,
+          },
+        },
+      }),
+      Category.findAll({
+        where: {
+          id: {
+            [Op.in]: categoriesIds,
+          },
+        },
+      }),
+    ]);
+    // Add categories and topics to post
+    await Promise.all([post.addCategories(categories), post.addTopics(topics)]);
     return post;
   } catch (error) {
     if (error.name === 'SequelizeValidationError') {
@@ -28,16 +55,17 @@ export const getPosts = async (
   limit,
 ) => {
   try {
-    // If parameter was provided, add it to sequelize where query
-    const { id, title, slug, status } = whereQuery;
+    // Convert provided include query to array and check if it avaible for this model
+    const avaibleIncludes = ['topics', 'categories', 'author'];
+    const include = checkIncludes(includeQuery, avaibleIncludes);
+
+    // Check if provided query avaible for filtering this model
+    const avaibleWheres = ['id', 'title', 'slug', 'status'];
+    const whereObj = buildWhereObject(whereQuery, avaibleWheres);
+
     const result = await Post.findAndCountAll({
-      where: {
-        ...(id && { id }),
-        ...(title && { title }),
-        ...(slug && { slug }),
-        ...(status && { status }),
-      },
-      include: [],
+      where: whereObj,
+      include,
       order: [],
       offset,
       limit,
@@ -48,17 +76,50 @@ export const getPosts = async (
   }
 };
 
-export const updatePost = async (id, toUpdate) => {
+export const updatePost = async (id, { topicId, categoryId, ...toUpdate }) => {
+  // Сheck whether the given ids is an array, and if it is not, it converts it into an array.
+  const topicsIds = Array.isArray(topicId)
+    ? topicId
+    : [topicId];
+  const categoriesIds = Array.isArray(categoryId)
+    ? categoryId
+    : [categoryId];
+
   try {
-    const post = await Post.findByPk(id);
+    // Find if exist post, categories and topics with provided id
+    const [post, topics, categories] = await Promise.all([
+      Post.findByPk(id),
+      Topic.findAll({
+        where: {
+          id: {
+            [Op.in]: topicsIds,
+          },
+        },
+      }),
+      Category.findAll({
+        where: {
+          id: {
+            [Op.in]: categoriesIds,
+          },
+        },
+      }),
+    ]);
     if (!post) {
       throw new HttpError('Post with this id not found', 404);
     }
-
-    const result = await Post.update(toUpdate, {
-      where: {
-        id,
-      },
+    // Update post, and set new categories and topics
+    const result = await sequelize.transaction(async (transaction) => {
+      const updatedData = await Promise.all([
+        post.setCategories(categories, { transaction }),
+        post.setTopics(topics, { transaction }),
+        Post.update(toUpdate, {
+          where: {
+            id,
+          },
+          transaction,
+        }),
+      ]);
+      return updatedData[2];
     });
     if (result[0] === 0) {
       throw new HttpError('Post was not updated', 400);

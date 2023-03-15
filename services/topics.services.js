@@ -1,10 +1,25 @@
 import { Op } from 'sequelize';
-import { Topic } from '../models/index.js';
+import { Topic, Category, sequelize } from '../models/index.js';
 import HttpError from '../utils/http-error.js';
+import { checkIncludes, buildWhereObject } from '../utils/models.js';
 
-export const createTopic = async (topicDate) => {
+export const createTopic = async (topicData) => {
+  // Сheck whether the given ids is an array, and if it is not, it converts it into an array.
+  const categoriesIds = Array.isArray(topicData.categoryId)
+    ? topicData.categoryId
+    : [topicData.categoryId];
   try {
-    const topic = await Topic.create(topicDate);
+    const [topic, categories] = await Promise.all([
+      Topic.create(topicData),
+      Category.findAll({
+        where: {
+          id: {
+            [Op.in]: categoriesIds,
+          },
+        },
+      }),
+    ]);
+    await topic.addCategories(categories);
     return topic;
   } catch (error) {
     if (error.name === 'SequelizeValidationError') {
@@ -28,16 +43,17 @@ export const getTopics = async (
   limit,
 ) => {
   try {
-    // If parameter was provided, add it to sequelize where query
-    const { id, title, slug, status } = whereQuery;
+    // Convert provided include query to array and check if it avaible for this model
+    const avaibleIncludes = ['users', 'pages', 'posts', 'categories'];
+    const include = checkIncludes(includeQuery, avaibleIncludes);
+
+    // Check if provided query avaible for filtering this model
+    const avaibleWheres = ['id', 'title', 'slug', 'status'];
+    const whereObj = buildWhereObject(whereQuery, avaibleWheres);
+
     const result = await Topic.findAndCountAll({
-      where: {
-        ...(id && { id }),
-        ...(title && { title }),
-        ...(slug && { slug }),
-        ...(status && { status }),
-      },
-      include: [],
+      where: whereObj,
+      include,
       order: [],
       offset,
       limit,
@@ -50,16 +66,36 @@ export const getTopics = async (
 };
 
 export const updateTopic = async (id, toUpdate) => {
+  // Сheck whether the given ids is an array, and if it is not, it converts it into an array.
+  const categoriesIds = Array.isArray(toUpdate.categoryId)
+    ? toUpdate.categoryId
+    : [toUpdate.categoryId];
   try {
-    const topic = await Topic.findByPk(id);
+    const [topic, categories] = await Promise.all([
+      Topic.findByPk(id),
+      Category.findAll({
+        where: {
+          id: {
+            [Op]: [categoriesIds],
+          },
+        },
+      }),
+    ]);
+
     if (!topic) {
       throw new HttpError('Topic with this id not found', 404);
     }
-
-    const result = await Topic.update(toUpdate, {
-      where: {
-        id,
-      },
+    const result = await sequelize.transaction(async (transaction) => {
+      const updatedData = await Promise.all([
+        topic.setCategories(categories, { transaction }),
+        Topic.update(toUpdate, {
+          where: {
+            id,
+          },
+          transaction,
+        }),
+      ]);
+      return updatedData[1];
     });
     if (result[0] === 0) {
       throw new HttpError('Topic was not updated', 400);

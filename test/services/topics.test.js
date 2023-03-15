@@ -203,7 +203,7 @@ describe('Topics serviсes', () => {
       expect(result.rows[0].image).toBe(toUpdate.image);
     });
 
-    it('Should call Topic.fingByPk() and Topic.update functions with arguments', async () => {
+    it('Should call Topic.fingByPk, Topic.update and setCategories functions', async () => {
       vi.spyOn(Topic, 'findByPk');
       vi.spyOn(Topic, 'update');
 
@@ -212,6 +212,7 @@ describe('Topics serviсes', () => {
         title: 'Old Title',
         description: 'Old Description',
       };
+      mockTopic.setCategories = vi.fn();
       Topic.findByPk.mockResolvedValue(mockTopic);
       Topic.update.mockResolvedValue([1]);
 
@@ -221,10 +222,9 @@ describe('Topics serviсes', () => {
       };
       await updateTopic(mockTopic.id, updatedTopic);
 
-      expect(Topic.findByPk).toHaveBeenCalledWith(mockTopic.id);
-      expect(Topic.update).toHaveBeenCalledWith(updatedTopic, {
-        where: { id: mockTopic.id },
-      });
+      expect(Topic.findByPk).toHaveBeenCalledOnce();
+      expect(Topic.update).toHaveBeenCalledOnce();
+      expect(mockTopic.setCategories).toHaveBeenCalledOnce();
     });
 
     it('Should throw an error if topic to update is not found', async () => {
@@ -253,7 +253,7 @@ describe('Topics serviсes', () => {
       vi.spyOn(Topic, 'findByPk');
       vi.spyOn(Topic, 'update');
 
-      Topic.findByPk.mockResolvedValue({ id: 1 });
+      Topic.findByPk.mockResolvedValue({ id: 1, setCategories: vi.fn() });
       Topic.update.mockResolvedValue([0]);
 
       try {

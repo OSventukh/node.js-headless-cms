@@ -22,13 +22,16 @@ export const createCategoryController = async (req, res, next) => {
 export const getCategoriesController = async (req, res, next) => {
   // Receive category id from url params or query
   const id = req.params.categoryId || req.query.id;
-
+  const { include, ...whereQuery } = req.query;
   try {
     // get topics with provided parameters and response it to the client
-    const { count, rows } = await getCategories({
-      id,
-      ...req.query,
-    });
+    const { count, rows } = await getCategories(
+      {
+        id,
+        ...whereQuery,
+      },
+      include,
+    );
     res.status(200).json({
       count,
       categories: rows,

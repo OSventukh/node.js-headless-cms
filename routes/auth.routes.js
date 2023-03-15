@@ -14,7 +14,7 @@ const router = express.Router();
 
 router.post('/login', loginValidator(), checkValidation, loginController);
 
-router.get('/login/refreshtoken', auth, refreshTokenController);
+router.get('/login/refreshtoken', refreshTokenController);
 
 router.post('/logout', auth, logoutController);
 

@@ -11,7 +11,10 @@ describe('Auth controllers', () => {
     vi.mock('../../services/auth.services.js');
     vi.mock('../../utils/token');
     vi.mock('../../middlewares/auth');
-    auth.mockImplementationOnce((req, res, next) => next());
+    auth.mockImplementationOnce((req, res, next) => {
+      req.auth = { userId: '1' };
+      next();
+    });
   });
   afterEach(() => {
     vi.restoreAllMocks();
