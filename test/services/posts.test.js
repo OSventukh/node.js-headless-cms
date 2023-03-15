@@ -19,7 +19,7 @@ describe('Posts serviсes', () => {
   let topic;
   let category;
   beforeAll(async () => {
-    await Post.sync();
+    await Post.sync({ alter: true });
     await Topic.sync();
     await Category.sync();
     // import services after sequelize run

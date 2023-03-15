@@ -3,16 +3,15 @@ import { sequelize, Post, Topic, Category } from '../models/index.js';
 import HttpError from '../utils/http-error.js';
 import { checkIncludes, buildWhereObject } from '../utils/models.js';
 
-export const createPost = async (postData) => {
+export const createPost = async ({ topicId, categoryId, ...postData }) => {
   try {
     // Сheck whether the given ids is an array, and if it is not, it converts it into an array.
-    const topicsIds = Array.isArray(postData.topicsIds)
-      ? postData.topicsIds
-      : [postData.topicsIds];
-    const categoriesIds = Array.isArray(postData.categoriesIds)
-      ? postData.categoriesIds
-      : [postData.categoriesIds];
-
+    const topicsIds = Array.isArray(topicId)
+      ? topicId
+      : [topicId];
+    const categoriesIds = Array.isArray(categoryId)
+      ? categoryId
+      : [categoryId];
     // Create post and find topic and category that provided in data form client
     const [post, topics, categories] = await Promise.all([
       Post.create(postData),
@@ -31,7 +30,6 @@ export const createPost = async (postData) => {
         },
       }),
     ]);
-
     // Add categories and topics to post
     await Promise.all([post.addCategories(categories), post.addTopics(topics)]);
     return post;
@@ -78,14 +76,14 @@ export const getPosts = async (
   }
 };
 
-export const updatePost = async (id, toUpdate) => {
+export const updatePost = async (id, { topicId, categoryId, ...toUpdate }) => {
   // Сheck whether the given ids is an array, and if it is not, it converts it into an array.
-  const topicsIds = Array.isArray(toUpdate.topicsIds)
-    ? toUpdate.topicsIds
-    : [toUpdate.topicsIds];
-  const categoriesIds = Array.isArray(toUpdate.categoriesIds)
-    ? toUpdate.categoriesIds
-    : [toUpdate.categoriesIds];
+  const topicsIds = Array.isArray(topicId)
+    ? topicId
+    : [topicId];
+  const categoriesIds = Array.isArray(categoryId)
+    ? categoryId
+    : [categoryId];
 
   try {
     // Find if exist post, categories and topics with provided id

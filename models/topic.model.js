@@ -5,8 +5,8 @@ export default (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       this.belongsToMany(models.User, { foreignKey: 'userId', as: 'users', through: 'TopicUsers' });
-      this.hasMany(models.Post, { foreignKey: 'topicId', as: 'posts' });
-      this.belongsToMany(models.Page, { foreignKey: 'pageId', as: 'pages', through: 'PageTopic' });
+      this.belongsToMany(models.Post, { foreignKey: 'postId', as: 'posts', through: 'PostTopic' });
+      this.hasMany(models.Page, { foreignKey: 'pageId', as: 'pages' });
       this.hasMany(models.Category, { foreignKey: 'topicId', as: 'categories' });
     }
   }
@@ -48,7 +48,7 @@ export default (sequelize, DataTypes) => {
     {
       sequelize,
       modelName: 'Topic',
-    }
+    },
   );
   return Post;
 };
