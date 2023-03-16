@@ -1,7 +1,7 @@
 import { Op } from 'sequelize';
 import { sequelize, Post, Topic, Category } from '../models/index.js';
 import HttpError from '../utils/http-error.js';
-import { checkIncludes, buildWhereObject, getOrder } from '../utils/models.js';
+import { checkIncludes, buildWhereObject, getOrder, getPagination } from '../utils/models.js';
 
 export const createPost = async ({ topicId, categoryId, ...postData }) => {
   try {
@@ -51,8 +51,8 @@ export const getPosts = async (
   whereQuery,
   includeQuery,
   orderQuery,
-  offset,
-  limit,
+  page,
+  size,
 ) => {
   try {
     // Convert provided include query to array and check if it avaible for this model
@@ -64,6 +64,8 @@ export const getPosts = async (
     const whereObj = buildWhereObject(whereQuery, avaibleWheres);
 
     const order = await getOrder(orderQuery, Post);
+
+    const { offset, limit } = getPagination(page, size);
 
     const result = await Post.findAndCountAll({
       where: whereObj,

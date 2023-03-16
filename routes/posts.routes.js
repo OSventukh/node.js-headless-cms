@@ -9,14 +9,14 @@ import {
   deletePostController,
 } from '../controllers/posts.controllers.js';
 
-import { postValidator, idValidator } from '../utils/validators.js';
+import { postValidator, idValidator, paginationValidator } from '../utils/validators.js';
 import checkValidation from '../middlewares/validation.js';
 
 const router = express.Router();
 
-router.get('/posts/:postId', idValidator('postId'), checkValidation, getPostsController);
+router.get('/posts/:postId', idValidator('postId'), paginationValidator(), checkValidation, getPostsController);
 
-router.get('/posts', getPostsController);
+router.get('/posts', paginationValidator(), checkValidation, getPostsController);
 
 router.post('/posts', auth, postValidator(), checkValidation, createPostController);
 

@@ -9,14 +9,14 @@ import {
   deleteUserController,
 } from '../controllers/users.controllers.js';
 
-import { userValidator, idValidator } from '../utils/validators.js';
+import { userValidator, idValidator, paginationValidator } from '../utils/validators.js';
 import checkValidation from '../middlewares/validation.js';
 
 const router = express.Router();
 
-router.get('/users/:userId', idValidator('userId'), checkValidation, getUsersController);
+router.get('/users/:userId', idValidator('userId'), paginationValidator(), checkValidation, getUsersController);
 
-router.get('/users', getUsersController);
+router.get('/users', paginationValidator(), checkValidation, getUsersController);
 
 router.post('/users', userValidator(), checkValidation, createUserController);
 
