@@ -1,5 +1,5 @@
 import { describe, it, vi, expect, beforeAll, afterEach, afterAll } from 'vitest';
-import { sequelize, Category, Post } from '../../models/index.js';
+import { sequelize, Category } from '../../models/index.js';
 import HttpError from '../../utils/http-error.js';
 
 describe('Categories serviсes', () => {
@@ -8,7 +8,8 @@ describe('Categories serviсes', () => {
   let getCategories = null;
   let deleteCategory = null;
   beforeAll(async () => {
-    await Category.sync();
+    await sequelize.query('SET FOREIGN_KEY_CHECKS = 0', { raw: true });
+    await Category.sync({ force: true });
     vi.clearAllMocks();
     vi.resetAllMocks();
     // import services after sequelize run
@@ -119,6 +120,25 @@ describe('Categories serviсes', () => {
       expect(result.count).toBe(1);
       expect(result.rows.length).toBe(1);
       expect(result.rows[0].name).toBe('Test category 3');
+    });
+
+    it('Should return an array with the correct order of records', async () => {
+      const categoryData1 = {
+        name: 'Test category',
+        slug: 'test-category',
+      };
+      const categoryData2 = {
+        name: 'Test category 2',
+        slug: 'test-category-2',
+      };
+      const categoryData3 = {
+        name: 'Test category 3',
+        slug: 'test-category-3',
+      };
+
+      await Category.bulkCreate([categoryData1, categoryData2, categoryData3]);
+      const result = await getCategories({}, '', 'id:desc');
+      expect(result.rows[0].name).toBe(categoryData3.name);
     });
 
     it('Should throw an error with message that sequelize provide and status code 500 if sequelize failed', async () => {

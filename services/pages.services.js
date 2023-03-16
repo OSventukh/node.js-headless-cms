@@ -1,7 +1,7 @@
 import { Op } from 'sequelize';
 import { Page } from '../models/index.js';
 import HttpError from '../utils/http-error.js';
-import { checkIncludes, buildWhereObject } from '../utils/models.js';
+import { checkIncludes, buildWhereObject, getOrder } from '../utils/models.js';
 
 export const createPage = async (pageData) => {
   try {
@@ -22,7 +22,7 @@ export const createPage = async (pageData) => {
 };
 
 export const getPages = async (
-  whereQuery = {},
+  whereQuery,
   includeQuery,
   orderQuery,
   offset,
@@ -37,10 +37,12 @@ export const getPages = async (
     const avaibleWheres = ['id', 'title', 'slug', 'status'];
     const whereObj = buildWhereObject(whereQuery, avaibleWheres);
 
+    const order = await getOrder(orderQuery, Page);
+
     const result = await Page.findAndCountAll({
       where: whereObj,
       include,
-      order: [],
+      order,
       offset,
       limit,
     });

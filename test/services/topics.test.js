@@ -16,7 +16,8 @@ describe('Topics serviсes', () => {
   let getTopics = null;
   let deleteTopic = null;
   beforeAll(async () => {
-    await Topic.sync();
+    await sequelize.query('SET FOREIGN_KEY_CHECKS = 0', { raw: true });
+    await Topic.sync({ force: true });
     // import services after sequelize run
     const topicsServices = await import('../../services/topics.services.js');
     createTopic = topicsServices.createTopic;
@@ -152,6 +153,35 @@ describe('Topics serviсes', () => {
       expect(result.rows.length).toBe(2);
       expect(result.rows[0].status).toBe('active');
       expect(result.rows[1].status).toBe('active');
+    });
+
+    it('Should return an array with the correct order of records', async () => {
+      const topicData1 = {
+        title: 'Test Topic 1',
+        slug: 'test-topic-1',
+        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+        image: 'test.jpg',
+        status: 'active',
+      };
+      const topicData2 = {
+        title: 'Test Topic 2',
+        slug: 'test-topic-2',
+        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+        image: 'test.jpg',
+        status: 'active',
+      };
+      const topicData3 = {
+        title: 'Test Topic 3',
+        slug: 'test-topic-3',
+        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+        image: 'test.jpg',
+        status: 'inactive',
+      };
+
+      await Topic.bulkCreate([topicData1, topicData2, topicData3]);
+
+      const result = await getTopics({}, '', 'id:desc');
+      expect(result.rows[0].title).toBe(topicData3.title);
     });
 
     it('Should throw an error with message that sequelize provide and status code 500 if sequelize failed', async () => {

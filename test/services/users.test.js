@@ -16,7 +16,8 @@ describe('Users serviсes', async () => {
   let getUsers = null;
   let deleteUser = null;
   beforeAll(async () => {
-    await sequelize.sync();
+    await sequelize.query('SET FOREIGN_KEY_CHECKS = 0', { raw: true });
+    await sequelize.sync({ force: true });
     // import services after sequelize run
     const usersServices = await import('../../services/users.services.js');
     createUser = usersServices.createUser;

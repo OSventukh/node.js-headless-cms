@@ -1,7 +1,7 @@
 import { Op } from 'sequelize';
 import { Topic, Category, sequelize } from '../models/index.js';
 import HttpError from '../utils/http-error.js';
-import { checkIncludes, buildWhereObject } from '../utils/models.js';
+import { checkIncludes, buildWhereObject, getOrder } from '../utils/models.js';
 
 export const createTopic = async (topicData) => {
   // Сheck whether the given ids is an array, and if it is not, it converts it into an array.
@@ -36,7 +36,7 @@ export const createTopic = async (topicData) => {
 };
 
 export const getTopics = async (
-  whereQuery = {},
+  whereQuery,
   includeQuery,
   orderQuery,
   offset,
@@ -51,10 +51,12 @@ export const getTopics = async (
     const avaibleWheres = ['id', 'title', 'slug', 'status'];
     const whereObj = buildWhereObject(whereQuery, avaibleWheres);
 
+    const order = await getOrder(orderQuery, Topic);
+
     const result = await Topic.findAndCountAll({
       where: whereObj,
       include,
-      order: [],
+      order,
       offset,
       limit,
     });
