@@ -1,7 +1,7 @@
 import { User } from '../models/index.js';
 import { hashPassword } from '../utils/hash.js';
 import HttpError from '../utils/http-error.js';
-import { checkIncludes, buildWhereObject } from '../utils/models.js';
+import { checkIncludes, buildWhereObject, getOrder } from '../utils/models.js';
 
 export const createUser = async (data) => {
   try {
@@ -23,7 +23,7 @@ export const createUser = async (data) => {
 };
 
 export const getUsers = async (
-  whereQuery = {},
+  whereQuery,
   includeQuery,
   orderQuery,
   offset,
@@ -38,11 +38,13 @@ export const getUsers = async (
     const avaibleWheres = ['id', 'firstname', 'lastName', 'email', 'role', 'status'];
     const whereObj = buildWhereObject(whereQuery, avaibleWheres);
 
+    const order = await getOrder(orderQuery, User);
+
     const result = await User.findAndCountAll({
       where: whereObj,
       attributes: { exclude: ['password'] },
       include,
-      order: [],
+      order,
       offset,
       limit,
     });

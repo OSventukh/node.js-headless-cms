@@ -1,7 +1,7 @@
 import { Op } from 'sequelize';
 import { sequelize, Post, Topic, Category } from '../models/index.js';
 import HttpError from '../utils/http-error.js';
-import { checkIncludes, buildWhereObject } from '../utils/models.js';
+import { checkIncludes, buildWhereObject, getOrder } from '../utils/models.js';
 
 export const createPost = async ({ topicId, categoryId, ...postData }) => {
   try {
@@ -48,7 +48,7 @@ export const createPost = async ({ topicId, categoryId, ...postData }) => {
 };
 
 export const getPosts = async (
-  whereQuery = {},
+  whereQuery,
   includeQuery,
   orderQuery,
   offset,
@@ -63,10 +63,12 @@ export const getPosts = async (
     const avaibleWheres = ['id', 'title', 'slug', 'status'];
     const whereObj = buildWhereObject(whereQuery, avaibleWheres);
 
+    const order = await getOrder(orderQuery, Post);
+
     const result = await Post.findAndCountAll({
       where: whereObj,
       include,
-      order: [],
+      order,
       offset,
       limit,
     });

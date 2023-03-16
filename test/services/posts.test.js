@@ -19,9 +19,10 @@ describe('Posts serviсes', () => {
   let topic;
   let category;
   beforeAll(async () => {
+    await sequelize.query('SET FOREIGN_KEY_CHECKS = 0', { raw: true });
     await Post.sync({ alter: true });
-    await Topic.sync();
-    await Category.sync();
+    await Topic.sync({ force: true });
+    await Category.sync({ force: true });
     // import services after sequelize run
     const postsServices = await import('../../services/posts.services.js');
     createPost = postsServices.createPost;
@@ -198,6 +199,41 @@ describe('Posts serviсes', () => {
       expect(result.rows.length).toBe(2);
       expect(result.rows[0].status).toBe('published');
       expect(result.rows[1].status).toBe('published');
+    });
+
+    it('Should return an array with the correct order of records', async () => {
+      const postData1 = {
+        title: 'Test Post 1',
+        slug: 'test-post-1',
+        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+        excerpt: 'Lorem ipsum dolor sit amet',
+        status: 'published',
+        topicId: topic.id,
+        categoryId: category.id,
+      };
+      const postData2 = {
+        title: 'Test Post 2',
+        slug: 'test-post-2',
+        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+        excerpt: 'Lorem ipsum dolor sit amet',
+        status: 'published',
+        topicId: topic.id,
+        categoryId: category.id,
+      };
+      const postData3 = {
+        title: 'Test Post 3',
+        slug: 'test-post-3',
+        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+        excerpt: 'Lorem ipsum dolor sit amet',
+        status: 'draft',
+        topicId: topic.id,
+        categoryId: category.id,
+      };
+
+      await Post.bulkCreate([postData1, postData2, postData3]);
+
+      const result = await getPosts({}, '', 'id:desc');
+      expect(result.rows[0].title).toBe(postData3.title);
     });
 
     it('Should throw an error with message that sequelize provide and status code 500 if sequelize failed', async () => {

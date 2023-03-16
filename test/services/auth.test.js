@@ -8,6 +8,7 @@ import {
   beforeEach,
 } from 'vitest';
 import {
+  sequelize,
   User,
   UserToken,
   UserBlockedToken,
@@ -20,10 +21,11 @@ describe('auth services', () => {
   let logout;
   let isUserLoggedIn;
   beforeAll(async () => {
-    Promise.all([
-      User.sync(),
+    await sequelize.query('SET FOREIGN_KEY_CHECKS = 0', { raw: true });
+    await User.sync({ force: true });
+    await Promise.all([
       UserToken.sync({ force: true }),
-      UserBlockedToken.sync(),
+      UserBlockedToken.sync({ force: true }),
     ]);
 
     vi.clearAllMocks();

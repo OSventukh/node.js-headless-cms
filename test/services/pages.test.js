@@ -8,7 +8,8 @@ describe('Pages serviсes', () => {
   let getPages = null;
   let deletePage = null;
   beforeAll(async () => {
-    await Page.sync();
+    await sequelize.query('SET FOREIGN_KEY_CHECKS = 0', { raw: true });
+    await Page.sync({ force: true });
     vi.clearAllMocks();
     vi.resetAllMocks();
     // import services after sequelize run
@@ -143,6 +144,36 @@ describe('Pages serviсes', () => {
       expect(result.rows.length).toBe(2);
       expect(result.rows[0].status).toBe('published');
       expect(result.rows[1].status).toBe('published');
+    });
+
+    it('Should return an array with the correct order of records', async () => {
+      const pageData1 = {
+        title: 'Page 1',
+        slug: 'page-1',
+        description: 'This is the first page',
+        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+        status: 'published',
+      };
+      const pageData2 = {
+        title: 'Page 2',
+        slug: 'page-2',
+        description: 'This is the second page',
+        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+        status: 'published',
+      };
+      const pageData3 = {
+        title: 'Page 3',
+        slug: 'page-3',
+        description: 'This is the third page',
+        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+        status: 'draft',
+      };
+
+      await Page.bulkCreate([pageData1, pageData2, pageData3]);
+
+      const result = await getPages({}, '', 'id:desc');
+
+      expect(result.rows[0].title).toBe(pageData3.title);
     });
 
     it('Should throw an error with message that sequelize provide and status code 500 if sequelize failed', async () => {
