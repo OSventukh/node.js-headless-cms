@@ -65,6 +65,10 @@ export const signup = async (data) => {
       },
     });
 
+    if (!adminRole) {
+      throw new HttpError('Role not found', 500);
+    }
+
     const userData = {
       ...data,
       password: await hashPassword(data.password),
@@ -72,7 +76,7 @@ export const signup = async (data) => {
     // Creating user and adding role 'administrator';
     const user = await sequelize.transaction(async (transaction) => {
       const createdUser = await User.create(userData, { transaction });
-      await createdUser.addRole(adminRole, { transaction });
+      await createdUser.setRole(adminRole, { transaction });
       return createdUser;
     });
     return user;

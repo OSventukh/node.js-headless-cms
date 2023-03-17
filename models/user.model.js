@@ -41,23 +41,12 @@ export default (sequelize, DataTypes) => {
           notEmpty: true,
         },
       },
-      role: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        defaultValue: 'writer',
-        validate: {
-          isIn: {
-            args: [['administrator', 'moderator', 'writer', 'blocked']],
-            msg: 'Incorect user status value',
-          },
-        },
-      },
       status: {
         type: DataTypes.STRING,
-        defaultValue: 'pending',
+        defaultValue: 'active',
         validate: {
           isIn: {
-            args: [['pending', 'active']],
+            args: [['blocked', 'active']],
             msg: 'Incorect user status value',
           },
         },
