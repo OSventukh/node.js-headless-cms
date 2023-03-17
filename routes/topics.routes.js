@@ -9,14 +9,14 @@ import {
   deleteTopicController,
 } from '../controllers/topics.controllers.js';
 
-import { topicValidator, idValidator } from '../utils/validators.js';
+import { topicValidator, idValidator, paginationValidator } from '../utils/validators.js';
 import checkValidation from '../middlewares/validation.js';
 
 const router = express.Router();
 
-router.get('/topics/:topicId', idValidator('topicId'), checkValidation, getTopicsController);
+router.get('/topics/:topicId', idValidator('topicId'), paginationValidator(), checkValidation, getTopicsController);
 
-router.get('/topics', getTopicsController);
+router.get('/topics', paginationValidator(), checkValidation, getTopicsController);
 
 router.post('/topics', auth, topicValidator(), checkValidation, createTopicController);
 

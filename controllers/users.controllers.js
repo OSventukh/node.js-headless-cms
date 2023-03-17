@@ -17,14 +17,23 @@ export const createUserController = async (req, res, next) => {
 export const getUsersController = async (req, res, next) => {
   // receive user id from url params or query
   const id = req.params.userId || req.query.id;
+  const { include, order, page, size, ...whereQuery } = req.query;
   try {
     // getting users with provided paramaters and response it to the client
-    const { count, rows } = await getUsers({
-      id,
-      ...req.query,
-    });
+    const { count, rows } = await getUsers(
+      {
+        id,
+        ...whereQuery,
+      },
+      include,
+      order,
+      page,
+      size,
+    );
     res.status(200).json({
       count,
+      currentPage: page,
+      totalPages: Math.ceil(count / size),
       users: rows,
     });
   } catch (error) {

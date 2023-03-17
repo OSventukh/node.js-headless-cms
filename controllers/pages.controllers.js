@@ -23,14 +23,24 @@ export const getPagesController = async (req, res, next) => {
   // Receive page id from url params or query
   const id = req.params.pageId || req.query.id;
 
+  const { include, order, page, size, ...whereQuery } = req.query;
+
   try {
     // get topics with provided parameters and response it to the client
-    const { count, rows } = await getPages({
-      id,
-      ...req.query,
-    });
+    const { count, rows } = await getPages(
+      {
+        id,
+        ...whereQuery,
+      },
+      include,
+      order,
+      page,
+      size,
+    );
     res.status(200).json({
       count,
+      currentPage: page,
+      totalPages: Math.ceil(count / size),
       pages: rows,
     });
   } catch (error) {

@@ -1,3 +1,5 @@
+import config from '../config/config.js';
+
 export function checkIncludes(includeQuery = '', avaibleIncludes = []) {
   const includeArr = includeQuery.split(',');
   const include = includeArr.filter((item) => avaibleIncludes.includes(item));
@@ -7,7 +9,7 @@ export function checkIncludes(includeQuery = '', avaibleIncludes = []) {
 export function buildWhereObject(whereQuery = {}, avaibleWheres = []) {
   return Object.fromEntries(
     Object.entries(whereQuery).filter(
-      ([key, value]) => avaibleWheres.includes(key) && value !== undefined,
+      ([key, value]) => avaibleWheres.includes(key) && value !== undefined
     ),
   );
 }
@@ -30,4 +32,10 @@ export async function getOrder(orderQuery = '', Model) {
   } catch (error) {
     return orderQuery;
   }
+}
+
+export function getPagination(page, size) {
+  const limit = size || config.defaultRecordsPerPage;
+  const offset = page ? size * (page - 1) : 0;
+  return { limit, offset };
 }

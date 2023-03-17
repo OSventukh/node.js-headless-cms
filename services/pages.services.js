@@ -1,7 +1,7 @@
 import { Op } from 'sequelize';
 import { Page } from '../models/index.js';
 import HttpError from '../utils/http-error.js';
-import { checkIncludes, buildWhereObject, getOrder } from '../utils/models.js';
+import { checkIncludes, buildWhereObject, getOrder, getPagination } from '../utils/models.js';
 
 export const createPage = async (pageData) => {
   try {
@@ -25,8 +25,8 @@ export const getPages = async (
   whereQuery,
   includeQuery,
   orderQuery,
-  offset,
-  limit,
+  page,
+  size,
 ) => {
   try {
     // Convert provided include query to array and check if it avaible for this model
@@ -39,6 +39,7 @@ export const getPages = async (
 
     const order = await getOrder(orderQuery, Page);
 
+    const { offset, limit } = getPagination(page, size);
     const result = await Page.findAndCountAll({
       where: whereObj,
       include,

@@ -9,14 +9,14 @@ import {
   deleteCategoryController,
 } from '../controllers/categories.controllers.js';
 
-import { categoryValidator, idValidator } from '../utils/validators.js';
+import { categoryValidator, idValidator, paginationValidator } from '../utils/validators.js';
 import checkValidation from '../middlewares/validation.js';
 
 const router = express.Router();
 
-router.get('/categories', getCategoriesController);
+router.get('/categories', paginationValidator(), checkValidation, getCategoriesController);
 
-router.get('/categories/:categoryId', idValidator('categoryId'), checkValidation, getCategoriesController);
+router.get('/categories/:categoryId', idValidator('categoryId'), paginationValidator(), checkValidation, getCategoriesController);
 
 router.post('/categories', auth, categoryValidator(), checkValidation, createCategoryController);
 

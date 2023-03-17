@@ -1,4 +1,4 @@
-import { body, param } from 'express-validator';
+import { body, param, query } from 'express-validator';
 
 export function loginValidator() {
   return [
@@ -40,5 +40,12 @@ export function topicValidator() {
 }
 
 export function idValidator(id) {
-  return [param(id).optional().optional().isInt().escape()];
+  return [param(id).optional().isInt().escape()];
+}
+
+export function paginationValidator() {
+  return [
+    query('page').optional().isInt({ min: 1 }).toInt(),
+    query('size').optional().isInt({ min: 1 }).toInt(),
+  ];
 }

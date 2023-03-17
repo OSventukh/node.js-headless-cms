@@ -1,7 +1,7 @@
 import { User } from '../models/index.js';
 import { hashPassword } from '../utils/hash.js';
 import HttpError from '../utils/http-error.js';
-import { checkIncludes, buildWhereObject, getOrder } from '../utils/models.js';
+import { checkIncludes, buildWhereObject, getOrder, getPagination } from '../utils/models.js';
 
 export const createUser = async (data) => {
   try {
@@ -26,8 +26,8 @@ export const getUsers = async (
   whereQuery,
   includeQuery,
   orderQuery,
-  offset,
-  limit,
+  page,
+  size,
 ) => {
   try {
     // Convert provided include query to array and check if it avaible for this model
@@ -39,6 +39,8 @@ export const getUsers = async (
     const whereObj = buildWhereObject(whereQuery, avaibleWheres);
 
     const order = await getOrder(orderQuery, User);
+
+    const { offset, limit } = getPagination(page, size);
 
     const result = await User.findAndCountAll({
       where: whereObj,
