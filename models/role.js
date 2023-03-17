@@ -3,7 +3,6 @@ import { Model } from 'sequelize';
 export default (sequelize, DataTypes) => {
   class Role extends Model {
     static associate(models) {
-      this.belongsToMany(models.Permission, { foreignKey: 'permissionId', through: 'RolePermission' });
     }
   }
 
