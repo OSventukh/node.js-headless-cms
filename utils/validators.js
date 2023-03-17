@@ -9,9 +9,16 @@ export function loginValidator() {
 
 export function signupValidator() {
   return [
-    body('firstname').trim().not().isEmpty(),
+    body('firstname')
+      .trim()
+      .not()
+      .isEmpty()
+      .withMessage('Firstname should not be an empty'),
     body('lastname').trim(),
-    body('email').isEmail().normalizeEmail({ gmail_remove_dots: false }),
+    body('email')
+      .isEmail()
+      .normalizeEmail({ gmail_remove_dots: false })
+      .withMessage('Please, enter a valid email'),
     body('password')
       .trim()
       .isLength({ min: 5 })
@@ -21,12 +28,18 @@ export function signupValidator() {
 
 export function userValidator() {
   return [
-    body('firstname').optional().trim().not().isEmpty(),
+    body('firstname')
+      .optional()
+      .trim()
+      .not()
+      .isEmpty()
+      .withMessage('Firstname should not be an empty'),
     body('lastname').optional().trim(),
     body('email')
       .optional()
       .isEmail()
-      .normalizeEmail({ gmail_remove_dots: false }),
+      .normalizeEmail({ gmail_remove_dots: false })
+      .withMessage('Please, enter a valid email'),
     body('password')
       .optional()
       .trim()
@@ -36,23 +49,58 @@ export function userValidator() {
 }
 
 export function categoryValidator() {
-  return [body('name').optional().trim().not().isEmpty()];
+  return [
+    body('name')
+      .optional()
+      .trim()
+      .not()
+      .isEmpty()
+      .withMessage('Category name should not be an empty'),
+  ];
 }
 
 export function optionValidator() {
-  return [body('name').optional().trim().not().isEmpty()];
+  return [
+    body('name')
+      .optional()
+      .trim()
+      .not()
+      .isEmpty()
+      .withMessage('Option name should not be an empty'),
+  ];
 }
 
 export function pageValidator() {
-  return [body('title').optional().trim().not().isEmpty()];
+  return [
+    body('title')
+      .optional()
+      .trim()
+      .not()
+      .isEmpty()
+      .withMessage('Title should not be an empty'),
+  ];
 }
 
 export function postValidator() {
-  return [body('title').optional().trim().not().isEmpty()];
+  return [
+    body('title')
+      .optional()
+      .trim()
+      .not()
+      .isEmpty()
+      .withMessage('Title should not be an empty'),
+  ];
 }
 
 export function topicValidator() {
-  return [body('title').optional().trim().not().isEmpty()];
+  return [
+    body('title')
+      .optional()
+      .trim()
+      .not()
+      .isEmpty()
+      .withMessage('Title should not be an empty'),
+  ];
 }
 
 export function idValidator(id) {

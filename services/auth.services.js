@@ -20,6 +20,7 @@ export const login = async (email, password) => {
       where: {
         email,
       },
+      include: 'role',
     });
     if (!user) {
       throw new HttpError('Invalid email or password', 403);
