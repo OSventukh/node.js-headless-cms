@@ -8,6 +8,7 @@ export default (sequelize, DataTypes) => {
       this.hasMany(models.Post, { foreignKey: 'userId', as: 'posts' });
       this.hasMany(models.Page, { foreignKey: 'userId', as: 'pages' });
       this.belongsToMany(models.Topic, { foreignKey: 'topicId', as: 'topics', through: 'TopicUsers' });
+      this.hasOne(models.Role, { foreignKey: 'userId' });
     }
   }
 
@@ -44,13 +45,19 @@ export default (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
         defaultValue: 'writer',
+        validate: {
+          isIn: {
+            args: [['administrator', 'moderator', 'writer', 'blocked']],
+            msg: 'Incorect user status value',
+          },
+        },
       },
       status: {
         type: DataTypes.STRING,
         defaultValue: 'pending',
         validate: {
           isIn: {
-            args: [['pending', 'active', 'deleted']],
+            args: [['pending', 'active']],
             msg: 'Incorect user status value',
           },
         },
