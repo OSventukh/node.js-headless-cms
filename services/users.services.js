@@ -1,4 +1,4 @@
-import { User } from '../models/index.js';
+import { sequelize, User, Role } from '../models/index.js';
 import { hashPassword } from '../utils/hash.js';
 import HttpError from '../utils/http-error.js';
 import { checkIncludes, buildWhereObject, getOrder, getPagination } from '../utils/models.js';
@@ -113,6 +113,52 @@ export const restoreUser = async (id) => {
         id,
       },
     });
+  } catch (error) {
+    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+  }
+};
+
+export const createFirstUser = async (data) => {
+  try {
+    const users = await User.findAll();
+    if (users.length > 0) {
+      throw new HttpError('Administrator already exist', 409);
+    }
+    const adminRole = await Role.findOne({
+      where: {
+        name: 'Administrator',
+      },
+    });
+
+    const userData = {
+      ...data,
+      password: await hashPassword(data.password),
+    };
+    // Creating user and adding role 'administrator';
+    const user = await sequelize.transaction(async (transaction) => {
+      const createdUser = await User.create(userData, { transaction });
+      await createdUser.addRole(adminRole, { transaction });
+      return createdUser;
+    });
+    return user;
+  } catch (error) {
+    if (error.name === 'SequelizeValidationError') {
+      throw new HttpError(error.message, 400);
+    }
+    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+  }
+};
+
+export const createRoles = async () => {
+  try {
+    const roles = await Role.findAll();
+    if (roles.length === 0) {
+      await Role.bulkCreate([
+        { name: 'Administrator' },
+        { name: 'Moderator' },
+        { name: 'Writer' },
+      ]);
+    }
   } catch (error) {
     throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
   }

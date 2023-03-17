@@ -7,6 +7,7 @@ import {
   getUsersController,
   updateUserController,
   deleteUserController,
+  createFirstUserController,
 } from '../controllers/users.controllers.js';
 
 import { userValidator, idValidator, paginationValidator } from '../utils/validators.js';
@@ -18,7 +19,9 @@ router.get('/users/:userId', idValidator('userId'), paginationValidator(), check
 
 router.get('/users', paginationValidator(), checkValidation, getUsersController);
 
-router.post('/users', userValidator(), checkValidation, createUserController);
+router.post('/users', auth, userValidator(), checkValidation, createUserController);
+
+router.post('/users/firstuser', userValidator(), checkValidation, createFirstUserController);
 
 router.patch('/users/:userId', auth, userValidator(), idValidator('userId'), checkValidation, updateUserController);
 

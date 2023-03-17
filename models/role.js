@@ -3,6 +3,7 @@ import { Model } from 'sequelize';
 export default (sequelize, DataTypes) => {
   class Role extends Model {
     static associate(models) {
+      this.belongsTo(models.User, { foreignKey: 'roleId', as: 'role' });
     }
   }
 

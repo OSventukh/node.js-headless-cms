@@ -9,8 +9,7 @@ import CategoryModel from './category.js';
 import OptionModel from './option.model.js';
 import UserTokenModel from './user-token.model.js';
 import UserBlockedTokenModel from './user-blocked-token.model.js';
-import RoleModel from './role';
-import PermissionModel from './permission';
+import RoleModel from './role.js';
 
 const env = process.env.NODE_ENV || 'development';
 const sequelize = new Sequelize(database[env]);
@@ -25,7 +24,6 @@ const models = {
   UserToken: UserTokenModel(sequelize, DataTypes),
   UserBlockedToken: UserBlockedTokenModel(sequelize, DataTypes),
   Role: RoleModel(sequelize, DataTypes),
-  Permission: PermissionModel(sequelize, DataTypes),
 };
 
 Object.keys(models).forEach((modelName) => {
@@ -43,7 +41,6 @@ export const { Option } = models;
 export const { UserToken } = models;
 export const { UserBlockedToken } = models;
 export const { Role } = models;
-export const { Permission } = models;
 
 export {
   sequelize,
