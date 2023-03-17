@@ -28,6 +28,7 @@ export const getUsers = async (
   orderQuery,
   page,
   size,
+  paranoid,
 ) => {
   try {
     // Convert provided include query to array and check if it avaible for this model
@@ -49,6 +50,7 @@ export const getUsers = async (
       order,
       offset,
       limit,
+      paranoid: !paranoid,
     });
 
     return result;
@@ -89,20 +91,28 @@ export const deleteUser = async (id) => {
       throw new HttpError('This user cannot be deleted', 403);
     }
 
-    // Deleting a user is not permanent, a user can be restored
-    const result = await User.update(
-      {
-        status: 'deleted',
+    // Deleting the user
+    const result = await User.destroy({
+      where: {
+        id,
       },
-      {
-        where: {
-          id,
-        },
-      },
-    );
-    if (result[0] === 0) {
+    });
+
+    if (result === 0) {
       throw new HttpError('User was not deleted', 400);
     }
+  } catch (error) {
+    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+  }
+};
+
+export const restoreUser = async (id) => {
+  try {
+    await User.restore({
+      where: {
+        id,
+      },
+    });
   } catch (error) {
     throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
   }
