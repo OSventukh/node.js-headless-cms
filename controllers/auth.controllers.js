@@ -1,7 +1,21 @@
 import ms from 'ms';
-import { login, refreshTokens, isUserLoggedIn, logout } from '../services/auth.services.js';
+import { login, signup, refreshTokens, isUserLoggedIn, logout, adminCheck } from '../services/auth.services.js';
+import { createRoles } from '../services/roles.services.js';
 import HttpError from '../utils/http-error.js';
 import config from '../config/config.js';
+
+export const authController = async (req, res, next) => {
+  // Check if admin exist.
+  // Frontend should be redirect to signup if admin not exist or login if exist
+  try {
+    const result = await adminCheck();
+    res.status(200).json({
+      action: result ? 'login' : 'signup',
+    });
+  } catch (error) {
+    next(new HttpError(error.message, error.statusCode));
+  }
+};
 
 export const loginController = async (req, res, next) => {
   const { email, password } = req.body;
@@ -24,6 +38,19 @@ export const loginController = async (req, res, next) => {
         userId,
         accessToken,
       });
+  } catch (error) {
+    next(new HttpError(error.message, error.statusCode));
+  }
+};
+
+export const signupController = async (req, res, next) => {
+  try {
+    await createRoles();
+    const user = await signup(req.body);
+    res.status(201).json({
+      message: 'User successfully created',
+      user,
+    });
   } catch (error) {
     next(new HttpError(error.message, error.statusCode));
   }

@@ -7,6 +7,18 @@ export function loginValidator() {
   ];
 }
 
+export function signupValidator() {
+  return [
+    body('firstname').trim().not().isEmpty(),
+    body('lastname').trim(),
+    body('email').isEmail().normalizeEmail({ gmail_remove_dots: false }),
+    body('password')
+      .trim()
+      .isLength({ min: 5 })
+      .withMessage('Password should have at least 5 characters'),
+  ];
+}
+
 export function userValidator() {
   return [
     body('firstname').optional().trim().not().isEmpty(),
@@ -15,7 +27,11 @@ export function userValidator() {
       .optional()
       .isEmail()
       .normalizeEmail({ gmail_remove_dots: false }),
-    body('password').optional().trim().isLength({ min: 5 }),
+    body('password')
+      .optional()
+      .trim()
+      .isLength({ min: 5 })
+      .withMessage('Password should have at least 5 characters'),
   ];
 }
 

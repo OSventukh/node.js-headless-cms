@@ -1,23 +1,10 @@
 import HttpError from '../utils/http-error.js';
 
-import { createUser, getUsers, updateUser, deleteUser, createFirstUser, createRoles } from '../services/users.services.js';
+import { createUser, getUsers, updateUser, deleteUser } from '../services/users.services.js';
 
 export const createUserController = async (req, res, next) => {
   try {
     const user = await createUser(req.body);
-    res.status(201).json({
-      message: 'User successfully created',
-      user,
-    });
-  } catch (error) {
-    next(new HttpError(error.message, error.statusCode));
-  }
-};
-
-export const createFirstUserController = async (req, res, next) => {
-  try {
-    await createRoles();
-    const user = await createFirstUser(req.body);
     res.status(201).json({
       message: 'User successfully created',
       user,

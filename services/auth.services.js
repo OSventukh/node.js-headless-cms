@@ -1,6 +1,6 @@
 import ms from 'ms';
-import { User, UserToken, UserBlockedToken } from '../models/index.js';
-import { comparePassword } from '../utils/hash.js';
+import { sequelize, User, Role, UserToken, UserBlockedToken } from '../models/index.js';
+import { comparePassword, hashPassword } from '../utils/hash.js';
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -8,6 +8,11 @@ import {
 } from '../utils/token.js';
 import HttpError from '../utils/http-error.js';
 import config from '../config/config.js';
+
+export const adminCheck = async () => {
+  const users = await User.findAll({ include: 'role' });
+  return users.length > 0 && users[0].role.name === 'Administrator';
+};
 
 export const login = async (email, password) => {
   try {
@@ -44,6 +49,37 @@ export const login = async (email, password) => {
       error.message || 'Something went wrong',
       error.statusCode || 500,
     );
+  }
+};
+
+export const signup = async (data) => {
+  try {
+    const users = await User.findAll();
+    if (users.length > 0) {
+      throw new HttpError('Administrator already exist', 409);
+    }
+    const adminRole = await Role.findOne({
+      where: {
+        name: 'Administrator',
+      },
+    });
+
+    const userData = {
+      ...data,
+      password: await hashPassword(data.password),
+    };
+    // Creating user and adding role 'administrator';
+    const user = await sequelize.transaction(async (transaction) => {
+      const createdUser = await User.create(userData, { transaction });
+      await createdUser.addRole(adminRole, { transaction });
+      return createdUser;
+    });
+    return user;
+  } catch (error) {
+    if (error.name === 'SequelizeValidationError') {
+      throw new HttpError(error.message, 400);
+    }
+    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
   }
 };
 
