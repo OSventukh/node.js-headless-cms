@@ -7,6 +7,7 @@ const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
+
 await routes(app);
 
 app.use(errorHandler);

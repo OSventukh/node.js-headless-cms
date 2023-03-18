@@ -18,7 +18,7 @@ router.get('/users/:userId', idValidator('userId'), paginationValidator(), check
 
 router.get('/users', paginationValidator(), checkValidation, getUsersController);
 
-router.post('/users', userValidator(), checkValidation, createUserController);
+router.post('/users', auth, userValidator(), checkValidation, createUserController);
 
 router.patch('/users/:userId', auth, userValidator(), idValidator('userId'), checkValidation, updateUserController);
 
