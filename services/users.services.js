@@ -2,6 +2,7 @@ import { User } from '../models/index.js';
 import { hashPassword } from '../utils/hash.js';
 import HttpError from '../utils/http-error.js';
 import { checkIncludes, buildWhereObject, getOrder, getPagination } from '../utils/models.js';
+import { ADMIN, MODER, WRITER } from '../utils/constants/roles.js';
 
 export const createUser = async (data) => {
   try {
@@ -82,12 +83,12 @@ export const updateUser = async (id, toUpdate) => {
 
 export const deleteUser = async (id) => {
   try {
-    const user = await User.findByPk(id);
+    const user = await User.findByPk(id, { include: ['role'] });
     if (!user) {
       throw new HttpError('User not found', 404);
     }
     // Prevent deleting administrator
-    if (user.id === 1 || user.role === 'admin') {
+    if (user.id === 1 || user.role.name === ADMIN) {
       throw new HttpError('This user cannot be deleted', 403);
     }
 

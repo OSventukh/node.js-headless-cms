@@ -7,23 +7,38 @@ import {
   afterEach,
   afterAll,
 } from 'vitest';
-import { sequelize, User } from '../../models/index.js';
+import { sequelize, User, Role } from '../../models/index.js';
 import HttpError from '../../utils/http-error.js';
+import { ADMIN, MODER, WRITER } from '../../utils/constants/roles.js';
 
 describe('Users serviсes', async () => {
   let createUser = null;
   let updateUser = null;
   let getUsers = null;
   let deleteUser = null;
+  let restoreUser = null;
+
   beforeAll(async () => {
     await sequelize.query('SET FOREIGN_KEY_CHECKS = 0', { raw: true });
     await sequelize.sync({ force: true });
+    await Role.bulkCreate([
+      {
+        name: ADMIN,
+      },
+      {
+        name: MODER,
+      },
+      {
+        name: WRITER,
+      },
+    ]);
     // import services after sequelize run
     const usersServices = await import('../../services/users.services.js');
     createUser = usersServices.createUser;
     updateUser = usersServices.updateUser;
     getUsers = usersServices.getUsers;
     deleteUser = usersServices.deleteUser;
+    restoreUser = usersServices.restoreUser;
   });
 
   afterEach(async () => {
@@ -43,6 +58,7 @@ describe('Users serviсes', async () => {
         lastname: 'User',
         email: 'test@test.com',
         password: '123456',
+        roleId: 1,
       };
       const user = await createUser(userData);
 
@@ -57,6 +73,7 @@ describe('Users serviсes', async () => {
         lastname: 'User',
         email: 'test@test.com',
         password: '123456',
+        roleId: 1,
       };
       await expect(createUser(userData)).rejects.toThrow(HttpError);
     });
@@ -67,6 +84,8 @@ describe('Users serviсes', async () => {
         lastname: 'User',
         email: 'test@test.com',
         password: '123456',
+        roleId: 1,
+
       };
       expect.assertions(1);
       try {
@@ -82,12 +101,14 @@ describe('Users serviсes', async () => {
         lastname: 'User',
         email: 'test@test.com',
         password: '123456',
+        roleId: 1,
       };
       const userData2 = {
         firstname: 'Test',
         lastname: 'User',
         email: 'test@test.com',
         password: '123456',
+        roleId: 1,
       };
 
       expect.assertions(2);
@@ -108,12 +129,14 @@ describe('Users serviсes', async () => {
         lastname: 'User',
         email: 'test@test.com',
         password: '123456',
+        roleId: 1,
       };
       const userData2 = {
         firstname: 'Test 2',
         lastname: 'User',
         email: 'test2@test.com',
         password: '123456',
+        roleId: 2,
       };
 
       await createUser(userData1);
@@ -131,6 +154,7 @@ describe('Users serviсes', async () => {
         email: 'test1@test.com',
         password: '123456',
         status: 'active',
+        roleId: 1,
       };
       const userData2 = {
         firstname: 'Test 2',
@@ -138,6 +162,7 @@ describe('Users serviсes', async () => {
         email: 'test2@test.com',
         password: '123456',
         status: 'active',
+        roleId: 2,
       };
       const userData3 = {
         firstname: 'Test 3',
@@ -145,6 +170,7 @@ describe('Users serviсes', async () => {
         email: 'test3@test.com',
         password: '123456',
         status: 'pending',
+        roleId: 3,
       };
 
       await User.bulkCreate([userData1, userData2, userData3]);
@@ -189,12 +215,14 @@ describe('Users serviсes', async () => {
         lastname: 'Old Lastname',
         email: 'old@test.com',
         password: '123456',
+        roleId: 1,
       });
 
       const toUpdate = {
         firstname: 'New FirstName',
         lastname: 'New Lastname',
         email: 'new@test.com',
+        roleId: 1,
       };
       await updateUser(user.id, toUpdate);
       const result = await getUsers({ id: user.id });
@@ -211,6 +239,7 @@ describe('Users serviсes', async () => {
         id: 1,
         title: 'Old Title',
         description: 'Old Description',
+        roleId: 1,
       };
       User.findByPk.mockResolvedValue(mockUser);
       User.update.mockResolvedValue([1]);
@@ -296,16 +325,18 @@ describe('Users serviсes', async () => {
         lastname: 'User',
         email: 'test@test.com',
         password: '123456',
+        roleId: 3,
       });
       const user2 = await createUser({
         firstname: 'Test',
         lastname: 'User',
         email: 'test2@test.com',
         password: '123456',
+        roleId: 3,
       });
       await deleteUser(user2.id);
       const users = await getUsers({ id: user2.id });
-      expect(users.rows[0].status).toBe('deleted');
+      expect(users.count).toBe(0);
     });
 
     it('Should throw an error with message "This user cannot be deleted" and statusCode 403 if try delete user with id 1', async () => {
@@ -314,6 +345,8 @@ describe('Users serviсes', async () => {
         lastname: 'User',
         email: 'test@test.com',
         password: '123456',
+        roleId: 2,
+        id: 1,
       });
       try {
         await deleteUser(user.id);
@@ -335,7 +368,7 @@ describe('Users serviсes', async () => {
         lastname: 'User',
         email: 'test2@test.com',
         password: '123456',
-        role: 'admin',
+        roleId: 1,
       });
       expect.assertions(2);
       try {
@@ -365,6 +398,7 @@ describe('Users serviсes', async () => {
         lastname: 'User',
         email: 'test@test.com',
         password: '123456',
+        roleId: 3,
       });
 
       const user2 = await createUser({
@@ -372,9 +406,10 @@ describe('Users serviсes', async () => {
         lastname: 'User',
         email: 'test2@test.com',
         password: '123456',
+        roleId: 3,
       });
 
-      vi.spyOn(User, 'update').mockResolvedValueOnce([0]);
+      vi.spyOn(User, 'destroy').mockResolvedValueOnce(0);
 
       try {
         await deleteUser(user2.id);
@@ -391,6 +426,7 @@ describe('Users serviсes', async () => {
         lastname: 'User',
         email: 'test@test.com',
         password: '123456',
+        roleId: 3,
       });
 
       const user2 = await createUser({
@@ -398,9 +434,10 @@ describe('Users serviсes', async () => {
         lastname: 'User',
         email: 'test2@test.com',
         password: '123456',
+        roleId: 3,
       });
       const errorMessage = 'Sequelize error';
-      vi.spyOn(User, 'update').mockRejectedValueOnce(new Error(errorMessage));
+      vi.spyOn(User, 'destroy').mockRejectedValueOnce(new Error(errorMessage));
 
       try {
         await deleteUser(user2.id);
@@ -417,6 +454,7 @@ describe('Users serviсes', async () => {
         lastname: 'User',
         email: 'test@test.com',
         password: '123456',
+        roleId: 3,
       });
 
       const user2 = await createUser({
@@ -424,9 +462,10 @@ describe('Users serviсes', async () => {
         lastname: 'User',
         email: 'test2@test.com',
         password: '123456',
+        roleId: 3,
       });
       const errorMessage = 'Something went wrong';
-      vi.spyOn(User, 'update').mockRejectedValueOnce(new Error(errorMessage));
+      vi.spyOn(User, 'destroy').mockRejectedValueOnce(new Error(errorMessage));
 
       try {
         await deleteUser(user2.id);
@@ -434,6 +473,23 @@ describe('Users serviсes', async () => {
         expect(error.message).toBe(errorMessage);
         expect(error.statusCode).toBe(500);
       }
+    });
+  });
+  describe('restoreUser', () => {
+    it('Should restore deleted user', async () => {
+      const user = await createUser({
+        firstname: 'Test',
+        lastname: 'User',
+        email: 'test@test.com',
+        password: '123456',
+        roleId: 3,
+      });
+      await deleteUser(user.id);
+      await restoreUser(user.id);
+      const restoredUser = await User.findByPk(user.id);
+
+      expect(restoredUser).toBeDefined();
+      expect(restoredUser.firstname).toBe(user.firstname);
     });
   });
 });
