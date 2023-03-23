@@ -8,7 +8,7 @@ export default (sequelize, DataTypes) => {
       this.hasMany(models.Post, { foreignKey: 'userId', as: 'posts' });
       this.hasMany(models.Page, { foreignKey: 'userId', as: 'pages' });
       this.belongsToMany(models.Topic, { foreignKey: 'topicId', as: 'topics', through: 'TopicUsers' });
-      this.hasOne(models.Role, { foreignKey: 'userId' });
+      this.belongsTo(models.Role, { foreignKey: 'roleId', as: 'role' });
     }
   }
 
