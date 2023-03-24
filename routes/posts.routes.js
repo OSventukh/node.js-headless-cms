@@ -1,6 +1,6 @@
 import express from 'express';
 
-import { auth } from '../middlewares/auth.js';
+import { auth, rolesAccess } from '../middlewares/auth.js';
 
 import {
   createPostController,
@@ -15,6 +15,7 @@ import {
   paginationValidator,
 } from '../utils/validators.js';
 import checkValidation from '../middlewares/validation.js';
+import { ADMIN, MODER, WRITER } from '../utils/constants/roles.js';
 
 const router = express.Router();
 
@@ -23,47 +24,51 @@ router.get(
   idValidator('postId'),
   paginationValidator(),
   checkValidation,
-  getPostsController
+  getPostsController,
 );
 
 router.get(
   '/posts',
   paginationValidator(),
   checkValidation,
-  getPostsController
+  getPostsController,
 );
 
 router.post(
   '/posts',
   auth,
+  rolesAccess([ADMIN, MODER, WRITER]),
   postValidator(),
   checkValidation,
-  createPostController
+  createPostController,
 );
 
 router.patch(
   '/posts/:postId',
   auth,
+  rolesAccess([ADMIN, MODER, WRITER]),
   postValidator(),
   idValidator('postId'),
   checkValidation,
-  updatePostController
+  updatePostController,
 );
 
 router.patch(
   '/posts',
   auth,
+  rolesAccess([ADMIN, MODER, WRITER]),
   postValidator(),
   checkValidation,
-  updatePostController
+  updatePostController,
 );
 
 router.delete(
   '/posts/:postId',
   auth,
+  rolesAccess([ADMIN, MODER, WRITER]),
   idValidator('postId'),
   checkValidation,
-  deletePostController
+  deletePostController,
 );
 
 router.delete('/posts', auth, deletePostController);

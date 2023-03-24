@@ -23,7 +23,7 @@ router.get(
   '/categories',
   paginationValidator(),
   checkValidation,
-  getCategoriesController
+  getCategoriesController,
 );
 
 router.get(
@@ -31,7 +31,7 @@ router.get(
   idValidator('categoryId'),
   paginationValidator(),
   checkValidation,
-  getCategoriesController
+  getCategoriesController,
 );
 
 router.post(
@@ -40,24 +40,26 @@ router.post(
   rolesAccess([ADMIN]),
   categoryValidator(),
   checkValidation,
-  createCategoryController
+  createCategoryController,
 );
 
 router.patch(
   '/categories/:categoryId',
   auth,
+  rolesAccess([ADMIN]),
   idValidator('categoryId'),
   categoryValidator(),
   checkValidation,
-  updateCategoryController
+  updateCategoryController,
 );
 
 router.patch(
   '/categories',
   auth,
+  rolesAccess([ADMIN]),
   categoryValidator(),
   checkValidation,
-  updateCategoryController
+  updateCategoryController,
 );
 
 router.delete(
@@ -65,7 +67,7 @@ router.delete(
   auth,
   idValidator('categoryId'),
   checkValidation,
-  deleteCategoryController
+  deleteCategoryController,
 );
 
 router.delete('/categories', auth, deleteCategoryController);

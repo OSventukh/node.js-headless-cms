@@ -1,6 +1,7 @@
 import express from 'express';
 
-import { auth } from '../middlewares/auth.js';
+import { auth, rolesAccess } from '../middlewares/auth.js';
+import { ADMIN } from '../utils/constants/roles.js';
 
 import {
   createTopicController,
@@ -23,47 +24,51 @@ router.get(
   idValidator('topicId'),
   paginationValidator(),
   checkValidation,
-  getTopicsController
+  getTopicsController,
 );
 
 router.get(
   '/topics',
   paginationValidator(),
   checkValidation,
-  getTopicsController
+  getTopicsController,
 );
 
 router.post(
   '/topics',
   auth,
+  rolesAccess([ADMIN]),
   topicValidator(),
   checkValidation,
-  createTopicController
+  createTopicController,
 );
 
 router.patch(
   '/topics/:topicId',
   auth,
+  rolesAccess([ADMIN]),
   topicValidator(),
   idValidator('topicId'),
   checkValidation,
-  updateTopicController
+  updateTopicController,
 );
 
 router.patch(
   '/topics',
   auth,
+  rolesAccess([ADMIN]),
   topicValidator(),
   checkValidation,
-  updateTopicController
+  updateTopicController,
 );
 
 router.delete(
   '/topics/:topicId',
   auth,
+  rolesAccess([ADMIN]),
   idValidator('topicId'),
   checkValidation,
-  deleteTopicController
+  deleteTopicController,
 );
 
 router.delete('/topics', auth, deleteTopicController);

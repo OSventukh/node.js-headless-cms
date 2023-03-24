@@ -1,7 +1,7 @@
 import express from 'express';
 
-import { auth } from '../middlewares/auth.js';
-
+import { auth, rolesAccess } from '../middlewares/auth.js';
+import { ADMIN, MODER } from '../utils/constants/roles.js';
 import {
   createPageController,
   getPagesController,
@@ -23,48 +23,52 @@ router.get(
   idValidator('pageId'),
   paginationValidator(),
   checkValidation,
-  getPagesController
+  getPagesController,
 );
 
 router.get(
   '/pages',
   paginationValidator(),
   checkValidation,
-  getPagesController
+  getPagesController,
 );
 
 router.post(
   '/pages',
   auth,
+  rolesAccess([ADMIN]),
   pageValidator(),
   checkValidation,
-  createPageController
+  createPageController,
 );
 
 router.patch(
   '/pages/:pageId',
   auth,
+  rolesAccess([ADMIN, MODER]),
   idValidator('pageId'),
   checkValidation,
-  updatePageController
+  updatePageController,
 );
 
 router.patch(
   '/pages',
   auth,
+  rolesAccess([ADMIN, MODER]),
   pageValidator(),
   checkValidation,
-  updatePageController
+  updatePageController,
 );
 
 router.delete(
   '/pages/:pageId',
   auth,
+  rolesAccess([ADMIN]),
   idValidator('pageId'),
   checkValidation,
-  deletePageController
+  deletePageController,
 );
 
-router.delete('/pages', auth, deletePageController);
+router.delete('/pages', auth, rolesAccess([ADMIN]), deletePageController);
 
 export default router;
