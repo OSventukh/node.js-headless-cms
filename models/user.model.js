@@ -10,6 +10,17 @@ export default (sequelize, DataTypes) => {
       this.belongsToMany(models.Topic, { foreignKey: 'topicId', as: 'topics', through: 'TopicUsers' });
       this.belongsTo(models.Role, { foreignKey: 'roleId', as: 'role' });
     }
+
+    getPublicData() {
+      return {
+        id: this.id,
+        firstname: this.firstname,
+        lastname: this.lastname,
+        email: this.email,
+        createdAt: this.createdAt,
+        role: this?.role?.name,
+      };
+    }
   }
 
   User.init(

@@ -26,7 +26,7 @@ export const loginController = async (req, res, next) => {
       throw new HttpError('User already authenticated', 409);
     }
 
-    const { userId, accessToken, refreshToken } = await login(email, password);
+    const { user, accessToken, refreshToken } = await login(email, password);
     res
       .status(200)
       .cookie('refreshToken', refreshToken, {
@@ -35,7 +35,7 @@ export const loginController = async (req, res, next) => {
         secure: process.env.NODE_ENV === 'production',
       })
       .json({
-        userId,
+        user,
         accessToken,
       });
   } catch (error) {

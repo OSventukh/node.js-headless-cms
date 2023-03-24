@@ -20,8 +20,9 @@ export const login = async (email, password) => {
       where: {
         email,
       },
-      include: 'role',
+      include: ['role'],
     });
+
     if (!user) {
       throw new HttpError('Invalid email or password', 403);
     }
@@ -31,8 +32,15 @@ export const login = async (email, password) => {
     if (!isMatchPassword) {
       throw new HttpError('Invalid email or password', 403);
     }
-    const accessToken = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
+
+    const tokenData = {
+      id: user.id,
+      email: user.email,
+      role: user.role.name,
+    };
+
+    const accessToken = generateAccessToken(tokenData);
+    const refreshToken = generateRefreshToken(tokenData);
 
     await UserToken.create({
       userId: user.id,
@@ -41,7 +49,7 @@ export const login = async (email, password) => {
     });
 
     return {
-      userId: user.id,
+      user: user.getPublicData(),
       accessToken,
       refreshToken,
     };
@@ -101,8 +109,14 @@ export const refreshTokens = async (oldRefreshToken) => {
       throw new HttpError('Not Authenticated', 401);
     }
 
-    const newRefreshToken = generateRefreshToken(user);
-    const newAccessToken = generateAccessToken(user);
+    const tokenData = {
+      id: user.id,
+      email: user.email,
+      role: user.role.name,
+    };
+
+    const newRefreshToken = generateRefreshToken(tokenData);
+    const newAccessToken = generateAccessToken(tokenData);
 
     await UserToken.destroy({ where: { id: userToken.id } });
     await UserToken.create({
