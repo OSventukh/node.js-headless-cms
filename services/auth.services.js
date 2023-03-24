@@ -33,14 +33,8 @@ export const login = async (email, password) => {
       throw new HttpError('Invalid email or password', 403);
     }
 
-    const tokenData = {
-      id: user.id,
-      email: user.email,
-      role: user.role.name,
-    };
-
-    const accessToken = generateAccessToken(tokenData);
-    const refreshToken = generateRefreshToken(tokenData);
+    const accessToken = generateAccessToken(user.getTokenData());
+    const refreshToken = generateRefreshToken(user.getTokenData());
 
     await UserToken.create({
       userId: user.id,
@@ -54,10 +48,7 @@ export const login = async (email, password) => {
       refreshToken,
     };
   } catch (error) {
-    throw new HttpError(
-      error.message || 'Something went wrong',
-      error.statusCode || 500,
-    );
+    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
   }
 };
 
@@ -104,21 +95,17 @@ export const refreshTokens = async (oldRefreshToken) => {
         token: oldRefreshToken,
       },
     });
+
     const user = await User.findByPk(userId);
+
     if (!userToken || !user) {
       throw new HttpError('Not Authenticated', 401);
     }
 
-    const tokenData = {
-      id: user.id,
-      email: user.email,
-      role: user.role.name,
-    };
+    const newRefreshToken = generateRefreshToken(user.getTokenData());
+    const newAccessToken = generateAccessToken(user.getTokenData());
 
-    const newRefreshToken = generateRefreshToken(tokenData);
-    const newAccessToken = generateAccessToken(tokenData);
-
-    await UserToken.destroy({ where: { id: userToken.id } });
+    await userToken.destroy();
     await UserToken.create({
       user: user.id,
       token: newRefreshToken,

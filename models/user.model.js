@@ -21,6 +21,14 @@ export default (sequelize, DataTypes) => {
         role: this?.role?.name,
       };
     }
+
+    getTokenData() {
+      return {
+        id: this.id,
+        email: this.email,
+        role: this?.role?.name,
+      };
+    }
   }
 
   User.init(
