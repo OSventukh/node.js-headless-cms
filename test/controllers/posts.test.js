@@ -8,16 +8,20 @@ import {
   updatePost,
   deletePost,
 } from '../../services/posts.services.js';
-import auth from '../../middlewares/auth';
 
 describe('Post controller', () => {
   beforeEach(() => {
     vi.mock('../../services/posts.services.js');
-    vi.mock('../../middlewares/auth');
-    auth.mockImplementationOnce((req, res, next) => {
-      req.auth = { userId: '1' };
-      next();
-    });
+    vi.mock('../../middlewares/auth.js', () => ({
+      default: vi.fn(),
+      auth: (req, res, next) => {
+        req.auth = {
+          id: 1,
+        };
+        next();
+      },
+      rolesAccess: () => (req, res, next) => next(),
+    }));
   });
 
   afterEach(() => {
@@ -25,7 +29,7 @@ describe('Post controller', () => {
   });
 
   afterAll(() => {
-    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('Create post', () => {

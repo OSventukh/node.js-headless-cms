@@ -8,16 +8,15 @@ import {
   updateUser,
   deleteUser,
 } from '../../services/users.services.js';
-import auth from '../../middlewares/auth';
 
 describe('User controller', () => {
   beforeEach(() => {
+    vi.mock('../../middlewares/auth.js', () => ({
+      default: vi.fn(),
+      auth: (req, res, next) => next(),
+      rolesAccess: () => (req, res, next) => next(),
+    }));
     vi.mock('../../services/users.services.js');
-    vi.mock('../../middlewares/auth');
-    auth.mockImplementationOnce((req, res, next) => {
-      req.auth = { userId: '1' };
-      next();
-    });
   });
 
   afterEach(() => {
@@ -25,7 +24,7 @@ describe('User controller', () => {
   });
 
   afterAll(() => {
-    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('Create user', () => {

@@ -1,4 +1,12 @@
-import { describe, it, expect, vi, beforeEach, afterEach, afterAll } from 'vitest';
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+  afterEach,
+  afterAll,
+} from 'vitest';
 import request from 'supertest';
 
 import app from '../../app';
@@ -8,16 +16,15 @@ import {
   updateTopic,
   deleteTopic,
 } from '../../services/topics.services.js';
-import auth from '../../middlewares/auth';
 
 describe('Topic controller', () => {
   beforeEach(() => {
+    vi.mock('../../middlewares/auth.js', () => ({
+      default: vi.fn(),
+      auth: (req, res, next) => next(),
+      rolesAccess: () => (req, res, next) => next(),
+    }));
     vi.mock('../../services/topics.services.js');
-    vi.mock('../../middlewares/auth');
-    auth.mockImplementationOnce((req, res, next) => {
-      req.auth = { userId: '1' };
-      next();
-    });
   });
 
   afterEach(() => {
@@ -25,7 +32,7 @@ describe('Topic controller', () => {
   });
 
   afterAll(() => {
-    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('Create topic', () => {

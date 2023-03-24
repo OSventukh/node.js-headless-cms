@@ -8,24 +8,19 @@ import {
   updateCategory,
   deleteCategory,
 } from '../../services/categories.services.js';
-import auth from '../../middlewares/auth.js';
 
 describe('Category controller', () => {
   beforeEach(() => {
+    vi.mock('../../middlewares/auth.js', () => ({
+      default: vi.fn(),
+      auth: (req, res, next) => next(),
+      rolesAccess: () => (req, res, next) => next(),
+    }));
     vi.mock('../../services/categories.services.js');
-    vi.mock('../../middlewares/auth');
-    auth.mockImplementationOnce((req, res, next) => {
-      req.auth = { userId: '1' };
-      next();
-    });
-  });
-
-  afterEach(() => {
-    vi.resetAllMocks();
   });
 
   afterAll(() => {
-    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('Create categories', () => {

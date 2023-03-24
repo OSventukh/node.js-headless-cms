@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import jwt from 'jsonwebtoken';
 import HttpError from '../../utils/http-error.js';
 import { UserBlockedToken } from '../../models/index.js';
-import auth from '../../middlewares/auth.js';
+import { auth } from '../../middlewares/auth.js';
 
 describe('Auth middleware', () => {
   const mockUser = {

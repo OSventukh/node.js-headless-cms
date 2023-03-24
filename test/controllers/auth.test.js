@@ -4,17 +4,22 @@ import app from '../../app';
 
 import { login, logout, refreshTokens } from '../../services/auth.services.js';
 import { verifyRefreshToken } from '../../utils/token';
-import auth from '../../middlewares/auth';
 
 describe('Auth controllers', () => {
   beforeEach(() => {
     vi.mock('../../services/auth.services.js');
     vi.mock('../../utils/token');
-    vi.mock('../../middlewares/auth');
-    auth.mockImplementationOnce((req, res, next) => {
-      req.auth = { userId: '1' };
-      next();
-    });
+    vi.mock('../../middlewares/auth.js', () => ({
+      default: vi.fn(),
+      auth: (req, res, next) => {
+        req.auth = {
+          id: 1,
+          firstname: 'Test',
+        };
+        next();
+      },
+      rolesAccess: () => (req, res, next) => next(),
+    }));
   });
   afterEach(() => {
     vi.restoreAllMocks();

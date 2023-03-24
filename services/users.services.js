@@ -2,7 +2,7 @@ import { User } from '../models/index.js';
 import { hashPassword } from '../utils/hash.js';
 import HttpError from '../utils/http-error.js';
 import { checkIncludes, buildWhereObject, getOrder, getPagination } from '../utils/models.js';
-import { ADMIN, MODER, WRITER } from '../utils/constants/roles.js';
+import { ADMIN } from '../utils/constants/roles.js';
 
 export const createUser = async (data) => {
   try {

@@ -79,9 +79,9 @@ export const refreshTokenController = async (req, res, next) => {
 };
 
 export const logoutController = async (req, res, next) => {
-  const userRefreshToken = req.cookies?.refreshToken;
-  const userAccessToken = req.get('authorization').split(' ')[1];
   try {
+    const userRefreshToken = req.cookies?.refreshToken;
+    const userAccessToken = req.get('authorization').split(' ')[1];
     await logout(userRefreshToken, userAccessToken);
     res
       .status(200)

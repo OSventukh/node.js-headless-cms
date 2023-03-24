@@ -1,6 +1,6 @@
 import express from 'express';
 
-import auth from '../middlewares/auth.js';
+import { auth } from '../middlewares/auth.js';
 
 import {
   getOptionsController,
@@ -16,8 +16,20 @@ router.get('/site/:optionName', getOptionsController);
 
 router.get('/site', getOptionsController);
 
-router.patch('/site/:optionName', auth, optionValidator(), checkValidation, updateOptionController);
+router.patch(
+  '/site/:optionName',
+  auth,
+  optionValidator(),
+  checkValidation,
+  updateOptionController
+);
 
-router.patch('/site/', auth, optionValidator(), checkValidation, updateOptionController);
+router.patch(
+  '/site/',
+  auth,
+  optionValidator(),
+  checkValidation,
+  updateOptionController
+);
 
 export default router;
