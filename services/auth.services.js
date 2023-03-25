@@ -34,7 +34,7 @@ export const login = async (email, password) => {
     }
 
     const accessToken = generateAccessToken(user.getTokenData());
-    const refreshToken = generateRefreshToken(user.getTokenData());
+    const refreshToken = generateRefreshToken(user.id);
 
     await UserToken.create({
       userId: user.id,
@@ -89,21 +89,20 @@ export const signup = async (data) => {
 
 export const refreshTokens = async (oldRefreshToken) => {
   try {
-    const { userId } = verifyRefreshToken(oldRefreshToken);
+    const { id } = verifyRefreshToken(oldRefreshToken);
     const userToken = await UserToken.findOne({
       where: {
         token: oldRefreshToken,
       },
     });
 
-    const user = await User.findByPk(userId);
+    const user = await User.findByPk(id);
 
     if (!userToken || !user) {
       throw new HttpError('Not Authenticated', 401);
     }
-
     const newRefreshToken = generateRefreshToken(user.getTokenData());
-    const newAccessToken = generateAccessToken(user.getTokenData());
+    const newAccessToken = generateAccessToken(user.id);
 
     await userToken.destroy();
     await UserToken.create({

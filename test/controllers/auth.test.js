@@ -25,7 +25,7 @@ describe('Auth controllers', () => {
     vi.restoreAllMocks();
   });
   describe('loginController', () => {
-    it('Should return accessToken and userId in response object', async () => {
+    it('Should return accessToken and userData in response object', async () => {
       const userCredentials = {
         email: 'test@test.com',
         password: '123456',
@@ -33,14 +33,18 @@ describe('Auth controllers', () => {
       const loginBody = {
         accessToken: 'accessToken',
         refreshToken: 'refreshToken',
-        userId: '1',
+        user: {
+          id: 1,
+          role: 'test',
+          email: 'test@test.com'
+        },
       };
 
       login.mockResolvedValueOnce(loginBody);
       const response = await request(app).post('/login').send(userCredentials);
       expect(response.headers['content-type']).toMatch(/json/);
       expect(response.body.accessToken).toBe(loginBody.accessToken);
-      expect(response.body.userId).toBe(loginBody.userId);
+      expect(response.body.user).toEqual(loginBody.user);
     });
 
     it('Should response with status code 200 if login was successfull', async () => {

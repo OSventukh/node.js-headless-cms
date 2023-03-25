@@ -27,9 +27,6 @@ describe('auth services', () => {
       UserToken.sync({ force: true }),
       UserBlockedToken.sync({ force: true }),
     ]);
-
-    vi.clearAllMocks();
-    vi.resetAllMocks();
     // import services after sequelize run
     const authServices = await import('../../services/auth.services.js');
     login = authServices.login;
@@ -45,10 +42,11 @@ describe('auth services', () => {
     await User.destroy({ where: {}, force: true });
     await UserToken.destroy({ where: {}, force: true });
     await UserBlockedToken.destroy({ where: {}, force: true });
+    vi.restoreAllMocks();
   });
 
   describe('login', () => {
-    it('Should return an object with userId, accessToken and refreshToken properties', async () => {
+    it('Should return an object with user, accessToken and refreshToken properties', async () => {
       const userCredentials = {
         firstname: 'Test',
         email: 'test@test.com',
@@ -63,7 +61,7 @@ describe('auth services', () => {
         userCredentials.email,
         userCredentials.password,
       );
-      expect(loginData).haveOwnProperty('userId');
+      expect(loginData).haveOwnProperty('user');
       expect(loginData).haveOwnProperty('accessToken');
       expect(loginData).haveOwnProperty('refreshToken');
     });
@@ -142,11 +140,13 @@ describe('auth services', () => {
         email: 'test@test.com',
         password: '12345',
       };
+
       await User.create({
         firstname: userCredentials.firstname,
         email: userCredentials.email,
         password: await hashPassword(userCredentials.password),
       });
+
       const { refreshToken } = await login(
         userCredentials.email,
         userCredentials.password,
@@ -186,11 +186,13 @@ describe('auth services', () => {
         email: 'test@test.com',
         password: '12345',
       };
+
       await User.create({
         firstname: userCredentials.firstname,
         email: userCredentials.email,
         password: await hashPassword(userCredentials.password),
       });
+
       const { refreshToken } = await login(
         userCredentials.email,
         userCredentials.password,
@@ -246,11 +248,15 @@ describe('auth services', () => {
         userCredentials.password,
       );
 
-      vi.spyOn(UserToken, 'destroy');
-
       await refreshTokens(refreshToken);
 
-      expect(UserToken.destroy).toHaveBeenCalled();
+      const oldToken = await UserToken.findOne({
+        where: {
+          token: refreshToken,
+        },
+      });
+
+      expect(oldToken).toBeNull();
     });
   });
 
