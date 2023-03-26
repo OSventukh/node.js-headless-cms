@@ -9,7 +9,7 @@ export default (sequelize, DataTypes) => {
   UserBlockedToken.init(
     {
       token: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull: false,
         unique: true,
       },

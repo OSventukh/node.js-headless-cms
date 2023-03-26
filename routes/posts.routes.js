@@ -1,6 +1,6 @@
 import express from 'express';
 
-import { auth, rolesAccess } from '../middlewares/auth.js';
+import { auth, rolesAccess, canEditPost } from '../middlewares/auth.js';
 
 import {
   createPostController,
@@ -47,6 +47,7 @@ router.patch(
   '/posts/:postId',
   auth,
   rolesAccess([ADMIN, MODER, WRITER]),
+  canEditPost,
   postValidator(),
   idValidator('postId'),
   checkValidation,
@@ -57,6 +58,7 @@ router.patch(
   '/posts',
   auth,
   rolesAccess([ADMIN, MODER, WRITER]),
+  canPostEdit,
   postValidator(),
   checkValidation,
   updatePostController,
@@ -66,11 +68,12 @@ router.delete(
   '/posts/:postId',
   auth,
   rolesAccess([ADMIN, MODER, WRITER]),
+  canPostEdit,
   idValidator('postId'),
   checkValidation,
   deletePostController,
 );
 
-router.delete('/posts', auth, deletePostController);
+router.delete('/posts', auth, rolesAccess([ADMIN, MODER, WRITER]), canPostEdit, deletePostController);
 
 export default router;
