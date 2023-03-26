@@ -58,7 +58,7 @@ router.patch(
   '/posts',
   auth,
   rolesAccess([ADMIN, MODER, WRITER]),
-  canPostEdit,
+  canEditPost,
   postValidator(),
   checkValidation,
   updatePostController,
@@ -68,12 +68,12 @@ router.delete(
   '/posts/:postId',
   auth,
   rolesAccess([ADMIN, MODER, WRITER]),
-  canPostEdit,
+  canEditPost,
   idValidator('postId'),
   checkValidation,
   deletePostController,
 );
 
-router.delete('/posts', auth, rolesAccess([ADMIN, MODER, WRITER]), canPostEdit, deletePostController);
+router.delete('/posts', auth, rolesAccess([ADMIN, MODER, WRITER]), canEditPost, deletePostController);
 
 export default router;
