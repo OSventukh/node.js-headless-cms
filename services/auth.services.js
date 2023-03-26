@@ -20,7 +20,7 @@ export const login = async (email, password) => {
       where: {
         email,
       },
-      include: ['role'],
+      include: ['role', 'topics'],
     });
 
     if (!user) {
@@ -34,7 +34,7 @@ export const login = async (email, password) => {
     }
 
     const accessToken = generateAccessToken(user.getTokenData());
-    const refreshToken = generateRefreshToken(user.id);
+    const refreshToken = generateRefreshToken({ id: user.id });
 
     await UserToken.create({
       userId: user.id,
@@ -72,6 +72,7 @@ export const signup = async (data) => {
       ...data,
       password: await hashPassword(data.password),
     };
+
     // Creating user and adding role 'administrator';
     const user = await sequelize.transaction(async (transaction) => {
       const createdUser = await User.create(userData, { transaction });
@@ -90,19 +91,20 @@ export const signup = async (data) => {
 export const refreshTokens = async (oldRefreshToken) => {
   try {
     const { id } = verifyRefreshToken(oldRefreshToken);
+
     const userToken = await UserToken.findOne({
       where: {
         token: oldRefreshToken,
       },
     });
-
-    const user = await User.findByPk(id);
-
+    const user = await User.findByPk(id, {
+      include: ['role', 'topics'],
+    });
     if (!userToken || !user) {
       throw new HttpError('Not Authenticated', 401);
     }
-    const newRefreshToken = generateRefreshToken(user.getTokenData());
-    const newAccessToken = generateAccessToken(user.id);
+    const newRefreshToken = generateRefreshToken({ id: user.id });
+    const newAccessToken = generateAccessToken(user.getTokenData());
 
     await userToken.destroy();
     await UserToken.create({
