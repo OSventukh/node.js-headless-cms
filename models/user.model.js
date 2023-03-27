@@ -1,4 +1,5 @@
 import { Model } from 'sequelize';
+import { hashPassword, comparePassword } from '../utils/hash.js';
 
 export default (sequelize, DataTypes) => {
   class User extends Model {
@@ -28,6 +29,10 @@ export default (sequelize, DataTypes) => {
         email: this.email,
         role: this?.role?.name,
       };
+    }
+
+    async comparePassword(password) {
+      return comparePassword(password, this.password);
     }
   }
 
@@ -75,6 +80,17 @@ export default (sequelize, DataTypes) => {
       sequelize,
       modelName: 'User',
       paranoid: true,
+      hooks: {
+        beforeCreate: async (record) => {
+          record.password = await hashPassword(record.password);
+        },
+        beforeBulkUpdate: async (record) => {
+          if (record.password) {
+            record.attributes.password = await hashPassword(record.attributes.password);
+          }
+        }
+      },
+      
     },
   );
   return User;

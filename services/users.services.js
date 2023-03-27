@@ -1,21 +1,15 @@
 import { Op } from 'sequelize';
 import { User, Topic } from '../models/index.js';
-import { hashPassword } from '../utils/hash.js';
 import HttpError from '../utils/http-error.js';
 import { checkIncludes, buildWhereObject, getOrder, getPagination } from '../utils/models.js';
 import { ADMIN } from '../utils/constants/roles.js';
 
 export const createUser = async ({ topicId, ...data }) => {
   try {
-    const userData = {
-      ...data,
-      password: await hashPassword(data.password),
-    };
-
     // Create user and find topic
     const topicIds = topicId ? Array.from(topicId) : [];
     const [user, topics] = await Promise.all([
-      await User.create(userData),
+      await User.create(data),
       await Topic.findAll({
         where: {
           id: {

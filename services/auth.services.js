@@ -26,8 +26,7 @@ export const login = async (email, password) => {
     if (!user) {
       throw new HttpError('Invalid email or password', 403);
     }
-
-    const isMatchPassword = await comparePassword(password, user.password);
+    const isMatchPassword = await user.comparePassword(password);
 
     if (!isMatchPassword) {
       throw new HttpError('Invalid email or password', 403);

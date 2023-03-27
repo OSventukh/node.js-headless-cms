@@ -13,7 +13,6 @@ import {
   UserToken,
   UserBlockedToken,
 } from '../../models/index.js';
-import { hashPassword } from '../../utils/hash.js';
 
 describe('auth services', () => {
   let login;
@@ -55,7 +54,7 @@ describe('auth services', () => {
       await User.create({
         firstname: userCredentials.firstname,
         email: userCredentials.email,
-        password: await hashPassword(userCredentials.password),
+        password: userCredentials.password,
       });
       const loginData = await login(
         userCredentials.email,
@@ -75,7 +74,7 @@ describe('auth services', () => {
       await User.create({
         firstname: userCredentials.firstname,
         email: userCredentials.email,
-        password: await hashPassword(userCredentials.password),
+        password: userCredentials.password,
       });
       vi.stubEnv('ACCESS_TOKEN_SECRET_KEY', '12345');
       vi.stubEnv('REFRESH_TOKEN_SECRET_KEY', '12345');
@@ -97,7 +96,7 @@ describe('auth services', () => {
       await User.create({
         firstname: userCredentials.firstname,
         email: userCredentials.email,
-        password: await hashPassword(userCredentials.password),
+        password: userCredentials.password,
       });
       vi.stubEnv('ACCESS_TOKEN_SECRET_KEY', '12345');
       vi.stubEnv('REFRESH_TOKEN_SECRET_KEY', '12345');
@@ -121,7 +120,7 @@ describe('auth services', () => {
       await User.create({
         firstname: userCredentials.firstname,
         email: userCredentials.email,
-        password: await hashPassword(userCredentials.password),
+        password: userCredentials.password,
       });
       const { refreshToken } = await login(
         userCredentials.email,
@@ -144,7 +143,7 @@ describe('auth services', () => {
       await User.create({
         firstname: userCredentials.firstname,
         email: userCredentials.email,
-        password: await hashPassword(userCredentials.password),
+        password: userCredentials.password,
       });
 
       const { refreshToken } = await login(
@@ -167,7 +166,7 @@ describe('auth services', () => {
       await User.create({
         firstname: userCredentials.firstname,
         email: userCredentials.email,
-        password: await hashPassword(userCredentials.password),
+        password: userCredentials.password,
       });
       const { refreshToken } = await login(
         userCredentials.email,
@@ -190,7 +189,7 @@ describe('auth services', () => {
       await User.create({
         firstname: userCredentials.firstname,
         email: userCredentials.email,
-        password: await hashPassword(userCredentials.password),
+        password: userCredentials.password,
       });
 
       const { refreshToken } = await login(
@@ -216,7 +215,7 @@ describe('auth services', () => {
       await User.create({
         firstname: userCredentials.firstname,
         email: userCredentials.email,
-        password: await hashPassword(userCredentials.password),
+        password: userCredentials.password,
       });
       const { refreshToken } = await login(
         userCredentials.email,
@@ -241,7 +240,7 @@ describe('auth services', () => {
       await User.create({
         firstname: userCredentials.firstname,
         email: userCredentials.email,
-        password: await hashPassword(userCredentials.password),
+        password: userCredentials.password,
       });
       const { refreshToken } = await login(
         userCredentials.email,
@@ -270,7 +269,7 @@ describe('auth services', () => {
       await User.create({
         firstname: userCredentials.firstname,
         email: userCredentials.email,
-        password: await hashPassword(userCredentials.password),
+        password: userCredentials.password,
       });
       const { refreshToken } = await login(
         userCredentials.email,
@@ -290,7 +289,7 @@ describe('auth services', () => {
       await User.create({
         firstname: userCredentials.firstname,
         email: userCredentials.email,
-        password: await hashPassword(userCredentials.password),
+        password: userCredentials.password,
       });
       await login(
         userCredentials.email,
