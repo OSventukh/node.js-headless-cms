@@ -85,9 +85,11 @@ export const updateUser = async (id, { topicId, ...toUpdate }) => {
     // Find user and topics in database
     const [user, topics] = await Promise.all([
       await User.findByPk(id),
-      await Topic.findAll({
+      topicId && await Topic.findAll({
         where: {
-          [Op.in]: topicIds,
+          id: {
+            [Op.in]: topicIds,
+          },
         },
       }),
     ]);
@@ -103,7 +105,7 @@ export const updateUser = async (id, { topicId, ...toUpdate }) => {
           id,
         },
       }),
-      user.setTopics(topics),
+      topicId && user.setTopics(topics),
     ]);
 
     if (result[0] === 0) {

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeAll, afterEach, afterAll, beforeEach } from 'vitest';
+import { describe, it, expect, vi, afterEach, afterAll, beforeEach } from 'vitest';
 import request from 'supertest';
 
 import app from '../../app';
@@ -13,8 +13,14 @@ describe('User controller', () => {
   beforeEach(() => {
     vi.mock('../../middlewares/auth.js', () => ({
       default: vi.fn(),
-      auth: (req, res, next) => next(),
+      auth: (req, res, next) => {
+        req.authUser = {
+          id: 1,
+        };
+        next();
+      },
       rolesAccess: () => (req, res, next) => next(),
+      canEditPost: (req, res, next) => next(),
     }));
     vi.mock('../../services/users.services.js');
   });

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach, afterAll } from 'vitest';
+import { describe, it, expect, vi, beforeAll, beforeEach, afterEach, afterAll } from 'vitest';
 import request from 'supertest';
 
 import app from '../../app';
@@ -10,17 +10,20 @@ import {
 } from '../../services/posts.services.js';
 
 describe('Post controller', () => {
+  beforeAll(async () => {
+  });
   beforeEach(() => {
     vi.mock('../../services/posts.services.js');
     vi.mock('../../middlewares/auth.js', () => ({
       default: vi.fn(),
       auth: (req, res, next) => {
-        req.auth = {
+        req.authUser = {
           id: 1,
         };
         next();
       },
       rolesAccess: () => (req, res, next) => next(),
+      canEditPost: (req, res, next) => next(),
     }));
   });
 
@@ -44,6 +47,7 @@ describe('Post controller', () => {
       createPost.mockImplementationOnce();
 
       const response = await request(app).post('/posts').send(body);
+
       expect(response.statusCode).toBe(201);
     });
 

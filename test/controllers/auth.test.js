@@ -12,13 +12,14 @@ describe('Auth controllers', () => {
     vi.mock('../../middlewares/auth.js', () => ({
       default: vi.fn(),
       auth: (req, res, next) => {
-        req.auth = {
+        req.authUser = {
           id: 1,
           firstname: 'Test',
         };
         next();
       },
       rolesAccess: () => (req, res, next) => next(),
+      canEditPost: (req, res, next) => next(),
     }));
   });
   afterEach(() => {

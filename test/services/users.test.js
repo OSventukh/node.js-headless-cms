@@ -215,14 +215,12 @@ describe('Users serviсes', async () => {
         lastname: 'Old Lastname',
         email: 'old@test.com',
         password: '123456',
-        roleId: 1,
       });
 
       const toUpdate = {
         firstname: 'New FirstName',
         lastname: 'New Lastname',
         email: 'new@test.com',
-        roleId: 1,
       };
       await updateUser(user.id, toUpdate);
       const result = await getUsers({ id: user.id });

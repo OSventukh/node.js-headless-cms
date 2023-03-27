@@ -15,6 +15,7 @@ describe('Page controller', () => {
       default: vi.fn(),
       auth: (req, res, next) => next(),
       rolesAccess: () => (req, res, next) => next(),
+      canEditPost: (req, res, next) => next(),
     }));
     vi.mock('../../services/pages.services.js');
   });

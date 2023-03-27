@@ -22,7 +22,6 @@ export async function auth(req, res, next) {
     if (blockedToken) {
       throw new HttpError('Not Authenticated', 401);
     }
-
     const { id } = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET_KEY);
     const user = await User.findByPk(id);
 
@@ -74,7 +73,7 @@ export const canEditPost = async (req, res, next) => {
       user.getTopics(),
     ]);
     const commonTopic = userTopic.filter(
-      (uTopic) => postTopic.some((pTopic) => uTopic.id === pTopic.id)
+      (uTopic) => postTopic.some((pTopic) => uTopic.id === pTopic.id),
     );
 
     if (userRole.name === MODER && commonTopic.length > 0) {

@@ -9,7 +9,7 @@ export default (sequelize, DataTypes) => {
   UserToken.init(
     {
       token: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(512),
         allowNull: false,
         unique: true,
       },
