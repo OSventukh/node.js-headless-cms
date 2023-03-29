@@ -88,9 +88,8 @@ export default (sequelize, DataTypes) => {
           if (record.password) {
             record.attributes.password = await hashPassword(record.attributes.password);
           }
-        }
+        },
       },
-      
     },
   );
   return User;

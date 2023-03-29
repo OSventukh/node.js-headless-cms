@@ -25,7 +25,7 @@ export async function auth(req, res, next) {
     const { id } = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET_KEY);
     const user = await User.findByPk(id);
 
-    if (!user) {
+    if (!user || user.status === 'blocked') {
       throw new HttpError('Not Authenticated', 401);
     }
 
