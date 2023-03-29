@@ -1,6 +1,6 @@
 import express from 'express';
 
-import auth from '../middlewares/auth.js';
+import { auth, rolesAccess } from '../middlewares/auth.js';
 
 import {
   getOptionsController,
@@ -9,6 +9,7 @@ import {
 
 import { optionValidator } from '../utils/validators.js';
 import checkValidation from '../middlewares/validation.js';
+import { ADMIN } from '../utils/constants/roles.js';
 
 const router = express.Router();
 
@@ -16,8 +17,22 @@ router.get('/site/:optionName', getOptionsController);
 
 router.get('/site', getOptionsController);
 
-router.patch('/site/:optionName', auth, optionValidator(), checkValidation, updateOptionController);
+router.patch(
+  '/site/:optionName',
+  auth,
+  rolesAccess([ADMIN]),
+  optionValidator(),
+  checkValidation,
+  updateOptionController,
+);
 
-router.patch('/site/', auth, optionValidator(), checkValidation, updateOptionController);
+router.patch(
+  '/site/',
+  auth,
+  rolesAccess([ADMIN]),
+  optionValidator(),
+  checkValidation,
+  updateOptionController,
+);
 
 export default router;

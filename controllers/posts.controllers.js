@@ -9,7 +9,7 @@ import {
 
 export const createPostController = async (req, res, next) => {
   try {
-    const post = await createPost({ ...req.body, userId: req.auth.userId });
+    const post = await createPost({ ...req.body, userId: req.authUser.id });
     res.status(201).json({
       message: 'Post successfully created',
       post,

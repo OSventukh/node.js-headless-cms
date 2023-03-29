@@ -4,23 +4,29 @@ import app from '../../app';
 
 import { login, logout, refreshTokens } from '../../services/auth.services.js';
 import { verifyRefreshToken } from '../../utils/token';
-import auth from '../../middlewares/auth';
 
 describe('Auth controllers', () => {
   beforeEach(() => {
     vi.mock('../../services/auth.services.js');
     vi.mock('../../utils/token');
-    vi.mock('../../middlewares/auth');
-    auth.mockImplementationOnce((req, res, next) => {
-      req.auth = { userId: '1' };
-      next();
-    });
+    vi.mock('../../middlewares/auth.js', () => ({
+      default: vi.fn(),
+      auth: (req, res, next) => {
+        req.authUser = {
+          id: 1,
+          firstname: 'Test',
+        };
+        next();
+      },
+      rolesAccess: () => (req, res, next) => next(),
+      canEditPost: (req, res, next) => next(),
+    }));
   });
   afterEach(() => {
     vi.restoreAllMocks();
   });
   describe('loginController', () => {
-    it('Should return accessToken and userId in response object', async () => {
+    it('Should return accessToken and userData in response object', async () => {
       const userCredentials = {
         email: 'test@test.com',
         password: '123456',
@@ -28,14 +34,18 @@ describe('Auth controllers', () => {
       const loginBody = {
         accessToken: 'accessToken',
         refreshToken: 'refreshToken',
-        userId: '1',
+        user: {
+          id: 1,
+          role: 'test',
+          email: 'test@test.com'
+        },
       };
 
       login.mockResolvedValueOnce(loginBody);
       const response = await request(app).post('/login').send(userCredentials);
       expect(response.headers['content-type']).toMatch(/json/);
       expect(response.body.accessToken).toBe(loginBody.accessToken);
-      expect(response.body.userId).toBe(loginBody.userId);
+      expect(response.body.user).toEqual(loginBody.user);
     });
 
     it('Should response with status code 200 if login was successfull', async () => {

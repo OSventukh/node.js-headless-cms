@@ -1,6 +1,6 @@
 import express from 'express';
 
-import auth from '../middlewares/auth.js';
+import { auth } from '../middlewares/auth.js';
 import { loginValidator, signupValidator } from '../utils/validators.js';
 import checkValidation from '../middlewares/validation.js';
 

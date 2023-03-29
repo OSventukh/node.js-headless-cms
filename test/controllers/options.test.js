@@ -6,24 +6,20 @@ import {
   getOptions,
   updateOption,
 } from '../../services/options.services.js';
-import auth from '../../middlewares/auth';
 
 describe('Option controller', () => {
   beforeEach(() => {
+    vi.mock('../../middlewares/auth.js', () => ({
+      default: vi.fn(),
+      auth: (req, res, next) => next(),
+      rolesAccess: () => (req, res, next) => next(),
+      canEditPost: (req, res, next) => next(),
+    }));
     vi.mock('../../services/options.services.js');
-    vi.mock('../../middlewares/auth');
-    auth.mockImplementationOnce((req, res, next) => {
-      req.auth = { userId: '1' };
-      next();
-    });
-  });
-
-  afterEach(() => {
-    vi.resetAllMocks();
   });
 
   afterAll(() => {
-    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('Get options', () => {

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeAll, afterEach, afterAll, beforeEach } from 'vitest';
+import { describe, it, expect, vi, afterEach, afterAll, beforeEach } from 'vitest';
 import request from 'supertest';
 
 import app from '../../app';
@@ -8,16 +8,21 @@ import {
   updateUser,
   deleteUser,
 } from '../../services/users.services.js';
-import auth from '../../middlewares/auth';
 
 describe('User controller', () => {
   beforeEach(() => {
+    vi.mock('../../middlewares/auth.js', () => ({
+      default: vi.fn(),
+      auth: (req, res, next) => {
+        req.authUser = {
+          id: 1,
+        };
+        next();
+      },
+      rolesAccess: () => (req, res, next) => next(),
+      canEditPost: (req, res, next) => next(),
+    }));
     vi.mock('../../services/users.services.js');
-    vi.mock('../../middlewares/auth');
-    auth.mockImplementationOnce((req, res, next) => {
-      req.auth = { userId: '1' };
-      next();
-    });
   });
 
   afterEach(() => {
@@ -25,7 +30,7 @@ describe('User controller', () => {
   });
 
   afterAll(() => {
-    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('Create user', () => {

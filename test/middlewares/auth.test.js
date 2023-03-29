@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import jwt from 'jsonwebtoken';
 import HttpError from '../../utils/http-error.js';
-import { UserBlockedToken } from '../../models/index.js';
-import auth from '../../middlewares/auth.js';
+import { User, UserBlockedToken } from '../../models/index.js';
+import { auth } from '../../middlewares/auth.js';
 
 describe('Auth middleware', () => {
   const mockUser = {
@@ -33,15 +33,19 @@ describe('Auth middleware', () => {
 
   it('Should return next() function without arguments if accessToken is valid', async () => {
     vi.spyOn(UserBlockedToken, 'findOne').mockResolvedValue(false);
+
+    vi.spyOn(User, 'findByPk').mockResolvedValue(mockUser);
+
     await auth(req, res, next);
     expect(next).toHaveBeenCalledWith();
   });
 
-  it('Should add auth property with user id to request object if accessToken is valid', async () => {
+  it('Should add authUser property with user id to request object if accessToken is valid', async () => {
     vi.spyOn(UserBlockedToken, 'findOne').mockResolvedValue(false);
+    vi.spyOn(User, 'findByPk').mockResolvedValue(mockUser);
     await auth(req, res, next);
-    expect(req).haveOwnProperty('auth');
-    expect(req.auth.userId).toBe(mockUser.id);
+    expect(req).haveOwnProperty('authUser');
+    expect(req.authUser.id).toBe(mockUser.id);
   });
 
   it('Should check if provided accessToken not blocked', async () => {

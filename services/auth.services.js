@@ -20,19 +20,20 @@ export const login = async (email, password) => {
       where: {
         email,
       },
-      include: 'role',
+      include: ['role', 'topics'],
     });
+
     if (!user) {
       throw new HttpError('Invalid email or password', 403);
     }
-
-    const isMatchPassword = await comparePassword(password, user.password);
+    const isMatchPassword = await user.comparePassword(password);
 
     if (!isMatchPassword) {
       throw new HttpError('Invalid email or password', 403);
     }
-    const accessToken = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
+
+    const accessToken = generateAccessToken(user.getTokenData());
+    const refreshToken = generateRefreshToken({ id: user.id });
 
     await UserToken.create({
       userId: user.id,
@@ -41,15 +42,12 @@ export const login = async (email, password) => {
     });
 
     return {
-      userId: user.id,
+      user: user.getPublicData(),
       accessToken,
       refreshToken,
     };
   } catch (error) {
-    throw new HttpError(
-      error.message || 'Something went wrong',
-      error.statusCode || 500,
-    );
+    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
   }
 };
 
@@ -73,6 +71,7 @@ export const signup = async (data) => {
       ...data,
       password: await hashPassword(data.password),
     };
+
     // Creating user and adding role 'administrator';
     const user = await sequelize.transaction(async (transaction) => {
       const createdUser = await User.create(userData, { transaction });
@@ -90,21 +89,23 @@ export const signup = async (data) => {
 
 export const refreshTokens = async (oldRefreshToken) => {
   try {
-    const { userId } = verifyRefreshToken(oldRefreshToken);
+    const { id } = verifyRefreshToken(oldRefreshToken);
+
     const userToken = await UserToken.findOne({
       where: {
         token: oldRefreshToken,
       },
     });
-    const user = await User.findByPk(userId);
+    const user = await User.findByPk(id, {
+      include: ['role', 'topics'],
+    });
     if (!userToken || !user) {
       throw new HttpError('Not Authenticated', 401);
     }
+    const newRefreshToken = generateRefreshToken({ id: user.id });
+    const newAccessToken = generateAccessToken(user.getTokenData());
 
-    const newRefreshToken = generateRefreshToken(user);
-    const newAccessToken = generateAccessToken(user);
-
-    await UserToken.destroy({ where: { id: userToken.id } });
+    await userToken.destroy();
     await UserToken.create({
       user: user.id,
       token: newRefreshToken,

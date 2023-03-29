@@ -2,24 +2,22 @@ import jwt from 'jsonwebtoken';
 
 import config from '../config/config.js';
 
-export const generateAccessToken = (user) => (
+export const generateAccessToken = (payload) => (
   jwt.sign(
     {
-      userId: user.id,
-      email: user.email,
-      role: user.role,
+      ...payload,
+      createdAt: Date.now(),
     },
     process.env.ACCESS_TOKEN_SECRET_KEY,
     { expiresIn: config.accessTokenExpiresIn },
   )
 );
 
-export const generateRefreshToken = (user) => (
+export const generateRefreshToken = (payload) => (
   jwt.sign(
     {
-      userId: user.id,
-      email: user.email,
-      role: user.role,
+      ...payload,
+      createdAt: Date.now(),
     },
     process.env.REFRESH_TOKEN_SECRET_KEY,
     { expiresIn: config.refreshTokenExpiresIn },

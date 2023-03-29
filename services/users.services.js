@@ -1,15 +1,28 @@
-import { User } from '../models/index.js';
-import { hashPassword } from '../utils/hash.js';
+import { Op } from 'sequelize';
+import { User, Topic } from '../models/index.js';
 import HttpError from '../utils/http-error.js';
 import { checkIncludes, buildWhereObject, getOrder, getPagination } from '../utils/models.js';
+import { ADMIN } from '../utils/constants/roles.js';
 
-export const createUser = async (data) => {
+export const createUser = async ({ topicId, ...data }) => {
   try {
-    const userData = {
-      ...data,
-      password: await hashPassword(data.password),
-    };
-    const user = await User.create(userData);
+    // Create user and find topic
+    const topicIds = topicId ? Array.from(topicId) : [];
+    const [user, topics] = await Promise.all([
+      await User.create(data),
+      await Topic.findAll({
+        where: {
+          id: {
+            [Op.in]: topicIds,
+          },
+        },
+      }),
+    ]);
+
+    // if topic exist set it to created user
+    if (topics) {
+      await user.setTopics(topics);
+    }
     return user;
   } catch (error) {
     if (error.name === 'SequelizeValidationError') {
@@ -59,18 +72,35 @@ export const getUsers = async (
   }
 };
 
-export const updateUser = async (id, toUpdate) => {
+export const updateUser = async (id, { topicId, ...toUpdate }) => {
   try {
-    const user = await User.findByPk(id);
+    const topicIds = topicId ? Array.from(topicId) : [];
+
+    // Find user and topics in database
+    const [user, topics] = await Promise.all([
+      await User.findByPk(id),
+      topicId && await Topic.findAll({
+        where: {
+          id: {
+            [Op.in]: topicIds,
+          },
+        },
+      }),
+    ]);
+
     if (!user) {
       throw new HttpError('User with this id not found', 404);
     }
 
-    const result = await User.update(toUpdate, {
-      where: {
-        id,
-      },
-    });
+    // Update user, and set new assotiations with topics
+    const [result] = await Promise.all([
+      await User.update(toUpdate, {
+        where: {
+          id,
+        },
+      }),
+      topicId && user.setTopics(topics),
+    ]);
 
     if (result[0] === 0) {
       throw new HttpError('User was not updated', 400);
@@ -82,12 +112,12 @@ export const updateUser = async (id, toUpdate) => {
 
 export const deleteUser = async (id) => {
   try {
-    const user = await User.findByPk(id);
+    const user = await User.findByPk(id, { include: ['role'] });
     if (!user) {
       throw new HttpError('User not found', 404);
     }
     // Prevent deleting administrator
-    if (user.id === 1 || user.role === 'admin') {
+    if (user.id === 1 || user.role.name === ADMIN) {
       throw new HttpError('This user cannot be deleted', 403);
     }
 

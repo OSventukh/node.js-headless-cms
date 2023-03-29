@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach, afterAll } from 'vitest';
+import { describe, it, expect, vi, beforeAll, beforeEach, afterEach, afterAll } from 'vitest';
 import request from 'supertest';
 
 import app from '../../app';
@@ -8,16 +8,23 @@ import {
   updatePost,
   deletePost,
 } from '../../services/posts.services.js';
-import auth from '../../middlewares/auth';
 
 describe('Post controller', () => {
+  beforeAll(async () => {
+  });
   beforeEach(() => {
     vi.mock('../../services/posts.services.js');
-    vi.mock('../../middlewares/auth');
-    auth.mockImplementationOnce((req, res, next) => {
-      req.auth = { userId: '1' };
-      next();
-    });
+    vi.mock('../../middlewares/auth.js', () => ({
+      default: vi.fn(),
+      auth: (req, res, next) => {
+        req.authUser = {
+          id: 1,
+        };
+        next();
+      },
+      rolesAccess: () => (req, res, next) => next(),
+      canEditPost: (req, res, next) => next(),
+    }));
   });
 
   afterEach(() => {
@@ -25,7 +32,7 @@ describe('Post controller', () => {
   });
 
   afterAll(() => {
-    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('Create post', () => {
@@ -40,6 +47,7 @@ describe('Post controller', () => {
       createPost.mockImplementationOnce();
 
       const response = await request(app).post('/posts').send(body);
+
       expect(response.statusCode).toBe(201);
     });
 
