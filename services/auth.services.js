@@ -139,6 +139,7 @@ export const logout = async (refreshToken, accessToken) => {
     // the system even if they still have a valid access token.
     await UserBlockedToken.create({
       token: accessToken,
+      expiresIn: new Date(Date.now() + ms(config.accessTokenExpiresIn)),
     });
     // Delete refreshToken of the user that logging out from database
     await UserToken.destroy({
