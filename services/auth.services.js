@@ -1,6 +1,6 @@
 import ms from 'ms';
 import { sequelize, User, Role, UserToken, UserBlockedToken } from '../models/index.js';
-import { hashPassword } from '../utils/hash.js';
+
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -34,11 +34,11 @@ export const login = async (email, password, userIp) => {
 
     const accessToken = generateAccessToken(user.getTokenData());
     const refreshToken = generateRefreshToken({ id: user.id });
-
     // A user should have no more than 5 tokens
     if (user.tokens && user.tokens.length === 5) {
-      const { tokens } = user;
-      const sortedTokens = tokens.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+      const sortedTokens = user.tokens.sort(
+        (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
+      );
       await sortedTokens[0].destroy();
     }
     await UserToken.create({
@@ -119,15 +119,15 @@ export const refreshTokens = async (oldRefreshToken) => {
   }
 };
 
-export const isUserLoggedIn = (refreshToken) => {
+export const checkIsUserLoggedIn = async (refreshToken) => {
   try {
     verifyRefreshToken(refreshToken);
-    const savedToken = UserToken.findOne({
+    const savedToken = await UserToken.findOne({
       where: {
         token: refreshToken,
       },
     });
-    return savedToken && true;
+    return !!savedToken;
   } catch (error) {
     return false;
   }
