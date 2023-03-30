@@ -23,7 +23,7 @@ export const createUser = async ({ topicId, ...data }) => {
     if (topics) {
       await user.setTopics(topics);
     }
-    return user;
+    return user.getPublicData();
   } catch (error) {
     if (error.name === 'SequelizeValidationError') {
       throw new HttpError(error.message, 400);
