@@ -18,15 +18,15 @@ export const authController = async (req, res, next) => {
 };
 
 export const loginController = async (req, res, next) => {
-  const { email, password } = req.body;
-  const userRefreshToken = req.cookies?.refreshToken;
   try {
+    const { email, password } = req.body;
+    const userRefreshToken = req.cookies?.refreshToken;
+    const userIp = req.ip;
     // Check if user already logged in;
     if (isUserLoggedIn(userRefreshToken)) {
       throw new HttpError('User already authenticated', 409);
     }
-
-    const { user, accessToken, refreshToken } = await login(email, password);
+    const { user, accessToken, refreshToken } = await login(email, password, userIp);
     res
       .status(200)
       .cookie('refreshToken', refreshToken, {

@@ -1,6 +1,6 @@
 import ms from 'ms';
 import { sequelize, User, Role, UserToken, UserBlockedToken } from '../models/index.js';
-import { comparePassword, hashPassword } from '../utils/hash.js';
+import { hashPassword } from '../utils/hash.js';
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -14,13 +14,13 @@ export const adminCheck = async () => {
   return users.length > 0 && users[0].role.name === 'Administrator';
 };
 
-export const login = async (email, password) => {
+export const login = async (email, password, userIp) => {
   try {
     const user = await User.findOne({
       where: {
         email,
       },
-      include: ['role', 'topics'],
+      include: ['role', 'topics', 'tokens'],
     });
 
     if (!user) {
@@ -35,9 +35,16 @@ export const login = async (email, password) => {
     const accessToken = generateAccessToken(user.getTokenData());
     const refreshToken = generateRefreshToken({ id: user.id });
 
+    // A user should have no more than 5 tokens
+    if (user.tokens && user.tokens.length === 5) {
+      const { tokens } = user;
+      const sortedTokens = tokens.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+      await sortedTokens[0].destroy();
+    }
     await UserToken.create({
       userId: user.id,
       token: refreshToken,
+      ip: userIp,
       expiresIn: new Date(Date.now() + ms(config.refreshTokenExpiresIn)),
     });
 
@@ -67,14 +74,9 @@ export const signup = async (data) => {
       throw new HttpError('Role not found', 500);
     }
 
-    const userData = {
-      ...data,
-      password: await hashPassword(data.password),
-    };
-
     // Creating user and adding role 'administrator';
     const user = await sequelize.transaction(async (transaction) => {
-      const createdUser = await User.create(userData, { transaction });
+      const createdUser = await User.create(data, { transaction });
       await createdUser.setRole(adminRole, { transaction });
       return createdUser;
     });
