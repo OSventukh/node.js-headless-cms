@@ -1,4 +1,4 @@
-import { CronJob }  from 'cron';
+import { CronJob } from 'cron';
 import { Op } from 'sequelize';
 
 import { UserToken, UserBlockedToken } from '../models/index.js';
