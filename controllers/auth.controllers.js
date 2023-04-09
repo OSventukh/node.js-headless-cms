@@ -38,7 +38,10 @@ export const loginController = async (req, res, next) => {
       })
       .json({
         user,
-        accessToken,
+        accessToken: {
+          token: accessToken,
+          exipesIn: ms(config.accessTokenExpiresIn),
+        },
       });
   } catch (error) {
     next(new HttpError(error.message, error.statusCode));
@@ -73,7 +76,10 @@ export const refreshTokenController = async (req, res, next) => {
         secure: process.env.NODE_ENV === 'production',
       })
       .json({
-        accessToken: newAccessToken,
+        accessToken: {
+          token: newAccessToken,
+          exipesIn: ms(config.accessTokenExpiresIn),
+        },
       });
   } catch (error) {
     next(new HttpError(error.message, error.statusCode));
