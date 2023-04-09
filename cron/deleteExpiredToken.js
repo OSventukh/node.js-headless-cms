@@ -2,7 +2,6 @@ import { CronJob } from 'cron';
 import { Op } from 'sequelize';
 
 import { UserToken, UserBlockedToken } from '../models/index.js';
-
 // This cron runs every day at midnight
 const deleteExpiredTokenCron = new CronJob('00 00 00 * * *', () => {
   Promise.all([

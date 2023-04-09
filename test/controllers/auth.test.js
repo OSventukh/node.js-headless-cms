@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach, afterEach, afterAll } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import request from 'supertest';
 import app from '../../app';
 
-import { login, logout, refreshTokens } from '../../services/auth.services.js';
+import { checkIsUserLoggedIn, login, logout, refreshTokens } from '../../services/auth.services.js';
 import { verifyRefreshToken } from '../../utils/token';
 
 describe('Auth controllers', () => {
@@ -37,14 +37,14 @@ describe('Auth controllers', () => {
         user: {
           id: 1,
           role: 'test',
-          email: 'test@test.com'
+          email: 'test@test.com',
         },
       };
 
       login.mockResolvedValueOnce(loginBody);
       const response = await request(app).post('/login').send(userCredentials);
       expect(response.headers['content-type']).toMatch(/json/);
-      expect(response.body.accessToken).toBe(loginBody.accessToken);
+      expect(response.body.accessToken.token).toBe(loginBody.accessToken);
       expect(response.body.user).toEqual(loginBody.user);
     });
 
@@ -108,9 +108,10 @@ describe('Auth controllers', () => {
         refreshToken: '12345',
         userId: '1',
       };
-      verifyRefreshToken.mockResolvedValueOnce(true);
+      checkIsUserLoggedIn.mockResolvedValueOnce(true);
       login.mockResolvedValueOnce(loginBody);
       const response = await request(app).post('/login').set('Cookie', ['refreshToken=1234567']).send(userCredentials);
+
       expect(response.statusCode).toBe(409);
       expect(response.text).toContain('User already authenticated');
     });
@@ -126,7 +127,7 @@ describe('Auth controllers', () => {
       refreshTokens.mockResolvedValueOnce(refreshBody);
       const response = await request(app).get('/login/refreshtoken').set('Cookie', ['refreshToken=1234567']);
       expect(response.body).haveOwnProperty('accessToken');
-      expect(response.body.accessToken).toBe(refreshBody.newAccessToken);
+      expect(response.body.accessToken.token).toBe(refreshBody.newAccessToken);
     });
 
     it('Should not return new refreshToken in response object', async () => {

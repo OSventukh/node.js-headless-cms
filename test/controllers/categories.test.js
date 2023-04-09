@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach, afterEach, afterAll } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterAll } from 'vitest';
 import request from 'supertest';
 
-import app from '../../app';
+import app from '../../app.js';
 import {
   createCategory,
   getCategories,
