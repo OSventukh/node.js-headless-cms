@@ -40,7 +40,7 @@ export const loginController = async (req, res, next) => {
         user,
         accessToken: {
           token: accessToken,
-          exipesIn: ms(config.accessTokenExpiresIn),
+          expiresIn: ms(config.refreshTokenExpiresIn),
         },
       });
   } catch (error) {
