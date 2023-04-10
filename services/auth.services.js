@@ -5,6 +5,7 @@ import {
   generateAccessToken,
   generateRefreshToken,
   verifyRefreshToken,
+  verifyAccessToken,
 } from '../utils/token.js';
 import HttpError from '../utils/http-error.js';
 import config from '../config/config.js';
@@ -119,15 +120,10 @@ export const refreshTokens = async (oldRefreshToken) => {
   }
 };
 
-export const checkIsUserLoggedIn = async (refreshToken) => {
+export const checkIsUserLoggedIn = async (accessToken) => {
   try {
-    verifyRefreshToken(refreshToken);
-    const savedToken = await UserToken.findOne({
-      where: {
-        token: refreshToken,
-      },
-    });
-    return !!savedToken;
+    verifyAccessToken(accessToken);
+    return true;
   } catch (error) {
     return false;
   }
