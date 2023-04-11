@@ -1,11 +1,16 @@
 import ms from 'ms';
-import { sequelize, User, Role, UserToken, UserBlockedToken } from '../models/index.js';
+import {
+  sequelize,
+  User,
+  Role,
+  UserToken,
+  UserBlockedToken,
+} from '../models/index.js';
 
 import {
   generateAccessToken,
   generateRefreshToken,
   verifyRefreshToken,
-  verifyAccessToken,
 } from '../utils/token.js';
 import HttpError from '../utils/http-error.js';
 import config from '../config/config.js';
@@ -38,7 +43,7 @@ export const login = async (email, password, userIp) => {
     // A user should have no more than 5 tokens
     if (user.tokens && user.tokens.length === 5) {
       const sortedTokens = user.tokens.sort(
-        (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
+        (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
       );
       await sortedTokens[0].destroy();
     }
@@ -55,7 +60,10 @@ export const login = async (email, password, userIp) => {
       refreshToken,
     };
   } catch (error) {
-    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+    throw new HttpError(
+      error.message || 'Something went wrong',
+      error.statusCode || 500
+    );
   }
 };
 
@@ -86,7 +94,10 @@ export const signup = async (data) => {
     if (error.name === 'SequelizeValidationError') {
       throw new HttpError(error.message, 400);
     }
-    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+    throw new HttpError(
+      error.message || 'Something went wrong',
+      error.statusCode || 500
+    );
   }
 };
 
@@ -114,7 +125,7 @@ export const refreshTokens = async (oldRefreshToken) => {
       token: newRefreshToken,
       expiresIn: new Date(Date.now() + ms(config.refreshTokenExpiresIn)),
     });
-    return { newAccessToken, newRefreshToken };
+    return { newAccessToken, newRefreshToken, user: user.getPublicData() };
   } catch (error) {
     throw new HttpError('Not Authenticated', 401);
   }
@@ -122,7 +133,7 @@ export const refreshTokens = async (oldRefreshToken) => {
 
 export const checkIsUserLoggedIn = async (accessToken) => {
   try {
-    verifyAccessToken(accessToken);
+    verifyRefreshToken(accessToken);
     return true;
   } catch (error) {
     return false;

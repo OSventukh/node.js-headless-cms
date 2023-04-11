@@ -40,7 +40,7 @@ export const loginController = async (req, res, next) => {
         user,
         accessToken: {
           token: accessToken,
-          expiresIn: ms(config.refreshTokenExpiresIn),
+          expirationDate: new Date(Date.now() + ms(config.accessTokenExpiresIn)),
         },
       });
   } catch (error) {
@@ -62,9 +62,9 @@ export const signupController = async (req, res, next) => {
 };
 
 export const refreshTokenController = async (req, res, next) => {
-  const userRefreshToken = req.cookies.refreshToken;
   try {
-    const { newAccessToken, newRefreshToken } = await refreshTokens(
+    const userRefreshToken = req.cookies.refreshToken;
+    const { newAccessToken, newRefreshToken, user } = await refreshTokens(
       userRefreshToken,
     );
 
@@ -78,7 +78,8 @@ export const refreshTokenController = async (req, res, next) => {
       .json({
         accessToken: {
           token: newAccessToken,
-          exipesIn: ms(config.accessTokenExpiresIn),
+          user,
+          expirationDate: new Date(Date.now() + ms(config.accessTokenExpiresIn)),
         },
       });
   } catch (error) {
