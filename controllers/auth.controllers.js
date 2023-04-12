@@ -65,9 +65,7 @@ export const refreshTokenController = async (req, res, next) => {
   try {
     const userRefreshToken = req.cookies.refreshToken;
     if (!userRefreshToken) {
-      res.status(301).json({
-        message: 'Not Authenticated',
-      });
+      res.status(204).json();
       return;
     }
 

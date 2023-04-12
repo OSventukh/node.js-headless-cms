@@ -152,10 +152,10 @@ describe('Auth controllers', () => {
       expect(response.headers['set-cookie'][0]).toContain('HttpOnly');
     });
 
-    it('Should response with status code 301 and message "Not Authenticated" if refreshToken not provided', async () => {
+    it('Should response with status code 204 and no content if refreshToken not provided', async () => {
       const response = await request(app).get('/login/refreshtoken');
-      expect(response.statusCode).toBe(301);
-      expect(response.body.message).toBe('Not Authenticated');
+      expect(response.statusCode).toBe(204);
+      expect(response.body).toEqual({});
     });
 
     it('Should response an error with message "Not Authenticated" and status code 401 if refreshToken not valid', async () => {
