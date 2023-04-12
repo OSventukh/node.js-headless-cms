@@ -104,7 +104,6 @@ export const signup = async (data) => {
 export const refreshTokens = async (oldRefreshToken) => {
   try {
     const { id } = verifyRefreshToken(oldRefreshToken);
-
     const userToken = await UserToken.findOne({
       where: {
         token: oldRefreshToken,

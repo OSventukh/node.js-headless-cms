@@ -64,6 +64,13 @@ export const signupController = async (req, res, next) => {
 export const refreshTokenController = async (req, res, next) => {
   try {
     const userRefreshToken = req.cookies.refreshToken;
+    if (!userRefreshToken) {
+      res.status(301).json({
+        message: 'Not Authenticated',
+      });
+      return;
+    }
+
     const { newAccessToken, newRefreshToken, user } = await refreshTokens(
       userRefreshToken,
     );
@@ -78,9 +85,9 @@ export const refreshTokenController = async (req, res, next) => {
       .json({
         accessToken: {
           token: newAccessToken,
-          user,
           expirationDate: new Date(Date.now() + ms(config.accessTokenExpiresIn)),
         },
+        user,
       });
   } catch (error) {
     next(new HttpError(error.message, error.statusCode));
@@ -89,7 +96,7 @@ export const refreshTokenController = async (req, res, next) => {
 
 export const logoutController = async (req, res, next) => {
   try {
-    const userRefreshToken = req.cookies?.refreshToken;
+    const userRefreshToken = req.cookies.refreshToken;
     const userAccessToken = req.get('authorization').split(' ')[1];
     await logout(userRefreshToken, userAccessToken);
     res

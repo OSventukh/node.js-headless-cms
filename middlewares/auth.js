@@ -7,7 +7,6 @@ export async function auth(req, res, next) {
   try {
     const authHeader = req.get('authorization');
     const token = authHeader?.split(' ')[1];
-
     if (!token) {
       throw new HttpError('Not Authenticated', 401);
     }
@@ -57,7 +56,6 @@ export const canEditPost = async (req, res, next) => {
     const user = req.authUser;
     const userRole = await user.getRole();
     const postId = req.params.postId || req.body.id;
-
     if (!postId) {
       throw new HttpError('Post id is not valid', 422);
     }

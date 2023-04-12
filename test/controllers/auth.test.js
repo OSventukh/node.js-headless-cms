@@ -3,7 +3,6 @@ import request from 'supertest';
 import app from '../../app';
 
 import { checkIsUserLoggedIn, login, logout, refreshTokens } from '../../services/auth.services.js';
-import { verifyRefreshToken } from '../../utils/token';
 
 describe('Auth controllers', () => {
   beforeEach(() => {
@@ -153,9 +152,9 @@ describe('Auth controllers', () => {
       expect(response.headers['set-cookie'][0]).toContain('HttpOnly');
     });
 
-    it('Should response an error with message "Not Authenticated" and status code 401 if refreshToken not provided', async () => {
+    it('Should response with status code 301 and message "Not Authenticated" if refreshToken not provided', async () => {
       const response = await request(app).get('/login/refreshtoken');
-      expect(response.statusCode).toBe(401);
+      expect(response.statusCode).toBe(301);
       expect(response.body.message).toBe('Not Authenticated');
     });
 
