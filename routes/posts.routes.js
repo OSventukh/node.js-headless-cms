@@ -1,4 +1,5 @@
 import express from 'express';
+import upload from '../utils/multer.js';
 
 import { auth, rolesAccess, canEditPost } from '../middlewares/auth.js';
 
@@ -7,6 +8,7 @@ import {
   getPostsController,
   updatePostController,
   deletePostController,
+  uploadPostImageController
 } from '../controllers/posts.controllers.js';
 
 import {
@@ -41,6 +43,14 @@ router.post(
   postValidator(),
   checkValidation,
   createPostController,
+);
+
+router.post(
+  '/posts/upload-image',
+  // auth,
+  // rolesAccess([ADMIN, MODER, WRITER]),
+  upload.single('upload'),
+  uploadPostImageController,
 );
 
 router.patch(

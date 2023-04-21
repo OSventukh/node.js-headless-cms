@@ -61,39 +61,41 @@ describe('Posts serviсes', () => {
 
   describe('createPost', () => {
     it('Should create a new post', async () => {
+      const title = 'Test title';
+      const content = '<p>Test content</p>';
+
       const postData = {
-        title: 'Test Post',
         slug: 'test-post',
-        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-        excerpt: 'Lorem ipsum dolor sit amet',
+        rawContent: `<h1>${title}</h1>${content}`,
         topicId: topic.id,
         categoryId: category.id,
       };
 
       const post = await createPost(postData);
-      expect(post.title).toBe(postData.title);
+      expect(post.title).toBe(title);
       expect(post.slug).toBe(postData.slug);
-      expect(post.content).toBe(postData.content);
+      expect(post.content).toBe(content);
     });
 
     it('Should throw an error if validation failed', async () => {
+      const title = '';
+      const content = '<p>Test content</p>';
+
       const postData = {
-        title: '',
         slug: 'test-post',
-        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-        excerpt: 'Lorem ipsum dolor sit amet',
+        rawContent: `<h1>${title}</h1>${content}`,
         topicId: topic.id,
         categoryId: category.id,
       };
       await expect(createPost(postData)).rejects.toThrow(HttpError);
     });
 
-    it('Should throw a 400 error if validation fails', async () => {
+    it('Should throw a 400 error if validation failed', async () => {
+      const title = '';
+      const content = '<p>Test content</p>';
+
       const postData = {
-        title: '',
-        slug: 'test-post',
-        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-        excerpt: 'Lorem ipsum dolor sit amet',
+        rawContent: `<h1>${title}</h1>${content}`,
         topicId: topic.id,
         categoryId: category.id,
       };
@@ -106,19 +108,19 @@ describe('Posts serviсes', () => {
     });
 
     it('Should throw a message error "The slug should be an unique. Value [valueName] is already in use" and statusCode 409 if slug not unique', async () => {
+      const title = 'Test Title';
+      const content = '<p>Test content</p>';
+
       const postData1 = {
-        title: 'Test Post 1',
+        rawContent: `<h1>${title}</h1>${content}`,
         slug: 'test-post',
-        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-        excerpt: 'Lorem ipsum dolor sit amet',
         topicId: topic.id,
         categoryId: category.id,
       };
+
       const postData2 = {
-        title: 'Test Post 2',
+        rawContent: `<h1>${title}2</h1>${content}`,
         slug: 'test-post',
-        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-        excerpt: 'Lorem ipsum dolor sit amet',
         topicId: topic.id,
         categoryId: category.id,
       };
@@ -139,18 +141,14 @@ describe('Posts serviсes', () => {
   describe('getPosts', () => {
     it('Should return all posts', async () => {
       const postData1 = {
-        title: 'Test Post 1',
+        rawContent: '<h1>Test title</h1><p>Test content</p>',
         slug: 'test-post-1',
-        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-        excerpt: 'Lorem ipsum dolor sit amet',
         topicId: topic.id,
         categoryId: category.id,
       };
       const postData2 = {
-        title: 'Test Post 2',
+        rawContent: '<h1>Test title2</h1><p>Test content</p>',
         slug: 'test-post-2',
-        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-        excerpt: 'Lorem ipsum dolor sit amet',
         topicId: topic.id,
         categoryId: category.id,
       };
@@ -165,31 +163,31 @@ describe('Posts serviсes', () => {
 
     it('Should return an array of posts that match the query', async () => {
       const postData1 = {
-        title: 'Test Post 1',
+        title: 'Test title',
+        content: 'Test content',
+        excerpt: 'Test excerpt',
         slug: 'test-post-1',
-        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-        excerpt: 'Lorem ipsum dolor sit amet',
-        status: 'published',
         topicId: topic.id,
         categoryId: category.id,
+        status: 'published',
       };
       const postData2 = {
-        title: 'Test Post 2',
+        title: 'Test title',
+        excerpt: 'Test excerpt',
+        content: 'Test content',
         slug: 'test-post-2',
-        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-        excerpt: 'Lorem ipsum dolor sit amet',
-        status: 'published',
         topicId: topic.id,
         categoryId: category.id,
+        status: 'published',
       };
       const postData3 = {
-        title: 'Test Post 3',
+        title: 'Test title',
+        excerpt: 'Test excerpt',
+        content: 'Test content',
         slug: 'test-post-3',
-        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-        excerpt: 'Lorem ipsum dolor sit amet',
-        status: 'draft',
         topicId: topic.id,
         categoryId: category.id,
+        status: 'draft',
       };
 
       await Post.bulkCreate([postData1, postData2, postData3]);
@@ -203,31 +201,31 @@ describe('Posts serviсes', () => {
 
     it('Should return an array with the correct order of records', async () => {
       const postData1 = {
-        title: 'Test Post 1',
+        title: 'Test title',
+        excerpt: 'Test excerpt',
+        content: 'Test content',
         slug: 'test-post-1',
-        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-        excerpt: 'Lorem ipsum dolor sit amet',
-        status: 'published',
         topicId: topic.id,
         categoryId: category.id,
+        status: 'published',
       };
       const postData2 = {
-        title: 'Test Post 2',
+        title: 'Test title',
+        excerpt: 'Test excerpt',
+        content: 'Test content',
         slug: 'test-post-2',
-        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-        excerpt: 'Lorem ipsum dolor sit amet',
-        status: 'published',
         topicId: topic.id,
         categoryId: category.id,
+        status: 'published',
       };
       const postData3 = {
-        title: 'Test Post 3',
+        title: 'Test title',
+        excerpt: 'Test excerpt',
+        content: 'Test content',
         slug: 'test-post-3',
-        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-        excerpt: 'Lorem ipsum dolor sit amet',
-        status: 'draft',
         topicId: topic.id,
         categoryId: category.id,
+        status: 'published',
       };
 
       await Post.bulkCreate([postData1, postData2, postData3]);
@@ -265,28 +263,27 @@ describe('Posts serviсes', () => {
   describe('updatePost', () => {
     it('Should update post successfully', async () => {
       const post = await createPost({
-        title: 'Old Title',
-        slug: 'old-title',
-        content: 'Old Content',
-        excerpt: 'Old Excerpt',
+        rawContent: '<h1>Old title</h1><p>Old content</p>',
+        slug: 'old-slug',
         topicId: topic.id,
         categoryId: category.id,
+        status: 'draft',
       });
 
       const toUpdate = {
-        title: 'New Title',
-        content: 'New Content',
-        slug: 'new-title',
-        excerpt: 'New Excerpt',
+        rawContent: '<h1>Test title</h1><p>Test content</p>',
+        slug: 'new-slug',
         topicId: topic.id,
         categoryId: category.id,
+        status: 'published',
       };
+
       await updatePost(post.id, toUpdate);
       const result = await getPosts({ id: post.id });
-      expect(result.rows[0].title).toBe(toUpdate.title);
-      expect(result.rows[0].content).toBe(toUpdate.content);
+      expect(result.rows[0].title).toBe(toUpdate.rawContent.match(/<h1>(.*?)<\/h1>/)[1]);
+      expect(result.rows[0].content).toBe(toUpdate.rawContent.replace(/<h1>.*?<\/h1>/, ''));
       expect(result.rows[0].slug).toBe(toUpdate.slug);
-      expect(result.rows[0].excerpt).toBe(toUpdate.excerpt);
+      expect(result.rows[0].status).toBe(toUpdate.status);
     });
 
     it('Should call Post.findByPk, Post.update, setCategories and setTopics functions', async () => {
@@ -298,7 +295,7 @@ describe('Posts serviсes', () => {
       mockPost.setTopics = vi.fn();
       Post.findByPk.mockResolvedValue(mockPost);
       Post.update.mockResolvedValue([1]);
-      const updatedPost = { title: 'New Title', content: 'New Content' };
+      const updatedPost = { rawContent: '<h1>New Title</h1><p>New Content</p>' };
       await updatePost(mockPost.id, updatedPost);
 
       expect(Post.findByPk).toHaveBeenCalledOnce();
@@ -337,7 +334,7 @@ describe('Posts serviсes', () => {
       Post.update.mockResolvedValue([0]);
 
       try {
-        await updatePost(1, {});
+        await updatePost(1, { rawContent: '<h1>Title</h1>' });
       } catch (error) {
         expect(error.message).toBe('Post was not updated');
         expect(error.statusCode).toBe(400);
@@ -373,10 +370,8 @@ describe('Posts serviсes', () => {
   describe('deletePost', () => {
     it('Should delete single post successfully', async () => {
       const post = await createPost({
-        title: 'Test post',
+        rawContent: '<h1>Test title</h1><p>Test content</p>',
         slug: 'test-post',
-        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-        excerpt: 'Lorem ipsum dolor sit amet',
         topicId: topic.id,
         categoryId: category.id,
       });
@@ -389,19 +384,15 @@ describe('Posts serviсes', () => {
 
     it('Should delete multiple posts successfully', async () => {
       const post1 = await createPost({
-        title: 'Test post 1',
+        rawContent: '<h1>Test title</h1><p>Test content</p>',
         slug: 'test-post-1',
-        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-        excerpt: 'Lorem ipsum dolor sit amet',
         topicId: topic.id,
         categoryId: category.id,
       });
 
       const post2 = await createPost({
-        title: 'Test post 2',
+        rawContent: '<h1>Test title</h1><p>Test content</p>',
         slug: 'test-post-2',
-        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-        excerpt: 'Lorem ipsum dolor sit amet',
         topicId: topic.id,
         categoryId: category.id,
       });
@@ -435,10 +426,8 @@ describe('Posts serviсes', () => {
       expect.assertions(2);
 
       const post = await createPost({
-        title: 'Test post',
+        rawContent: '<h1>Test title</h1><p>Test content</p>',
         slug: 'test-post',
-        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-        excerpt: 'Lorem ipsum dolor sit amet',
         topicId: topic.id,
         categoryId: category.id,
       });
@@ -456,10 +445,8 @@ describe('Posts serviсes', () => {
     it('Should throw an error with provided message and statusCode 500 if sequelize failed', async () => {
       expect.assertions(2);
       const post = await createPost({
-        title: 'Test post',
+        rawContent: '<h1>Test title</h1><p>Test content</p>',
         slug: 'test-post',
-        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-        excerpt: 'Lorem ipsum dolor sit amet',
         topicId: topic.id,
         categoryId: category.id,
       });
@@ -477,10 +464,8 @@ describe('Posts serviсes', () => {
     it('Should throw an error with message "Something went wrong" and statusCode 500 if unknown error occurred', async () => {
       expect.assertions(2);
       const post = await createPost({
-        title: 'Test post',
+        rawContent: '<h1>Test title</h1><p>Test content</p>',
         slug: 'test-post',
-        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-        excerpt: 'Lorem ipsum dolor sit amet',
         topicId: topic.id,
         categoryId: category.id,
       });

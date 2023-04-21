@@ -1,3 +1,4 @@
+import path from 'path';
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
@@ -9,10 +10,14 @@ const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({
-  origin: process.env.ACCESS_DOMEN || true,
-  credentials: true,
-}));
+
+app.use('/uploads', express.static(path.join('uploads')));
+app.use(
+  cors({
+    origin: process.env.ACCESS_DOMEN || true,
+    credentials: true,
+  }),
+);
 
 deleteExpiredTokenCron.start();
 

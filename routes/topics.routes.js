@@ -2,6 +2,7 @@ import express from 'express';
 
 import { auth, rolesAccess } from '../middlewares/auth.js';
 import { ADMIN } from '../utils/constants/roles.js';
+import upload from '../utils/multer.js';
 
 import {
   createTopicController,
@@ -24,14 +25,14 @@ router.get(
   idValidator('topicId'),
   paginationValidator(),
   checkValidation,
-  getTopicsController,
+  getTopicsController
 );
 
 router.get(
   '/topics',
   paginationValidator(),
   checkValidation,
-  getTopicsController,
+  getTopicsController
 );
 
 router.post(
@@ -40,7 +41,8 @@ router.post(
   rolesAccess([ADMIN]),
   topicValidator(),
   checkValidation,
-  createTopicController,
+  upload.single('topic-image'),
+  createTopicController
 );
 
 router.patch(
@@ -50,6 +52,7 @@ router.patch(
   topicValidator(),
   idValidator('topicId'),
   checkValidation,
+  upload.single('topic-image'),
   updateTopicController,
 );
 
@@ -59,6 +62,7 @@ router.patch(
   rolesAccess([ADMIN]),
   topicValidator(),
   checkValidation,
+  upload.single('topic-image'),
   updateTopicController,
 );
 
@@ -68,9 +72,16 @@ router.delete(
   rolesAccess([ADMIN]),
   idValidator('topicId'),
   checkValidation,
-  deleteTopicController,
+  deleteTopicController
 );
 
-router.delete('/topics', auth, deleteTopicController);
+router.delete(
+  '/topics',
+  auth,
+  rolesAccess([ADMIN]),
+  idValidator('topicId'),
+  checkValidation,
+  deleteTopicController,
+);
 
 export default router;

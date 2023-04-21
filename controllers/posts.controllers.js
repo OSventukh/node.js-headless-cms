@@ -33,7 +33,7 @@ export const getPostsController = async (req, res, next) => {
       include,
       order,
       page,
-      size,
+      size
     );
     res.status(200).json({
       count,
@@ -73,10 +73,20 @@ export const deletePostController = async (req, res, next) => {
     // deleting all post with given id
     const result = await deletePost(postId);
     res.status(200).json({
-      message: result > 1 ? 'Posts were successfully deleted' : 'Post was successfully deleted',
+      message:
+        result > 1
+          ? 'Posts were successfully deleted'
+          : 'Post was successfully deleted',
       count: result,
     });
   } catch (error) {
     next(new HttpError(error.message, error.statusCode));
   }
+};
+
+export const uploadPostImageController = (req, res, next) => {
+  const imageUrl = `http://localhost:5000/uploads/${req.file.filename}`;
+  res.json({
+    url: imageUrl,
+  });
 };

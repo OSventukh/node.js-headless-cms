@@ -1,20 +1,51 @@
 import { Op } from 'sequelize';
 import { sequelize, Post, Topic, Category } from '../models/index.js';
 import HttpError from '../utils/http-error.js';
-import { checkIncludes, buildWhereObject, getOrder, getPagination } from '../utils/models.js';
+import {
+  checkIncludes,
+  buildWhereObject,
+  getOrder,
+  getPagination,
+} from '../utils/models.js';
+
+const transformData = (data) => {
+  // extract title from all content
+  const title = data?.rawContent?.match(/<h1>(.*?)<\/h1>/)[1];
+
+  if (!title || title.trim().length === 0) {
+    throw new HttpError('Title should not be an empty', 400);
+  }
+
+  // Remove title from content
+  const contentWithoutTitle = data.rawContent.replace(/<h1>.*?<\/h1>/, '');
+
+  // We divide the content using the separator presented in CKEditor;
+  const [excerpt, others] = contentWithoutTitle.split(
+    '<div class="page-break" style="page-break-after:always;"><span style="display:none;">&nbsp;</span></div>'
+  );
+
+  const content = others ? excerpt + others : excerpt;
+
+  return {
+    title,
+    excerpt,
+    content,
+    slug: data.slug,
+    status: data.status,
+  };
+};
 
 export const createPost = async ({ topicId, categoryId, ...postData }) => {
   try {
     // Сheck whether the given ids is an array, and if it is not, it converts it into an array.
-    const topicsIds = Array.isArray(topicId)
-      ? topicId
-      : [topicId];
-    const categoriesIds = Array.isArray(categoryId)
-      ? categoryId
-      : [categoryId];
+    const topicsIds = Array.isArray(topicId) ? topicId : [topicId];
+    const categoriesIds = Array.isArray(categoryId) ? categoryId : [categoryId];
+
+    const transformedData = transformData(postData);
+
     // Create post and find topic and category that provided in data form client
     const [post, topics, categories] = await Promise.all([
-      Post.create(postData),
+      Post.create(transformedData),
       Topic.findAll({
         where: {
           id: {
@@ -30,6 +61,15 @@ export const createPost = async ({ topicId, categoryId, ...postData }) => {
         },
       }),
     ]);
+
+    if (!topics && topics.length === 0) {
+      throw new HttpError('No topic selected', 400);
+    }
+
+    if (!categories && categories.length === 0) {
+      throw new HttpError('No topic selected', 400);
+    }
+
     // Add categories and topics to post
     await Promise.all([post.addCategories(categories), post.addTopics(topics)]);
     return post;
@@ -43,7 +83,10 @@ export const createPost = async ({ topicId, categoryId, ...postData }) => {
       const errorMessage = `The ${fieldName} should be an unique. Value ${fieldValue} is already in use`;
       throw new HttpError(errorMessage, 409);
     }
-    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+    throw new HttpError(
+      error.message || 'Something went wrong',
+      error.statusCode || 500
+    );
   }
 };
 
@@ -52,7 +95,7 @@ export const getPosts = async (
   includeQuery,
   orderQuery,
   page,
-  size,
+  size
 ) => {
   try {
     // Convert provided include query to array and check if it avaible for this model
@@ -76,18 +119,17 @@ export const getPosts = async (
     });
     return result;
   } catch (error) {
-    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+    throw new HttpError(
+      error.message || 'Something went wrong',
+      error.statusCode || 500
+    );
   }
 };
 
 export const updatePost = async (id, { topicId, categoryId, ...toUpdate }) => {
   // Сheck whether the given ids is an array, and if it is not, it converts it into an array.
-  const topicsIds = Array.isArray(topicId)
-    ? topicId
-    : [topicId];
-  const categoriesIds = Array.isArray(categoryId)
-    ? categoryId
-    : [categoryId];
+  const topicsIds = Array.isArray(topicId) ? topicId : [topicId];
+  const categoriesIds = Array.isArray(categoryId) ? categoryId : [categoryId];
 
   try {
     // Find if exist post, categories and topics with provided id
@@ -112,11 +154,13 @@ export const updatePost = async (id, { topicId, categoryId, ...toUpdate }) => {
       throw new HttpError('Post with this id not found', 404);
     }
     // Update post, and set new categories and topics
+    const transformedData = transformData(toUpdate);
+
     const result = await sequelize.transaction(async (transaction) => {
       const updatedData = await Promise.all([
         post.setCategories(categories, { transaction }),
         post.setTopics(topics, { transaction }),
-        Post.update(toUpdate, {
+        Post.update(transformedData, {
           where: {
             id,
           },
@@ -129,7 +173,10 @@ export const updatePost = async (id, { topicId, categoryId, ...toUpdate }) => {
       throw new HttpError('Post was not updated', 400);
     }
   } catch (error) {
-    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+    throw new HttpError(
+      error.message || 'Something went wrong',
+      error.statusCode || 500
+    );
   }
 };
 
@@ -164,6 +211,9 @@ export const deletePost = async (id) => {
 
     return result;
   } catch (error) {
-    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+    throw new HttpError(
+      error.message || 'Something went wrong',
+      error.statusCode || 500
+    );
   }
 };
