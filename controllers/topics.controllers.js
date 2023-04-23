@@ -23,7 +23,7 @@ export const createTopicController = async (req, res, next) => {
 export const getTopicsController = async (req, res, next) => {
   // receive topic id from url params or query
   const id = req.params.topicId || req.query.id;
-  const { include, order, page, size, ...whereQuery } = req.query;
+  const { include, order, page, size, columns, ...whereQuery } = req.query;
 
   try {
     // getting topics with provided paramaters and response it to the client
@@ -36,6 +36,7 @@ export const getTopicsController = async (req, res, next) => {
       order,
       page,
       size,
+      columns,
     );
     res.status(200).json({
       count,

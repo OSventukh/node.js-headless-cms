@@ -1,8 +1,10 @@
 import { Op } from 'sequelize';
 import { sequelize, Post, Topic, Category } from '../models/index.js';
 import HttpError from '../utils/http-error.js';
+import slugifyString from '../utils/slugify.js';
 import {
   checkIncludes,
+  checkAttributes,
   buildWhereObject,
   getOrder,
   getPagination,
@@ -21,7 +23,7 @@ const transformData = (data) => {
 
   // We divide the content using the separator presented in CKEditor;
   const [excerpt, others] = contentWithoutTitle.split(
-    '<div class="page-break" style="page-break-after:always;"><span style="display:none;">&nbsp;</span></div>'
+    '<div class="page-break" style="page-break-after:always;"><span style="display:none;">&nbsp;</span></div>',
   );
 
   const content = others ? excerpt + others : excerpt;
@@ -30,7 +32,7 @@ const transformData = (data) => {
     title,
     excerpt,
     content,
-    slug: data.slug,
+    slug: data.slug ?? slugifyString(title),
     status: data.status,
   };
 };
@@ -44,8 +46,7 @@ export const createPost = async ({ topicId, categoryId, ...postData }) => {
     const transformedData = transformData(postData);
 
     // Create post and find topic and category that provided in data form client
-    const [post, topics, categories] = await Promise.all([
-      Post.create(transformedData),
+    const [topics, categories] = await Promise.all([
       Topic.findAll({
         where: {
           id: {
@@ -62,14 +63,15 @@ export const createPost = async ({ topicId, categoryId, ...postData }) => {
       }),
     ]);
 
-    if (!topics && topics.length === 0) {
+    if (!topics || topics.length === 0) {
       throw new HttpError('No topic selected', 400);
     }
 
-    if (!categories && categories.length === 0) {
+    if (!categories || categories.length === 0) {
       throw new HttpError('No topic selected', 400);
     }
 
+    const post = await Post.create(transformedData);
     // Add categories and topics to post
     await Promise.all([post.addCategories(categories), post.addTopics(topics)]);
     return post;
@@ -85,7 +87,7 @@ export const createPost = async ({ topicId, categoryId, ...postData }) => {
     }
     throw new HttpError(
       error.message || 'Something went wrong',
-      error.statusCode || 500
+      error.statusCode || 500,
     );
   }
 };
@@ -94,8 +96,9 @@ export const getPosts = async (
   whereQuery,
   includeQuery,
   orderQuery,
+  columns,
   page,
-  size
+  size,
 ) => {
   try {
     // Convert provided include query to array and check if it avaible for this model
@@ -103,8 +106,10 @@ export const getPosts = async (
     const include = checkIncludes(includeQuery, avaibleIncludes);
 
     // Check if provided query avaible for filtering this model
-    const avaibleWheres = ['id', 'title', 'slug', 'status'];
-    const whereObj = buildWhereObject(whereQuery, avaibleWheres);
+    const avaibleColumns = ['id', 'title', 'slug', 'status', 'content', 'excerpt', 'createdAt', 'updatedAt'];
+
+    const whereObj = buildWhereObject(whereQuery, avaibleColumns);
+    const attributes = checkAttributes(columns, avaibleColumns);
 
     const order = await getOrder(orderQuery, Post);
 
@@ -116,12 +121,13 @@ export const getPosts = async (
       order,
       offset,
       limit,
+      ...(columns && { attributes: ['id', ...attributes] }),
     });
     return result;
   } catch (error) {
     throw new HttpError(
       error.message || 'Something went wrong',
-      error.statusCode || 500
+      error.statusCode || 500,
     );
   }
 };
@@ -175,7 +181,7 @@ export const updatePost = async (id, { topicId, categoryId, ...toUpdate }) => {
   } catch (error) {
     throw new HttpError(
       error.message || 'Something went wrong',
-      error.statusCode || 500
+      error.statusCode || 500,
     );
   }
 };
@@ -213,7 +219,7 @@ export const deletePost = async (id) => {
   } catch (error) {
     throw new HttpError(
       error.message || 'Something went wrong',
-      error.statusCode || 500
+      error.statusCode || 500,
     );
   }
 };

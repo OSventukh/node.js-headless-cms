@@ -6,6 +6,12 @@ export function checkIncludes(includeQuery = '', avaibleIncludes = []) {
   return include;
 }
 
+export function checkAttributes(attributesQuery = '', avaibleAttributes = []) {
+  const includeArr = attributesQuery.split(',');
+  const attributes = includeArr.filter((item) => avaibleAttributes.includes(item));
+  return attributes;
+}
+
 export function buildWhereObject(whereQuery = {}, avaibleWheres = []) {
   return Object.fromEntries(
     Object.entries(whereQuery).filter(

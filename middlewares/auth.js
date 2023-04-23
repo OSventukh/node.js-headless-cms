@@ -56,6 +56,7 @@ export const canEditPost = async (req, res, next) => {
     const user = req.authUser;
     const userRole = await user.getRole();
     const postId = req.params.postId || req.body.id;
+
     if (!postId) {
       throw new HttpError('Post id is not valid', 422);
     }
@@ -70,14 +71,18 @@ export const canEditPost = async (req, res, next) => {
       post.getTopics(),
       user.getTopics(),
     ]);
+
+    // check if user belongs to current post topic
     const commonTopic = userTopic.filter(
       (uTopic) => postTopic.some((pTopic) => uTopic.id === pTopic.id),
     );
 
+    // moderator have access to all post within their topics
     if (userRole.name === MODER && commonTopic.length > 0) {
       return next();
     }
 
+    // writter have access only to own post
     if (userRole.name === WRITER && (await user.hasPost(post))) {
       return next();
     }
