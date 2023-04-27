@@ -11,6 +11,7 @@ export default (sequelize, DataTypes) => {
       // define association here
       this.belongsToMany(models.Post, { foreignKey: 'postId', as: 'posts', through: 'PostCategory' });
       this.belongsTo(models.Category, { foreignKey: 'parentId', as: 'parent' });
+      this.hasMany(models.Category, { foreignKey: 'parentId', as: 'children' });
     }
   }
 
@@ -32,7 +33,7 @@ export default (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: true,
         references: {
-          model: 'Categories',
+          model: 'Category',
           key: 'id',
         },
       },

@@ -30,6 +30,7 @@ export const getUsersController = async (req, res, next) => {
       page,
       size,
       all,
+      columns,
     );
     res.status(200).json({
       count,

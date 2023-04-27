@@ -34,6 +34,7 @@ export const getCategoriesController = async (req, res, next) => {
       order,
       page,
       size,
+      columns,
     );
     res.status(200).json({
       count,

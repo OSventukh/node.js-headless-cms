@@ -1,7 +1,7 @@
 import { Op } from 'sequelize';
 import { User, Topic } from '../models/index.js';
 import HttpError from '../utils/http-error.js';
-import { checkIncludes, buildWhereObject, getOrder, getPagination } from '../utils/models.js';
+import { checkIncludes, checkAttributes, buildWhereObject, getOrder, getPagination } from '../utils/models.js';
 import { ADMIN } from '../utils/constants/roles.js';
 
 export const createUser = async ({ topicId, ...data }) => {
@@ -42,30 +42,31 @@ export const getUsers = async (
   page,
   size,
   paranoid,
+  columns,
 ) => {
   try {
     // Convert provided include query to array and check if it avaible for this model
-    const avaibleIncludes = ['posts', 'pages', 'topics'];
+    const avaibleIncludes = ['posts', 'pages', 'topics', 'role'];
     const include = checkIncludes(includeQuery, avaibleIncludes);
 
     // Check if provided query avaible for filtering this model
-    const avaibleWheres = ['id', 'firstname', 'lastName', 'email', 'role', 'status'];
-    const whereObj = buildWhereObject(whereQuery, avaibleWheres);
+    const avaibleColumns = ['id', 'firstname', 'lastname', 'email', 'status', 'createdAt', 'updatedAt', 'deletedAt'];
+    const whereObj = buildWhereObject(whereQuery, avaibleColumns);
 
-    const order = await getOrder(orderQuery, User);
+    const attributes = checkAttributes(columns, avaibleColumns, ['password']);
+    const order = await getOrder(orderQuery, User, [{ model: 'Role', as: 'role', column: 'name' }]);
 
     const { offset, limit } = getPagination(page, size);
 
     const result = await User.findAndCountAll({
       where: whereObj,
-      attributes: { exclude: ['password'] },
+      attributes: ['id', ...attributes],
       include,
       order,
       offset,
       limit,
       paranoid: !paranoid,
     });
-
     return result;
   } catch (error) {
     throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
