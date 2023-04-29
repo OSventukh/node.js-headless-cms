@@ -7,6 +7,7 @@ import {
   getUsersController,
   updateUserController,
   deleteUserController,
+  getUserRolesController,
 } from '../controllers/users.controllers.js';
 
 import {
@@ -24,14 +25,14 @@ router.get(
   idValidator('userId'),
   paginationValidator(),
   checkValidation,
-  getUsersController,
+  getUsersController
 );
 
 router.get(
   '/users',
   paginationValidator(),
   checkValidation,
-  getUsersController,
+  getUsersController
 );
 
 router.post(
@@ -40,7 +41,7 @@ router.post(
   rolesAccess([ADMIN]),
   userValidator(),
   checkValidation,
-  createUserController,
+  createUserController
 );
 
 router.patch(
@@ -50,7 +51,7 @@ router.patch(
   userValidator(),
   idValidator('userId'),
   checkValidation,
-  updateUserController,
+  updateUserController
 );
 
 router.patch(
@@ -59,7 +60,7 @@ router.patch(
   rolesAccess([ADMIN]),
   userValidator(),
   checkValidation,
-  updateUserController,
+  updateUserController
 );
 
 router.delete(
@@ -72,5 +73,7 @@ router.delete(
 );
 
 router.delete('/users', auth, rolesAccess([ADMIN]), deleteUserController);
+
+router.get('/roles', auth, rolesAccess([ADMIN]), getUserRolesController);
 
 export default router;

@@ -1,6 +1,12 @@
 import HttpError from '../utils/http-error.js';
 
-import { createUser, getUsers, updateUser, deleteUser } from '../services/users.services.js';
+import {
+  createUser,
+  getUsers,
+  updateUser,
+  deleteUser,
+  getUserRoles,
+} from '../services/users.services.js';
 
 export const createUserController = async (req, res, next) => {
   try {
@@ -30,7 +36,7 @@ export const getUsersController = async (req, res, next) => {
       page,
       size,
       all,
-      columns,
+      columns
     );
     res.status(200).json({
       count,
@@ -71,6 +77,17 @@ export const deleteUserController = async (req, res, next) => {
 
     res.status(200).json({
       message: 'User was successfully deleted',
+    });
+  } catch (error) {
+    next(new HttpError(error.message, error.statusCode));
+  }
+};
+
+export const getUserRolesController = async (req, res, next) => {
+  try {
+    const roles = await getUserRoles();
+    res.status(200).json({
+      roles,
     });
   } catch (error) {
     next(new HttpError(error.message, error.statusCode));

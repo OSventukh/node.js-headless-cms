@@ -1,5 +1,5 @@
 import { Op } from 'sequelize';
-import { User, Topic } from '../models/index.js';
+import { User, Topic, Role } from '../models/index.js';
 import HttpError from '../utils/http-error.js';
 import { checkIncludes, checkAttributes, buildWhereObject, getOrder, getPagination } from '../utils/models.js';
 import { ADMIN } from '../utils/constants/roles.js';
@@ -53,7 +53,9 @@ export const getUsers = async (
     const avaibleColumns = ['id', 'firstname', 'lastname', 'email', 'status', 'createdAt', 'updatedAt', 'deletedAt'];
     const whereObj = buildWhereObject(whereQuery, avaibleColumns);
 
+    // exclude password
     const attributes = checkAttributes(columns, avaibleColumns, ['password']);
+    // include Role association
     const order = await getOrder(orderQuery, User, [{ model: 'Role', as: 'role', column: 'name' }]);
 
     const { offset, limit } = getPagination(page, size);
@@ -144,6 +146,17 @@ export const restoreUser = async (id) => {
         id,
       },
     });
+  } catch (error) {
+    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+  }
+};
+
+export const getUserRoles = async () => {
+  try {
+    const roles = Role.findAll({
+      attributes: ['id', 'name'],
+    });
+    return roles;
   } catch (error) {
     throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
   }
