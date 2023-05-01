@@ -1,6 +1,12 @@
 import HttpError from '../utils/http-error.js';
 
-import { createUser, getUsers, updateUser, deleteUser } from '../services/users.services.js';
+import {
+  createUser,
+  getUsers,
+  updateUser,
+  deleteUser,
+  getUserRoles,
+} from '../services/users.services.js';
 
 export const createUserController = async (req, res, next) => {
   try {
@@ -17,7 +23,7 @@ export const createUserController = async (req, res, next) => {
 export const getUsersController = async (req, res, next) => {
   // receive user id from url params or query
   const id = req.params.userId || req.query.id;
-  const { include, order, page, size, all, ...whereQuery } = req.query;
+  const { include, order, page, size, all, columns, ...whereQuery } = req.query;
   try {
     // getting users with provided paramaters and response it to the client
     const { count, rows } = await getUsers(
@@ -30,6 +36,7 @@ export const getUsersController = async (req, res, next) => {
       page,
       size,
       all,
+      columns
     );
     res.status(200).json({
       count,
@@ -70,6 +77,17 @@ export const deleteUserController = async (req, res, next) => {
 
     res.status(200).json({
       message: 'User was successfully deleted',
+    });
+  } catch (error) {
+    next(new HttpError(error.message, error.statusCode));
+  }
+};
+
+export const getUserRolesController = async (req, res, next) => {
+  try {
+    const roles = await getUserRoles();
+    res.status(200).json({
+      roles,
     });
   } catch (error) {
     next(new HttpError(error.message, error.statusCode));

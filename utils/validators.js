@@ -83,12 +83,12 @@ export function pageValidator() {
 
 export function postValidator() {
   return [
-    body('title')
+    body('rawContent')
       .optional()
       .trim()
       .not()
       .isEmpty()
-      .withMessage('Title should not be an empty'),
+      .withMessage('No content to save'),
   ];
 }
 

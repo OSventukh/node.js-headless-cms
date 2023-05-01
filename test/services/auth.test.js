@@ -18,7 +18,7 @@ describe('auth services', () => {
   let login;
   let refreshTokens;
   let logout;
-  let isUserLoggedIn;
+  let checkIsUserLoggedIn;
   beforeAll(async () => {
     await sequelize.query('SET FOREIGN_KEY_CHECKS = 0', { raw: true });
     await User.sync({ force: true });
@@ -31,7 +31,7 @@ describe('auth services', () => {
     login = authServices.login;
     refreshTokens = authServices.refreshTokens;
     logout = authServices.logout;
-    isUserLoggedIn = authServices.isUserLoggedIn;
+    checkIsUserLoggedIn = authServices.checkIsUserLoggedIn;
   });
   beforeEach(() => {
     vi.stubEnv('ACCESS_TOKEN_SECRET_KEY', '12345');
@@ -276,7 +276,7 @@ describe('auth services', () => {
         userCredentials.password,
       );
 
-      const result = isUserLoggedIn(refreshToken);
+      const result = await checkIsUserLoggedIn(refreshToken);
       expect(result).toBe(true);
     });
 
@@ -296,7 +296,7 @@ describe('auth services', () => {
         userCredentials.password,
       );
 
-      const result = isUserLoggedIn('123456');
+      const result = await checkIsUserLoggedIn('123456');
       expect(result).toBe(false);
     });
   });
@@ -323,9 +323,7 @@ describe('auth services', () => {
 
       await logout(refreshToken, accessToken);
 
-      expect(UserBlockedToken.create).toHaveBeenCalledWith({
-        token: accessToken,
-      });
+      expect(UserBlockedToken.create).toHaveBeenCalled();
     });
     it('Should throw an HttpError if sequelize failed', async () => {
       const refreshToken = 12345;

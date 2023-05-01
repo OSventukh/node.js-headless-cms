@@ -176,6 +176,7 @@ describe('Users serviсes', async () => {
       await User.bulkCreate([userData1, userData2, userData3]);
 
       const result = await getUsers({ status: 'active' });
+      console.log(['result'], result.rows[0])
       expect(result.count).toBe(2);
       expect(result.rows.length).toBe(2);
       expect(result.rows[0].status).toBe('active');
@@ -215,6 +216,7 @@ describe('Users serviсes', async () => {
         lastname: 'Old Lastname',
         email: 'old@test.com',
         password: '123456',
+        roleId: 3,
       });
 
       const toUpdate = {
@@ -223,10 +225,10 @@ describe('Users serviсes', async () => {
         email: 'new@test.com',
       };
       await updateUser(user.id, toUpdate);
-      const result = await getUsers({ id: user.id });
-      expect(result.rows[0].firstname).toBe(toUpdate.firstname);
-      expect(result.rows[0].lastname).toBe(toUpdate.lastname);
-      expect(result.rows[0].email).toBe(toUpdate.email);
+      const result = await User.findByPk(user.id);
+      expect(result.firstname).toBe(toUpdate.firstname);
+      expect(result.lastname).toBe(toUpdate.lastname);
+      expect(result.email).toBe(toUpdate.email);
     });
 
     it('Should call User.findByPk() and User.update functions with arguments', async () => {
@@ -360,6 +362,7 @@ describe('Users serviсes', async () => {
         lastname: 'User',
         email: 'test@test.com',
         password: '123456',
+        roleId: 3,
       });
       const user = await createUser({
         firstname: 'Test',

@@ -10,6 +10,8 @@ export default (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       this.belongsToMany(models.Post, { foreignKey: 'postId', as: 'posts', through: 'PostCategory' });
+      this.belongsTo(models.Category, { foreignKey: 'parentId', as: 'parent' });
+      this.hasMany(models.Category, { foreignKey: 'parentId', as: 'children' });
     }
   }
 
@@ -26,6 +28,14 @@ export default (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         unique: true,
         allowNull: false,
+      },
+      parentId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+          model: 'Category',
+          key: 'id',
+        },
       },
     },
     {

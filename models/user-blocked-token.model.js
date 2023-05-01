@@ -13,6 +13,10 @@ export default (sequelize, DataTypes) => {
         allowNull: false,
         unique: true,
       },
+      expiresIn: {
+        type: DataTypes.DATE,
+        allowNull: false,
+      },
     },
     {
       sequelize,

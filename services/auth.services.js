@@ -1,6 +1,12 @@
 import ms from 'ms';
-import { sequelize, User, Role, UserToken, UserBlockedToken } from '../models/index.js';
-import { comparePassword, hashPassword } from '../utils/hash.js';
+import {
+  sequelize,
+  User,
+  Role,
+  UserToken,
+  UserBlockedToken,
+} from '../models/index.js';
+
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -14,13 +20,13 @@ export const adminCheck = async () => {
   return users.length > 0 && users[0].role.name === 'Administrator';
 };
 
-export const login = async (email, password) => {
+export const login = async (email, password, userIp) => {
   try {
     const user = await User.findOne({
       where: {
         email,
       },
-      include: ['role', 'topics'],
+      include: ['role', 'topics', 'tokens'],
     });
 
     if (!user) {
@@ -34,10 +40,17 @@ export const login = async (email, password) => {
 
     const accessToken = generateAccessToken(user.getTokenData());
     const refreshToken = generateRefreshToken({ id: user.id });
-
+    // A user should have no more than 5 tokens
+    if (user.tokens && user.tokens.length === 5) {
+      const sortedTokens = user.tokens.sort(
+        (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+      );
+      await sortedTokens[0].destroy();
+    }
     await UserToken.create({
       userId: user.id,
       token: refreshToken,
+      ip: userIp,
       expiresIn: new Date(Date.now() + ms(config.refreshTokenExpiresIn)),
     });
 
@@ -47,7 +60,10 @@ export const login = async (email, password) => {
       refreshToken,
     };
   } catch (error) {
-    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+    throw new HttpError(
+      error.message || 'Something went wrong',
+      error.statusCode || 500
+    );
   }
 };
 
@@ -67,14 +83,9 @@ export const signup = async (data) => {
       throw new HttpError('Role not found', 500);
     }
 
-    const userData = {
-      ...data,
-      password: await hashPassword(data.password),
-    };
-
     // Creating user and adding role 'administrator';
     const user = await sequelize.transaction(async (transaction) => {
-      const createdUser = await User.create(userData, { transaction });
+      const createdUser = await User.create(data, { transaction });
       await createdUser.setRole(adminRole, { transaction });
       return createdUser;
     });
@@ -83,14 +94,16 @@ export const signup = async (data) => {
     if (error.name === 'SequelizeValidationError') {
       throw new HttpError(error.message, 400);
     }
-    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+    throw new HttpError(
+      error.message || 'Something went wrong',
+      error.statusCode || 500
+    );
   }
 };
 
 export const refreshTokens = async (oldRefreshToken) => {
   try {
     const { id } = verifyRefreshToken(oldRefreshToken);
-
     const userToken = await UserToken.findOne({
       where: {
         token: oldRefreshToken,
@@ -111,21 +124,16 @@ export const refreshTokens = async (oldRefreshToken) => {
       token: newRefreshToken,
       expiresIn: new Date(Date.now() + ms(config.refreshTokenExpiresIn)),
     });
-    return { newAccessToken, newRefreshToken };
+    return { newAccessToken, newRefreshToken, user: user.getPublicData() };
   } catch (error) {
     throw new HttpError('Not Authenticated', 401);
   }
 };
 
-export const isUserLoggedIn = (refreshToken) => {
+export const checkIsUserLoggedIn = async (accessToken) => {
   try {
-    verifyRefreshToken(refreshToken);
-    const savedToken = UserToken.findOne({
-      where: {
-        token: refreshToken,
-      },
-    });
-    return savedToken && true;
+    verifyRefreshToken(accessToken);
+    return true;
   } catch (error) {
     return false;
   }
@@ -137,6 +145,7 @@ export const logout = async (refreshToken, accessToken) => {
     // the system even if they still have a valid access token.
     await UserBlockedToken.create({
       token: accessToken,
+      expiresIn: new Date(Date.now() + ms(config.accessTokenExpiresIn)),
     });
     // Delete refreshToken of the user that logging out from database
     await UserToken.destroy({

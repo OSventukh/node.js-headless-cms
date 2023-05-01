@@ -1,5 +1,5 @@
+import path from 'path';
 import HttpError from '../utils/http-error.js';
-
 import {
   createTopic,
   getTopics,
@@ -9,7 +9,8 @@ import {
 
 export const createTopicController = async (req, res, next) => {
   try {
-    const topic = await createTopic(req.body);
+    const imagePath = req.file ? path.join('uploads', 'images', 'topics', req.file.filename) : '';
+    const topic = await createTopic({ ...req.body, image: imagePath });
     res.status(201).json({
       message: 'Topic successfully created',
       topic,
@@ -22,7 +23,7 @@ export const createTopicController = async (req, res, next) => {
 export const getTopicsController = async (req, res, next) => {
   // receive topic id from url params or query
   const id = req.params.topicId || req.query.id;
-  const { include, order, page, size, ...whereQuery } = req.query;
+  const { include, order, page, size, columns, ...whereQuery } = req.query;
 
   try {
     // getting topics with provided paramaters and response it to the client
@@ -35,6 +36,7 @@ export const getTopicsController = async (req, res, next) => {
       order,
       page,
       size,
+      columns,
     );
     res.status(200).json({
       count,
@@ -48,15 +50,14 @@ export const getTopicsController = async (req, res, next) => {
 };
 
 export const updateTopicController = async (req, res, next) => {
-  // Receive topic id from url params or request body
-  const topicId = req.params.topicId || req.body.id;
-
-  // Divide the request body into data that will be updated and topic id if it was passed.
-  // Id should remain unchanged
-  const { id, ...toUpdate } = req.body;
-
   try {
-    await updateTopic(topicId, toUpdate);
+    // Receive topic id from url params or request body
+    const topicId = req.params.topicId || req.body.id;
+    // Divide the request body into data that will be updated and topic id if it was passed.
+    // Id should remain unchanged
+    const { id, ...toUpdate } = req.body;
+    const imagePath = req.file ? path.join('uploads', 'images', 'topics', req.file.filename) : '';
+    await updateTopic(topicId, { ...toUpdate, ...(imagePath && { image: imagePath }) });
 
     res.status(200).json({
       message: 'Topic was successfully updated',

@@ -6,15 +6,29 @@ export function checkIncludes(includeQuery = '', avaibleIncludes = []) {
   return include;
 }
 
+export function checkAttributes(
+  attributesQuery = '',
+  avaibleAttributes = [],
+  exclude = [],
+) {
+  const includeArr = attributesQuery.split(',');
+  const attributes = includeArr.filter(
+    (item) => (
+      avaibleAttributes.includes(item) && !avaibleAttributes.includes(exclude)
+    ),
+  );
+  return attributes;
+}
+
 export function buildWhereObject(whereQuery = {}, avaibleWheres = []) {
   return Object.fromEntries(
     Object.entries(whereQuery).filter(
-      ([key, value]) => avaibleWheres.includes(key) && value !== undefined
+      ([key, value]) => avaibleWheres.includes(key) && value !== undefined,
     ),
   );
 }
 
-export async function getOrder(orderQuery = '', Model) {
+export async function getOrder(orderQuery = '', Model, associations = []) {
   const ordersArr = [];
   if (!orderQuery) return ordersArr;
   try {
@@ -26,11 +40,23 @@ export async function getOrder(orderQuery = '', Model) {
         // direction should be DESC or ASC
         const validDirection = direction.toLowerCase() === 'desc' ? 'DESC' : 'ASC';
         ordersArr.push([column, validDirection]);
+      } else {
+        // Check if provided column is an association
+        const association = associations.find((assoc) => assoc.as === column);
+        if (association) {
+          // direction should be DESC or ASC
+          const validDirection = direction.toLowerCase() === 'desc' ? 'DESC' : 'ASC';
+          ordersArr.push([
+            { model: association.model, as: association.as },
+            association.column,
+            validDirection,
+          ]);
+        }
       }
     });
     return ordersArr;
   } catch (error) {
-    return orderQuery;
+    return [];
   }
 }
 

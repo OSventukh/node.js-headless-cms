@@ -21,11 +21,6 @@ export default (sequelize, DataTypes) => {
           notEmpty: true,
         },
       },
-      slug: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: true,
-      },
       image: {
         type: DataTypes.STRING,
         allowNull: true,
@@ -43,6 +38,11 @@ export default (sequelize, DataTypes) => {
             msg: 'Incorect topic status value',
           },
         },
+      },
+      slug: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
       },
     },
     {

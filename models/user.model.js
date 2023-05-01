@@ -8,7 +8,11 @@ export default (sequelize, DataTypes) => {
       this.hasMany(models.UserToken, { foreignKey: 'userId', as: 'tokens' });
       this.hasMany(models.Post, { foreignKey: 'userId', as: 'posts' });
       this.hasMany(models.Page, { foreignKey: 'userId', as: 'pages' });
-      this.belongsToMany(models.Topic, { foreignKey: 'topicId', as: 'topics', through: 'TopicUsers' });
+      this.belongsToMany(models.Topic, {
+        foreignKey: 'topicId',
+        as: 'topics',
+        through: 'TopicUsers',
+      });
       this.belongsTo(models.Role, { foreignKey: 'roleId', as: 'role' });
     }
 
@@ -60,17 +64,14 @@ export default (sequelize, DataTypes) => {
       },
       password: {
         type: DataTypes.STRING,
-        allowNull: false,
-        validate: {
-          notEmpty: true,
-        },
+        defaultValue: '',
       },
       status: {
         type: DataTypes.STRING,
         defaultValue: 'active',
         validate: {
           isIn: {
-            args: [['blocked', 'active']],
+            args: [['blocked', 'active', 'pending']],
             msg: 'Incorect user status value',
           },
         },
@@ -82,15 +83,19 @@ export default (sequelize, DataTypes) => {
       paranoid: true,
       hooks: {
         beforeCreate: async (record) => {
-          record.password = await hashPassword(record.password);
+          if (record.password) {
+            record.password = await hashPassword(record.password);
+          }
         },
         beforeBulkUpdate: async (record) => {
           if (record.password) {
-            record.attributes.password = await hashPassword(record.attributes.password);
+            record.attributes.password = await hashPassword(
+              record.attributes.password
+            );
           }
         },
       },
-    },
+    }
   );
   return User;
 };

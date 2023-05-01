@@ -1,7 +1,7 @@
 import { Op } from 'sequelize';
 import { Topic, Category, sequelize } from '../models/index.js';
 import HttpError from '../utils/http-error.js';
-import { checkIncludes, buildWhereObject, getOrder, getPagination } from '../utils/models.js';
+import { checkIncludes, buildWhereObject, getOrder, getPagination, checkAttributes } from '../utils/models.js';
 
 export const createTopic = async (topicData) => {
   // Сheck whether the given ids is an array, and if it is not, it converts it into an array.
@@ -41,6 +41,7 @@ export const getTopics = async (
   orderQuery,
   page,
   size,
+  columns,
 ) => {
   try {
     // Convert provided include query to array and check if it avaible for this model
@@ -48,19 +49,20 @@ export const getTopics = async (
     const include = checkIncludes(includeQuery, avaibleIncludes);
 
     // Check if provided query avaible for filtering this model
-    const avaibleWheres = ['id', 'title', 'slug', 'status'];
-    const whereObj = buildWhereObject(whereQuery, avaibleWheres);
+    const avaibleColumns = ['id', 'title', 'slug', 'image', 'description', 'status', 'createdAt', 'updatedAt'];
+    const whereObj = buildWhereObject(whereQuery, avaibleColumns);
+    const attributes = checkAttributes(columns, avaibleColumns);
 
     const order = await getOrder(orderQuery, Topic);
 
     const { offset, limit } = getPagination(page, size);
-
     const result = await Topic.findAndCountAll({
       where: whereObj,
       include,
       order,
       offset,
       limit,
+      ...(columns && { attributes: ['id', ...attributes] }),
     });
 
     return result;

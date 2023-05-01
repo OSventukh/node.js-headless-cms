@@ -1,5 +1,5 @@
 export default {
-  accessTokenExpiresIn: '200min',
+  accessTokenExpiresIn: '5min',
   refreshTokenExpiresIn: '20days',
   defaultRecordsPerPage: 10,
 };

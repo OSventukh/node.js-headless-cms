@@ -7,7 +7,6 @@ export async function auth(req, res, next) {
   try {
     const authHeader = req.get('authorization');
     const token = authHeader?.split(' ')[1];
-
     if (!token) {
       throw new HttpError('Not Authenticated', 401);
     }
@@ -22,6 +21,7 @@ export async function auth(req, res, next) {
     if (blockedToken) {
       throw new HttpError('Not Authenticated', 401);
     }
+
     const { id } = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET_KEY);
     const user = await User.findByPk(id);
 
@@ -72,14 +72,18 @@ export const canEditPost = async (req, res, next) => {
       post.getTopics(),
       user.getTopics(),
     ]);
+
+    // check if user belongs to current post topic
     const commonTopic = userTopic.filter(
       (uTopic) => postTopic.some((pTopic) => uTopic.id === pTopic.id),
     );
 
+    // moderator have access to all post within their topics
     if (userRole.name === MODER && commonTopic.length > 0) {
       return next();
     }
 
+    // writter have access only to own post
     if (userRole.name === WRITER && (await user.hasPost(post))) {
       return next();
     }
