@@ -176,7 +176,6 @@ describe('Users serviсes', async () => {
       await User.bulkCreate([userData1, userData2, userData3]);
 
       const result = await getUsers({ status: 'active' });
-      console.log(['result'], result.rows[0])
       expect(result.count).toBe(2);
       expect(result.rows.length).toBe(2);
       expect(result.rows[0].status).toBe('active');

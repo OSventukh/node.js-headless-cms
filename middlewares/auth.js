@@ -45,9 +45,9 @@ export function rolesAccess(roles = []) {
       if (roles.includes(userRole.name)) {
         return next();
       }
-      throw new HttpError('Not Authorized', 401);
+      throw new HttpError('No access to perform this action', 401);
     } catch (error) {
-      return next(error.message, error.statusCode);
+      return next(new HttpError(error.message, error.statusCode));
     }
   };
 }

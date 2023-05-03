@@ -1,4 +1,6 @@
 import { Model } from 'sequelize';
+import ms from 'ms';
+import generateConfirmationToken from '../utils/confirmation-token.js';
 import { hashPassword, comparePassword } from '../utils/hash.js';
 
 export default (sequelize, DataTypes) => {
@@ -64,11 +66,19 @@ export default (sequelize, DataTypes) => {
       },
       password: {
         type: DataTypes.STRING,
-        defaultValue: '',
+        allowNull: true,
+      },
+      confirmationToken: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      confirmationTokenExpirationDate: {
+        type: DataTypes.DATE,
+        allowNull: true,
       },
       status: {
         type: DataTypes.STRING,
-        defaultValue: 'active',
+        defaultValue: 'pending',
         validate: {
           isIn: {
             args: [['blocked', 'active', 'pending']],
@@ -83,6 +93,8 @@ export default (sequelize, DataTypes) => {
       paranoid: true,
       hooks: {
         beforeCreate: async (record) => {
+          record.confirmationToken = await generateConfirmationToken(User);
+          record.confirmationTokenExpirationDate = new Date(Date.now() + ms('1 day'));
           if (record.password) {
             record.password = await hashPassword(record.password);
           }

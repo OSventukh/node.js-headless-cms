@@ -9,6 +9,7 @@ import {
   getPagination,
 } from '../utils/models.js';
 import { ADMIN } from '../utils/constants/roles.js';
+import generateConfirmationToken from '../utils/confirmation-token.js';
 
 export const createUser = async ({ topicId, roleId, ...data }) => {
   try {
@@ -26,7 +27,7 @@ export const createUser = async ({ topicId, roleId, ...data }) => {
     ]);
 
     if (!role) {
-      throw new HttpError('Role non found', 404);
+      throw new HttpError('Role not found', 404);
     }
 
     const user = await sequelize.transaction(async (transaction) => {
@@ -59,7 +60,7 @@ export const getUsers = async (
   page,
   size,
   paranoid,
-  columns
+  columns,
 ) => {
   try {
     // Convert provided include query to array and check if it avaible for this model
@@ -148,20 +149,33 @@ export const updateUser = async (id, { topicId, ...toUpdate }) => {
 };
 
 export const deleteUser = async (id) => {
+  const usersId = Array.of(id).flat();
+
   try {
-    const user = await User.findByPk(id, { include: ['role'] });
-    if (!user) {
+    const users = await User.findAll({
+      where: {
+        id: {
+          [Op.in]: usersId
+        },
+      },
+      include: ['role'],
+    });
+    if (!users || users.length === 0) {
       throw new HttpError('User not found', 404);
     }
     // Prevent deleting administrator
-    if (user.id === 1 || user.role.name === ADMIN) {
-      throw new HttpError('This user cannot be deleted', 403);
-    }
+    users.forEach((user) => {
+      if (user.id === 1 || user.role.name === ADMIN) {
+        throw new HttpError('This user cannot be deleted', 403);
+      }
+    });
 
     // Deleting the user
     const result = await User.destroy({
       where: {
-        id,
+        id: {
+          [Op.in]: usersId,
+        },
       },
     });
 
