@@ -1,7 +1,7 @@
 import express from 'express';
 
 import { auth, rolesAccess } from '../middlewares/auth.js';
-import { ADMIN, MODER } from '../utils/constants/roles.js';
+import { SUPERADMIN, ADMIN, MODER } from '../utils/constants/roles.js';
 import {
   createPageController,
   getPagesController,
@@ -36,7 +36,7 @@ router.get(
 router.post(
   '/pages',
   auth,
-  rolesAccess([ADMIN]),
+  rolesAccess([SUPERADMIN, ADMIN]),
   pageValidator(),
   checkValidation,
   createPageController,
@@ -45,7 +45,7 @@ router.post(
 router.patch(
   '/pages/:pageId',
   auth,
-  rolesAccess([ADMIN, MODER]),
+  rolesAccess([SUPERADMIN, ADMIN, MODER]),
   idValidator('pageId'),
   checkValidation,
   updatePageController,
@@ -54,7 +54,7 @@ router.patch(
 router.patch(
   '/pages',
   auth,
-  rolesAccess([ADMIN, MODER]),
+  rolesAccess([SUPERADMIN, ADMIN, MODER]),
   pageValidator(),
   checkValidation,
   updatePageController,
@@ -63,12 +63,12 @@ router.patch(
 router.delete(
   '/pages/:pageId',
   auth,
-  rolesAccess([ADMIN]),
+  rolesAccess([SUPERADMIN, ADMIN]),
   idValidator('pageId'),
   checkValidation,
   deletePageController,
 );
 
-router.delete('/pages', auth, rolesAccess([ADMIN]), deletePageController);
+router.delete('/pages', auth, rolesAccess([SUPERADMIN, ADMIN]), deletePageController);
 
 export default router;

@@ -8,7 +8,7 @@ import {
   getPostsController,
   updatePostController,
   deletePostController,
-  uploadPostImageController
+  uploadPostImageController,
 } from '../controllers/posts.controllers.js';
 
 import {
@@ -17,7 +17,7 @@ import {
   paginationValidator,
 } from '../utils/validators.js';
 import checkValidation from '../middlewares/validation.js';
-import { ADMIN, MODER, WRITER } from '../utils/constants/roles.js';
+import { SUPERADMIN, ADMIN, MODER, WRITER } from '../utils/constants/roles.js';
 
 const router = express.Router();
 
@@ -39,7 +39,7 @@ router.get(
 router.post(
   '/posts',
   auth,
-  rolesAccess([ADMIN, MODER, WRITER]),
+  rolesAccess([SUPERADMIN, ADMIN, MODER, WRITER]),
   postValidator(),
   checkValidation,
   createPostController,
@@ -56,7 +56,7 @@ router.post(
 router.patch(
   '/posts/:postId',
   auth,
-  rolesAccess([ADMIN, MODER, WRITER]),
+  rolesAccess([SUPERADMIN, ADMIN, MODER, WRITER]),
   canEditPost,
   postValidator(),
   idValidator('postId'),
@@ -67,7 +67,7 @@ router.patch(
 router.patch(
   '/posts',
   auth,
-  rolesAccess([ADMIN, MODER, WRITER]),
+  rolesAccess([SUPERADMIN, ADMIN, MODER, WRITER]),
   canEditPost,
   postValidator(),
   checkValidation,
@@ -77,13 +77,13 @@ router.patch(
 router.delete(
   '/posts/:postId',
   auth,
-  rolesAccess([ADMIN, MODER, WRITER]),
+  rolesAccess([SUPERADMIN, ADMIN, MODER, WRITER]),
   canEditPost,
   idValidator('postId'),
   checkValidation,
   deletePostController,
 );
 
-router.delete('/posts', auth, rolesAccess([ADMIN, MODER, WRITER]), canEditPost, deletePostController);
+router.delete('/posts', auth, rolesAccess([SUPERADMIN, ADMIN, MODER, WRITER]), canEditPost, deletePostController);
 
 export default router;

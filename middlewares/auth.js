@@ -45,7 +45,7 @@ export function rolesAccess(roles = []) {
       if (roles.includes(userRole.name)) {
         return next();
       }
-      throw new HttpError('No access to perform this action', 401);
+      throw new HttpError('No access to perform this action', 403);
     } catch (error) {
       return next(new HttpError(error.message, error.statusCode));
     }

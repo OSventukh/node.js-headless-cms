@@ -15,7 +15,7 @@ import {
   paginationValidator,
 } from '../utils/validators.js';
 import checkValidation from '../middlewares/validation.js';
-import { ADMIN } from '../utils/constants/roles.js';
+import { SUPERADMIN, ADMIN } from '../utils/constants/roles.js';
 
 const router = express.Router();
 
@@ -37,7 +37,7 @@ router.get(
 router.post(
   '/categories',
   auth,
-  rolesAccess([ADMIN]),
+  rolesAccess([SUPERADMIN, ADMIN]),
   categoryValidator(),
   checkValidation,
   createCategoryController,
@@ -46,7 +46,7 @@ router.post(
 router.patch(
   '/categories/:categoryId',
   auth,
-  rolesAccess([ADMIN]),
+  rolesAccess([SUPERADMIN, ADMIN]),
   idValidator('categoryId'),
   categoryValidator(),
   checkValidation,
@@ -56,7 +56,7 @@ router.patch(
 router.patch(
   '/categories',
   auth,
-  rolesAccess([ADMIN]),
+  rolesAccess([SUPERADMIN, ADMIN]),
   categoryValidator(),
   checkValidation,
   updateCategoryController,

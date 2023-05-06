@@ -1,7 +1,7 @@
 import { Model } from 'sequelize';
 
 export default (sequelize, DataTypes) => {
-  class Post extends Model {
+  class Topic extends Model {
     static associate(models) {
       // define association here
       this.belongsToMany(models.User, { foreignKey: 'userId', as: 'users', through: 'TopicUsers' });
@@ -11,7 +11,7 @@ export default (sequelize, DataTypes) => {
     }
   }
 
-  Post.init(
+  Topic.init(
     {
       title: {
         type: DataTypes.STRING,
@@ -50,5 +50,5 @@ export default (sequelize, DataTypes) => {
       modelName: 'Topic',
     },
   );
-  return Post;
+  return Topic;
 };

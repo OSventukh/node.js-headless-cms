@@ -1,7 +1,7 @@
 import express from 'express';
 
 import { auth, rolesAccess } from '../middlewares/auth.js';
-import { ADMIN } from '../utils/constants/roles.js';
+import { SUPERADMIN, ADMIN } from '../utils/constants/roles.js';
 import upload from '../utils/multer.js';
 
 import {
@@ -16,6 +16,7 @@ import {
   idValidator,
   paginationValidator,
 } from '../utils/validators.js';
+
 import checkValidation from '../middlewares/validation.js';
 
 const router = express.Router();
@@ -25,30 +26,30 @@ router.get(
   idValidator('topicId'),
   paginationValidator(),
   checkValidation,
-  getTopicsController
+  getTopicsController,
 );
 
 router.get(
   '/topics',
   paginationValidator(),
   checkValidation,
-  getTopicsController
+  getTopicsController,
 );
 
 router.post(
   '/topics',
   auth,
-  rolesAccess([ADMIN]),
+  rolesAccess([SUPERADMIN, ADMIN]),
   topicValidator(),
   checkValidation,
   upload.single('topic-image'),
-  createTopicController
+  createTopicController,
 );
 
 router.patch(
   '/topics/:topicId',
   auth,
-  rolesAccess([ADMIN]),
+  rolesAccess([SUPERADMIN, ADMIN]),
   topicValidator(),
   idValidator('topicId'),
   checkValidation,
@@ -59,7 +60,7 @@ router.patch(
 router.patch(
   '/topics',
   auth,
-  rolesAccess([ADMIN]),
+  rolesAccess([SUPERADMIN, ADMIN]),
   topicValidator(),
   checkValidation,
   upload.single('topic-image'),
@@ -69,16 +70,16 @@ router.patch(
 router.delete(
   '/topics/:topicId',
   auth,
-  rolesAccess([ADMIN]),
+  rolesAccess([SUPERADMIN, ADMIN]),
   idValidator('topicId'),
   checkValidation,
-  deleteTopicController
+  deleteTopicController,
 );
 
 router.delete(
   '/topics',
   auth,
-  rolesAccess([ADMIN]),
+  rolesAccess([SUPERADMIN, ADMIN]),
   idValidator('topicId'),
   checkValidation,
   deleteTopicController,

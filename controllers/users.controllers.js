@@ -58,7 +58,7 @@ export const updateUserController = async (req, res, next) => {
   const { id, ...toUpdate } = req.body;
 
   try {
-    await updateUser(userId, toUpdate);
+    await updateUser(userId, toUpdate, req.authUser);
     res.status(200).json({
       message: 'User was successfully updated',
     });

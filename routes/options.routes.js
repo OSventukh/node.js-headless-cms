@@ -9,7 +9,7 @@ import {
 
 import { optionValidator } from '../utils/validators.js';
 import checkValidation from '../middlewares/validation.js';
-import { ADMIN } from '../utils/constants/roles.js';
+import { SUPERADMIN, ADMIN } from '../utils/constants/roles.js';
 
 const router = express.Router();
 
@@ -20,7 +20,7 @@ router.get('/site', getOptionsController);
 router.patch(
   '/site/:optionName',
   auth,
-  rolesAccess([ADMIN]),
+  rolesAccess([SUPERADMIN, ADMIN]),
   optionValidator(),
   checkValidation,
   updateOptionController,
@@ -29,7 +29,7 @@ router.patch(
 router.patch(
   '/site/',
   auth,
-  rolesAccess([ADMIN]),
+  rolesAccess([SUPERADMIN, ADMIN]),
   optionValidator(),
   checkValidation,
   updateOptionController,

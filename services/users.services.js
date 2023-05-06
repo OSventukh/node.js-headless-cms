@@ -8,8 +8,8 @@ import {
   getOrder,
   getPagination,
 } from '../utils/models.js';
-import { ADMIN } from '../utils/constants/roles.js';
-import generateConfirmationToken from '../utils/confirmation-token.js';
+
+import { ADMIN, SUPERADMIN } from '../utils/constants/roles.js';
 
 export const createUser = async ({ topicId, roleId, ...data }) => {
   try {
@@ -107,13 +107,13 @@ export const getUsers = async (
   }
 };
 
-export const updateUser = async (id, { topicId, ...toUpdate }) => {
+export const updateUser = async (id, { topicId, ...toUpdate }, authUser) => {
   try {
     const topicIds = topicId ? Array.from(topicId) : [];
 
     // Find user and topics in database
     const [user, topics] = await Promise.all([
-      await User.findByPk(id),
+      await User.findByPk(id, { include: ['role'] }),
       topicId && (await Topic.findAll({
         where: {
           id: {
@@ -126,7 +126,20 @@ export const updateUser = async (id, { topicId, ...toUpdate }) => {
     if (!user) {
       throw new HttpError('User with this id not found', 404);
     }
+    if (user.role.name === SUPERADMIN) {
+      const currentUserRole = await authUser.getRole();
 
+      if (currentUserRole.name !== SUPERADMIN) {
+        throw new HttpError('No access to perform this action', 403);
+      }
+
+      if (toUpdate.roleId) {
+        const roleToUpdate = await Role.findByPk(toUpdate.roleId);
+        if (roleToUpdate.name !== SUPERADMIN) {
+          throw new HttpError('Cannot change the role of a SUPERADMIN user', 403);
+        }
+      }
+    }
     // Update user, and set new assotiations with topics
     const [result] = await Promise.all([
       await User.update(toUpdate, {
@@ -209,12 +222,14 @@ export const getUserRoles = async () => {
   try {
     const roles = Role.findAll({
       attributes: ['id', 'name'],
+      where: {
+        name: {
+          [Op.not]: SUPERADMIN,
+        },
+      },
     });
     return roles;
   } catch (error) {
-    throw new HttpError(
-      error.message || 'Something went wrong',
-      error.statusCode || 500
-    );
+    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
   }
 };

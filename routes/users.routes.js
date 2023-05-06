@@ -16,7 +16,7 @@ import {
   paginationValidator,
 } from '../utils/validators.js';
 import checkValidation from '../middlewares/validation.js';
-import { ADMIN } from '../utils/constants/roles.js';
+import { SUPERADMIN, ADMIN } from '../utils/constants/roles.js';
 
 const router = express.Router();
 
@@ -25,55 +25,55 @@ router.get(
   idValidator('userId'),
   paginationValidator(),
   checkValidation,
-  getUsersController
+  getUsersController,
 );
 
 router.get(
   '/users',
   paginationValidator(),
   checkValidation,
-  getUsersController
+  getUsersController,
 );
 
 router.post(
   '/users',
   auth,
-  rolesAccess([ADMIN]),
+  rolesAccess([SUPERADMIN, ADMIN]),
   userValidator(),
   checkValidation,
-  createUserController
+  createUserController,
 );
 
 router.patch(
   '/users/:userId',
   auth,
-  rolesAccess([ADMIN]),
+  rolesAccess([SUPERADMIN, ADMIN]),
   userValidator(),
   idValidator('userId'),
   checkValidation,
-  updateUserController
+  updateUserController,
 );
 
 router.patch(
   '/users',
   auth,
-  rolesAccess([ADMIN]),
+  rolesAccess([SUPERADMIN, ADMIN]),
   userValidator(),
   checkValidation,
-  updateUserController
+  updateUserController,
 );
 
 router.delete(
   '/users/:userId',
   auth,
-  rolesAccess([ADMIN]),
+  rolesAccess([SUPERADMIN, ADMIN]),
   idValidator('userId'),
   checkValidation,
   deleteUserController,
 );
 
-router.delete('/users', auth, rolesAccess([ADMIN]), deleteUserController);
+router.delete('/users', auth, rolesAccess([SUPERADMIN, ADMIN]), deleteUserController);
 
-router.get('/roles', auth, rolesAccess([ADMIN]), getUserRolesController);
+router.get('/roles', auth, rolesAccess([SUPERADMIN, ADMIN]), getUserRolesController);
 
 export default router;

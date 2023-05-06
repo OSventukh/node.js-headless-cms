@@ -29,14 +29,6 @@ export default (sequelize, DataTypes) => {
         unique: true,
         allowNull: false,
       },
-      parentId: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-        references: {
-          model: 'Category',
-          key: 'id',
-        },
-      },
     },
     {
       sequelize,

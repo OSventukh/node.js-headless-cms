@@ -5,6 +5,7 @@ import {
   Role,
   UserToken,
   UserBlockedToken,
+  Option,
 } from '../models/index.js';
 
 import {
@@ -16,8 +17,26 @@ import HttpError from '../utils/http-error.js';
 import config from '../config/config.js';
 
 export const adminCheck = async () => {
-  const users = await User.findAll({ include: 'role' });
-  return users.length > 0 && users[0].role.name === 'Administrator';
+  try {
+    const adminEmail = await Option.findOne({
+      where: {
+        name: 'admin_email',
+      },
+    });
+
+    if (!adminEmail) {
+      return false;
+    }
+
+    const user = await User.findOne({
+      where: {
+        email: adminEmail.value,
+      },
+    });
+    return !!user;
+  } catch (error) {
+    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+  }
 };
 
 export const login = async (email, password, userIp) => {
@@ -43,7 +62,7 @@ export const login = async (email, password, userIp) => {
     // A user should have no more than 5 tokens
     if (user.tokens && user.tokens.length === 5) {
       const sortedTokens = user.tokens.sort(
-        (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+        (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
       );
       await sortedTokens[0].destroy();
     }
@@ -60,22 +79,24 @@ export const login = async (email, password, userIp) => {
       refreshToken,
     };
   } catch (error) {
-    throw new HttpError(
-      error.message || 'Something went wrong',
-      error.statusCode || 500
-    );
+    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
   }
 };
 
 export const signup = async (data) => {
   try {
-    const users = await User.findAll();
-    if (users.length > 0) {
+    const adminEmail = await Option.findOne({
+      where: {
+        name: 'admin_email',
+      },
+    });
+
+    if (adminEmail) {
       throw new HttpError('Administrator already exist', 409);
     }
     const adminRole = await Role.findOne({
       where: {
-        name: 'Administrator',
+        name: 'Super Administrator',
       },
     });
 
@@ -89,7 +110,13 @@ export const signup = async (data) => {
         { ...data, status: 'active' },
         { transaction },
       );
-      await createdUser.setRole(adminRole, { transaction });
+      await Promise.all([
+        await Option.create({
+          name: 'admin_email',
+          value: data.email,
+        }, { transaction }),
+        await createdUser.setRole(adminRole, { transaction }),
+      ]);
       return createdUser;
     });
     return user;
@@ -97,10 +124,7 @@ export const signup = async (data) => {
     if (error.name === 'SequelizeValidationError') {
       throw new HttpError(error.message, 400);
     }
-    throw new HttpError(
-      error.message || 'Something went wrong',
-      error.statusCode || 500
-    );
+    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
   }
 };
 
