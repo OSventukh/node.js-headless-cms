@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import HttpError from '../utils/http-error.js';
 import { Post, UserBlockedToken, User } from '../models/index.js';
 import { ADMIN, MODER, WRITER } from '../utils/constants/roles.js';
+import { BLOCKED } from '../utils/constants/status.js';
 
 export async function auth(req, res, next) {
   try {
@@ -25,8 +26,12 @@ export async function auth(req, res, next) {
     const { id } = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET_KEY);
     const user = await User.findByPk(id);
 
-    if (!user || user.status === 'blocked') {
+    if (!user) {
       throw new HttpError('Not Authenticated', 401);
+    }
+
+    if (user.status === BLOCKED) {
+      throw new HttpError('Access is denied', 403);
     }
 
     req.authUser = user;
