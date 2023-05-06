@@ -10,6 +10,7 @@ import {
 } from '../utils/models.js';
 
 import { ADMIN, SUPERADMIN } from '../utils/constants/roles.js';
+import { ACTIVE } from '../utils/constants/status.js';
 
 export const createUser = async ({ topicId, roleId, ...data }) => {
   try {
@@ -138,6 +139,10 @@ export const updateUser = async (id, { topicId, ...toUpdate }, authUser) => {
         if (roleToUpdate.name !== SUPERADMIN) {
           throw new HttpError('Cannot change the role of a SUPERADMIN user', 403);
         }
+      }
+
+      if (toUpdate.status && toUpdate.status !== ACTIVE) {
+        throw new HttpError('Cannot change the status of a SUPERADMIN user', 403);
       }
     }
     // Update user, and set new assotiations with topics
