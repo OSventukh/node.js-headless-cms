@@ -15,6 +15,7 @@ import {
 } from '../utils/token.js';
 import HttpError from '../utils/http-error.js';
 import config from '../config/config.js';
+import { ACTIVE } from '../utils/constants/status.js';
 
 export const adminCheck = async () => {
   try {
@@ -107,7 +108,7 @@ export const signup = async (data) => {
     // Creating user and adding role 'administrator';
     const user = await sequelize.transaction(async (transaction) => {
       const createdUser = await User.create(
-        { ...data, status: 'active' },
+        { ...data, status: ACTIVE },
         { transaction },
       );
       await Promise.all([

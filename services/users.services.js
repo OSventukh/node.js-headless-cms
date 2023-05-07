@@ -31,6 +31,11 @@ export const createUser = async ({ topicId, roleId, ...data }) => {
       throw new HttpError('Role not found', 404);
     }
 
+    // Prevent creante another super admin
+    if (role.name === SUPERADMIN) {
+      throw new HttpError('This action is not allowed', 403);
+    }
+
     const user = await sequelize.transaction(async (transaction) => {
       const createdUser = await User.create(data, { transaction });
       await Promise.all([
@@ -127,24 +132,34 @@ export const updateUser = async (id, { topicId, ...toUpdate }, authUser) => {
     if (!user) {
       throw new HttpError('User with this id not found', 404);
     }
+
+    const roleToUpdate = await Role.findByPk(toUpdate.roleId);
+
+    // Edit super admin user
     if (user.role.name === SUPERADMIN) {
       const currentUserRole = await authUser.getRole();
 
+      // Only super admin can edit himself
       if (currentUserRole.name !== SUPERADMIN) {
         throw new HttpError('No access to perform this action', 403);
       }
 
-      if (toUpdate.roleId) {
-        const roleToUpdate = await Role.findByPk(toUpdate.roleId);
-        if (roleToUpdate.name !== SUPERADMIN) {
-          throw new HttpError('Cannot change the role of a SUPERADMIN user', 403);
-        }
+      // Prevent changing role of super admin
+      if (toUpdate.roleId && roleToUpdate.name !== SUPERADMIN) {
+        throw new HttpError('Cannot change the role of a SUPERADMIN user', 403);
       }
 
+      // Prevent changing status of super admin
       if (toUpdate.status && toUpdate.status !== ACTIVE) {
         throw new HttpError('Cannot change the status of a SUPERADMIN user', 403);
       }
     }
+
+    // Prevent create another super admin
+    if (user.role.name !== SUPERADMIN && roleToUpdate.name === SUPERADMIN) {
+      throw new HttpError('This action is not allowed', 403);
+    }
+
     // Update user, and set new assotiations with topics
     const [result] = await Promise.all([
       await User.update(toUpdate, {
@@ -181,9 +196,9 @@ export const deleteUser = async (id) => {
     if (!users || users.length === 0) {
       throw new HttpError('User not found', 404);
     }
-    // Prevent deleting administrator
+    // Prevent deleting super admin
     users.forEach((user) => {
-      if (user.id === 1 || user.role.name === ADMIN) {
+      if (user.id === 1 || user.role.name === SUPERADMIN) {
         throw new HttpError('This user cannot be deleted', 403);
       }
     });

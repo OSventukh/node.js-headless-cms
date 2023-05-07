@@ -8,6 +8,8 @@ export default (sequelize, DataTypes) => {
       this.belongsToMany(models.Post, { foreignKey: 'postId', as: 'posts', through: 'PostTopic' });
       this.hasMany(models.Page, { foreignKey: 'pageId', as: 'pages' });
       this.hasMany(models.Category, { foreignKey: 'topicId', as: 'categories' });
+      this.belongsTo(models.Topic, { foreignKey: 'parentId', as: 'parent' });
+      this.hasMany(models.Topic, { foreignKey: 'parentId', as: 'children' });
     }
   }
 
