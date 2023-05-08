@@ -45,11 +45,11 @@ export const getTopics = async (
 ) => {
   try {
     // Convert provided include query to array and check if it avaible for this model
-    const avaibleIncludes = ['users', 'pages', 'posts', 'categories'];
+    const avaibleIncludes = ['users', 'pages', 'posts', 'categories', 'parent'];
     const include = checkIncludes(includeQuery, avaibleIncludes);
 
     // Check if provided query avaible for filtering this model
-    const avaibleColumns = ['id', 'title', 'slug', 'image', 'description', 'status', 'createdAt', 'updatedAt'];
+    const avaibleColumns = ['id', 'title', 'slug', 'image', 'description', 'status', 'parentId', 'categories', 'createdAt', 'updatedAt'];
     const whereObj = buildWhereObject(whereQuery, avaibleColumns);
     const attributes = checkAttributes(columns, avaibleColumns);
 
@@ -82,12 +82,11 @@ export const updateTopic = async (id, toUpdate) => {
       Category.findAll({
         where: {
           id: {
-            [Op]: [categoriesIds],
+            [Op.in]: categoriesIds,
           },
         },
       }),
     ]);
-
     if (!topic) {
       throw new HttpError('Topic with this id not found', 404);
     }

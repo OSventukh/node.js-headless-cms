@@ -27,7 +27,7 @@ export const getCategories = async (
   orderQuery,
   page,
   size,
-  columns
+  columns,
 ) => {
   try {
     // Convert provided include query to array and check if it avaible for this model
@@ -35,8 +35,7 @@ export const getCategories = async (
     const include = checkIncludes(includeQuery, avaibleIncludes);
 
     // Check if provided query avaible for filtering this model
-    const avaibleColumns = ['id', 'name', 'slug', 'categories'];
-
+    const avaibleColumns = ['id', 'name', 'slug', 'categories', 'parentId'];
     const whereObj = buildWhereObject(whereQuery, avaibleColumns);
     const attributes = checkAttributes(columns, avaibleColumns);
 
