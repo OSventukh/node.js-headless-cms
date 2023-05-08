@@ -21,7 +21,6 @@ export function checkAttributes(
 }
 
 export function buildWhereObject(whereQuery = {}, avaibleWheres = []) {
-  console.log(['whereQuery'], whereQuery)
   return Object.fromEntries(
     Object.entries(whereQuery).filter(
       ([key, value]) => avaibleWheres.includes(key) && value !== undefined,

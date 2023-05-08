@@ -10,7 +10,7 @@ import {
 } from '../utils/models.js';
 
 import { ADMIN, SUPERADMIN } from '../utils/constants/roles.js';
-import { ACTIVE } from '../utils/constants/status.js';
+import { ACTIVE, PENDING } from '../utils/constants/status.js';
 
 export const createUser = async ({ topicId, roleId, ...data }) => {
   try {
@@ -37,13 +37,14 @@ export const createUser = async ({ topicId, roleId, ...data }) => {
     }
 
     const user = await sequelize.transaction(async (transaction) => {
-      const createdUser = await User.create(data, { transaction });
+      const createdUser = await User.create({ ...data, status: PENDING }, { transaction });
       await Promise.all([
         topics && topics.length > 0 && await createdUser.setTopics(topics, { transaction }),
         role && await createdUser.setRole(role, { transaction }),
       ]);
       return createdUser;
     });
+
     return user.getPublicData();
   } catch (error) {
     if (error.name === 'SequelizeValidationError') {
@@ -249,6 +250,22 @@ export const getUserRoles = async () => {
       },
     });
     return roles;
+  } catch (error) {
+    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+  }
+};
+
+export const getUserTopics = async (authUser) => {
+  try {
+    const authUserRole = await authUser.getRole();
+
+    if (authUserRole.name === SUPERADMIN || authUserRole === ADMIN) {
+      const allTopics = await Topic.findAll();
+      return allTopics;
+    }
+
+    const userTopics = await authUser.getTopics();
+    return userTopics;
   } catch (error) {
     throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
   }

@@ -9,6 +9,7 @@ import {
   getTopicsController,
   updateTopicController,
   deleteTopicController,
+  getTopicCategoriesController,
 } from '../controllers/topics.controllers.js';
 
 import {
@@ -84,5 +85,7 @@ router.delete(
   checkValidation,
   deleteTopicController,
 );
+
+router.get('/topiccategories/:topics', auth, getTopicCategoriesController);
 
 export default router;

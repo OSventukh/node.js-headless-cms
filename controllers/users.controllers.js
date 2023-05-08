@@ -6,6 +6,7 @@ import {
   updateUser,
   deleteUser,
   getUserRoles,
+  getUserTopics,
 } from '../services/users.services.js';
 
 export const createUserController = async (req, res, next) => {
@@ -36,7 +37,7 @@ export const getUsersController = async (req, res, next) => {
       page,
       size,
       all,
-      columns
+      columns,
     );
     res.status(200).json({
       count,
@@ -88,6 +89,17 @@ export const getUserRolesController = async (req, res, next) => {
     const roles = await getUserRoles();
     res.status(200).json({
       roles,
+    });
+  } catch (error) {
+    next(new HttpError(error.message, error.statusCode));
+  }
+};
+
+export const getUserTopicsController = async (req, res, next) => {
+  try {
+    const topics = await getUserTopics(req.authUser);
+    res.status(200).json({
+      topics,
     });
   } catch (error) {
     next(new HttpError(error.message, error.statusCode));

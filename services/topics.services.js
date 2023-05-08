@@ -3,6 +3,15 @@ import { Topic, Category, sequelize } from '../models/index.js';
 import HttpError from '../utils/http-error.js';
 import { checkIncludes, buildWhereObject, getOrder, getPagination, checkAttributes } from '../utils/models.js';
 
+async function getAllChildCategories(categories) {
+  let allCategories = [...categories];
+  await Promise.all(categories.map(async (category) => {
+    const childCategories = await category.getChildren();
+    allCategories = allCategories.concat(childCategories);
+  }));
+  return allCategories;
+}
+
 export const createTopic = async (topicData) => {
   // Сheck whether the given ids is an array, and if it is not, it converts it into an array.
   const categoriesIds = Array.isArray(topicData.categoryId)
@@ -87,12 +96,16 @@ export const updateTopic = async (id, toUpdate) => {
         },
       }),
     ]);
+
     if (!topic) {
       throw new HttpError('Topic with this id not found', 404);
     }
+
+    const categoriesWithChild = await getAllChildCategories(categories);
+
     const result = await sequelize.transaction(async (transaction) => {
       const updatedData = await Promise.all([
-        topic.setCategories(categories, { transaction }),
+        topic.setCategories(categoriesWithChild, { transaction }),
         Topic.update(toUpdate, {
           where: {
             id,
@@ -139,6 +152,24 @@ export const deleteTopic = async (id) => {
     }
 
     return result;
+  } catch (error) {
+    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+  }
+};
+
+export const getTopicCategories = async (topicsIds) => {
+  try {
+    const topics = await Topic.findAll({
+      where: {
+        id: {
+          [Op.in]: topicsIds.split(','),
+        },
+      },
+      include: ['categories'],
+    });
+
+    const categories = topics.map((topic) => topic.categories).flat();
+    return categories;
   } catch (error) {
     throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
   }

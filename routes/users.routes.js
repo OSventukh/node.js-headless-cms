@@ -8,6 +8,7 @@ import {
   updateUserController,
   deleteUserController,
   getUserRolesController,
+  getUserTopicsController,
 } from '../controllers/users.controllers.js';
 
 import {
@@ -75,5 +76,7 @@ router.delete(
 router.delete('/users', auth, rolesAccess([SUPERADMIN, ADMIN]), deleteUserController);
 
 router.get('/roles', auth, rolesAccess([SUPERADMIN, ADMIN]), getUserRolesController);
+
+router.get('/usertopics', auth, getUserTopicsController);
 
 export default router;

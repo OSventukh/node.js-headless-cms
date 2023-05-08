@@ -5,11 +5,14 @@ import {
   getTopics,
   updateTopic,
   deleteTopic,
+  getTopicCategories,
 } from '../services/topics.services.js';
 
 export const createTopicController = async (req, res, next) => {
   try {
-    const imagePath = req.file ? path.join('uploads', 'images', 'topics', req.file.filename) : '';
+    const imagePath = req.file
+      ? path.join('uploads', 'images', 'topics', req.file.filename)
+      : '';
     const topic = await createTopic({ ...req.body, image: imagePath });
     res.status(201).json({
       message: 'Topic successfully created',
@@ -36,7 +39,7 @@ export const getTopicsController = async (req, res, next) => {
       order,
       page,
       size,
-      columns,
+      columns
     );
     res.status(200).json({
       count,
@@ -56,8 +59,13 @@ export const updateTopicController = async (req, res, next) => {
     // Divide the request body into data that will be updated and topic id if it was passed.
     // Id should remain unchanged
     const { id, ...toUpdate } = req.body;
-    const imagePath = req.file ? path.join('uploads', 'images', 'topics', req.file.filename) : '';
-    await updateTopic(topicId, { ...toUpdate, ...(imagePath && { image: imagePath }) });
+    const imagePath = req.file
+      ? path.join('uploads', 'images', 'topics', req.file.filename)
+      : '';
+    await updateTopic(topicId, {
+      ...toUpdate,
+      ...(imagePath && { image: imagePath }),
+    });
 
     res.status(200).json({
       message: 'Topic was successfully updated',
@@ -76,8 +84,27 @@ export const deleteTopicController = async (req, res, next) => {
     const result = await deleteTopic(topicId);
 
     res.status(200).json({
-      message: result > 1 ? 'Topics were successfully deleted' : 'Topic was successfully deleted',
+      message:
+        result > 1
+          ? 'Topics were successfully deleted'
+          : 'Topic was successfully deleted',
       count: result,
+    });
+  } catch (error) {
+    next(new HttpError(error.message, error.statusCode));
+  }
+};
+
+export const getTopicCategoriesController = async (req, res, next) => {
+  try {
+    const topicsIds = req.params.topics;
+
+    if (!topicsIds) {
+      throw new HttpError('Topic id should be passed as query parameters', 400);
+    }
+    const categories = await getTopicCategories(topicsIds);
+    res.status(200).json({
+      categories,
     });
   } catch (error) {
     next(new HttpError(error.message, error.statusCode));

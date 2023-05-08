@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import HttpError from '../utils/http-error.js';
 import { Post, UserBlockedToken, User } from '../models/index.js';
-import { ADMIN, MODER, WRITER } from '../utils/constants/roles.js';
+import { ADMIN, MODER, SUPERADMIN, WRITER } from '../utils/constants/roles.js';
 import { BLOCKED } from '../utils/constants/status.js';
 
 export async function auth(req, res, next) {
@@ -67,7 +67,7 @@ export const canEditPost = async (req, res, next) => {
       throw new HttpError('Post id is not valid', 422);
     }
 
-    if (userRole.name === ADMIN) {
+    if (userRole.name === ADMIN || userRole.name === SUPERADMIN) {
       return next();
     }
 
