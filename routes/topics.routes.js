@@ -86,6 +86,6 @@ router.delete(
   deleteTopicController,
 );
 
-router.get('/topiccategories/:topics', auth, getTopicCategoriesController);
+router.get('/topiccategories/', auth, getTopicCategoriesController);
 
 export default router;

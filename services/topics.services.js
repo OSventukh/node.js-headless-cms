@@ -165,7 +165,18 @@ export const getTopicCategories = async (topicsIds) => {
           [Op.in]: topicsIds.split(','),
         },
       },
-      include: ['categories'],
+      include: [
+        {
+          model: Category,
+          as: 'categories',
+          include: ['children'],
+        },
+        {
+          model: Category,
+          as: 'categories',
+          include: ['parent'],
+        }
+      ],
     });
 
     const categories = topics.map((topic) => topic.categories).flat();

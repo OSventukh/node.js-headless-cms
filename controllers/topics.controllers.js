@@ -97,11 +97,15 @@ export const deleteTopicController = async (req, res, next) => {
 
 export const getTopicCategoriesController = async (req, res, next) => {
   try {
-    const topicsIds = req.params.topics;
+    const topicsIds = req.query.topics;
 
     if (!topicsIds) {
-      throw new HttpError('Topic id should be passed as query parameters', 400);
+      res.status(200).json({
+        categories: [],
+      });
+      return;
     }
+
     const categories = await getTopicCategories(topicsIds);
     res.status(200).json({
       categories,
