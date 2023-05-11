@@ -15,7 +15,7 @@ import {
 } from '../utils/token.js';
 import HttpError from '../utils/http-error.js';
 import config from '../config/config.js';
-import { ACTIVE } from '../utils/constants/status.js';
+import { ACTIVE, PENDING } from '../utils/constants/status.js';
 
 export const adminCheck = async () => {
   try {
@@ -48,7 +48,7 @@ export const login = async (email, password, userIp) => {
       },
       include: ['role', 'topics', 'tokens'],
     });
-
+    console.log(['user'], password)
     if (!user) {
       throw new HttpError('Invalid email or password', 403);
     }
@@ -181,6 +181,62 @@ export const logout = async (refreshToken, accessToken) => {
         token: refreshToken,
       },
     });
+  } catch (error) {
+    throw new HttpError(error.message, error.statusCode);
+  }
+};
+
+export const getPendingUser = async (confirmationToken) => {
+  try {
+    const user = await User.findOne({
+      where: {
+        confirmationToken,
+      },
+    });
+
+    if (!user) {
+      throw new HttpError('User not found', 404);
+    }
+
+    if (user.status !== PENDING) {
+      throw new HttpError('The user is already verified', 409);
+    }
+
+    if (new Date(user.confirmationTokenExpirationDate) < new Date()) {
+      throw new HttpError('Confirmation token is expired', 401);
+    }
+
+    return { email: user.email, name: user.firstname };
+  } catch (error) {
+    throw new HttpError(error.message, error.statusCode);
+  }
+};
+
+export const confirmUser = async (confirmationToken, password) => {
+  try {
+    const user = await User.findOne({
+      where: {
+        confirmationToken,
+      },
+    });
+
+    if (!user) {
+      throw new HttpError('User not found', 404);
+    }
+
+    if (user.status !== PENDING) {
+      throw new HttpError('The user is already verified', 409);
+    }
+
+    if (new Date(user.confirmationTokenExpirationDate) < new Date()) {
+      throw new HttpError('Confirmation token is expired', 401);
+    }
+    user.status = ACTIVE;
+    user.password = password;
+    user.confirmationToken = null;
+    user.confirmationTokenExpirationDate = null;
+
+    await user.save();
   } catch (error) {
     throw new HttpError(error.message, error.statusCode);
   }

@@ -1,7 +1,7 @@
 import express from 'express';
 
 import { auth } from '../middlewares/auth.js';
-import { loginValidator, signupValidator } from '../utils/validators.js';
+import { confirmUserValidator, loginValidator, signupValidator } from '../utils/validators.js';
 import checkValidation from '../middlewares/validation.js';
 
 import {
@@ -10,6 +10,8 @@ import {
   refreshTokenController,
   logoutController,
   authController,
+  getPendingUserController,
+  confirmUserController,
 } from '../controllers/auth.controllers.js';
 
 const router = express.Router();
@@ -23,5 +25,9 @@ router.post('/signup', signupValidator(), checkValidation, signupController);
 router.get('/login/refreshtoken', refreshTokenController);
 
 router.post('/logout', auth, logoutController);
+
+router.get('/confirm/:token', getPendingUserController);
+
+router.post('/confirm', confirmUserValidator(), checkValidation, confirmUserController);
 
 export default router;

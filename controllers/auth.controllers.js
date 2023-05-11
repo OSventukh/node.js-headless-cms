@@ -1,5 +1,5 @@
 import ms from 'ms';
-import { login, signup, refreshTokens, checkIsUserLoggedIn, logout, adminCheck } from '../services/auth.services.js';
+import { login, signup, refreshTokens, checkIsUserLoggedIn, logout, adminCheck, getPendingUser, confirmUser } from '../services/auth.services.js';
 import { createRoles } from '../services/roles.services.js';
 import HttpError from '../utils/http-error.js';
 import config from '../config/config.js';
@@ -103,6 +103,40 @@ export const logoutController = async (req, res, next) => {
       .json({
         message: 'You have successfully logged out',
       });
+  } catch (error) {
+    next(new HttpError(error.message, error.statusCode));
+  }
+};
+
+export const getPendingUserController = async (req, res, next) => {
+  try {
+    const confirmationToken = req.params.token;
+
+    if (!confirmationToken) {
+      throw new HttpError('User not found', 404);
+    }
+
+    const { name, email } = await getPendingUser(confirmationToken);
+    res.status(200).json({
+      userName: name,
+      userEmail: email,
+    });
+  } catch (error) {
+    next(new HttpError(error.message, error.statusCode));
+  }
+};
+
+export const confirmUserController = async (req, res, next) => {
+  try {
+    const { password, token } = req.body;
+
+    if (!token) {
+      throw new HttpError('User not found', 404);
+    }
+    await confirmUser(token, password);
+    res.status(200).json({
+      message: 'User successfully verified',
+    });
   } catch (error) {
     next(new HttpError(error.message, error.statusCode));
   }

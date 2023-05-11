@@ -107,6 +107,11 @@ export default (sequelize, DataTypes) => {
             );
           }
         },
+        beforeUpdate: async (record) => {
+          if (record.password) {
+            record.password = await hashPassword(record.password);
+          }
+        },
       },
     }
   );

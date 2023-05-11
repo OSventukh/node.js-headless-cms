@@ -11,7 +11,9 @@ import {
 
 export const createUserController = async (req, res, next) => {
   try {
-    const user = await createUser(req.body);
+    const host = req.get('Origin');
+
+    const user = await createUser(req.body, host);
     res.status(201).json({
       message: 'User successfully created',
       user,

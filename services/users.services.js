@@ -8,11 +8,12 @@ import {
   getOrder,
   getPagination,
 } from '../utils/models.js';
+import sendMail from '../utils/nodemailer.js';
 
 import { ADMIN, SUPERADMIN } from '../utils/constants/roles.js';
 import { ACTIVE, PENDING } from '../utils/constants/status.js';
 
-export const createUser = async ({ topicId, roleId, ...data }) => {
+export const createUser = async ({ topicId, roleId, ...data }, host) => {
   try {
     // Create user and find topic
     const topicIds = topicId ? Array.from(topicId) : [];
@@ -43,6 +44,19 @@ export const createUser = async ({ topicId, roleId, ...data }) => {
         role && await createdUser.setRole(role, { transaction }),
       ]);
       return createdUser;
+    });
+
+    const info = await sendMail({
+      to: user.email,
+      subject: 'Confirm registration',
+      body: `<body>
+        <h1>VETHELTH</h1>
+        <p>Dear, ${user.firstname}</p>
+        <p>An administrator has created an account for you. To complete your registration and activate your account, please click on the link below</p>
+        <div>
+          <a href="${host}/confirm/${user.confirmationToken}">Click Here</a>
+        </div>
+      </body>`,
     });
 
     return user.getPublicData();
