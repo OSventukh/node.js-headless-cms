@@ -16,6 +16,7 @@ import {
 import HttpError from '../utils/http-error.js';
 import config from '../config/config.js';
 import { ACTIVE } from '../utils/constants/status.js';
+import { SUPERADMIN } from '../utils/constants/roles.js';
 
 export const adminCheck = async () => {
   try {
@@ -86,15 +87,17 @@ export const login = async (email, password, userIp) => {
 
 export const signup = async (data) => {
   try {
-    const adminEmail = await Option.findOne({
+    const superAdmin = await User.findOne({
       where: {
-        name: 'admin_email',
+        '$Role.name$': SUPERADMIN,
       },
+      include: ['role'],
     });
 
-    if (adminEmail) {
+    if (superAdmin) {
       throw new HttpError('Administrator already exist', 409);
     }
+
     const adminRole = await Role.findOne({
       where: {
         name: 'Super Administrator',
@@ -112,11 +115,11 @@ export const signup = async (data) => {
         { transaction },
       );
       await Promise.all([
-        await Option.create({
+        Option.create({
           name: 'admin_email',
           value: data.email,
         }, { transaction }),
-        await createdUser.setRole(adminRole, { transaction }),
+        createdUser.setRole(adminRole, { transaction }),
       ]);
       return createdUser;
     });
@@ -140,6 +143,7 @@ export const refreshTokens = async (oldRefreshToken) => {
     const user = await User.findByPk(id, {
       include: ['role', 'topics'],
     });
+
     if (!userToken || !user) {
       throw new HttpError('Not Authenticated', 401);
     }

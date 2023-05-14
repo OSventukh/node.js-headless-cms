@@ -20,27 +20,20 @@ export const authController = async (req, res, next) => {
 export const loginController = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    const userRefreshToken = req.cookies?.refreshToken;
     const userIp = req.ip;
 
-    // Check if user already logged in;
-    const isUserLoggedIn = await checkIsUserLoggedIn(userRefreshToken);
-    if (isUserLoggedIn) {
-      throw new HttpError('User already authenticated', 409);
-    }
     const { user, accessToken, refreshToken } = await login(email, password, userIp);
     res
       .status(200)
-      .cookie('refreshToken', refreshToken, {
-        expires: new Date(Date.now() + ms(config.refreshTokenExpiresIn)),
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-      })
       .json({
         user,
         accessToken: {
           token: accessToken,
           expirationDate: new Date(Date.now() + ms(config.accessTokenExpiresIn)),
+        },
+        refreshToken: {
+          token: refreshToken,
+          expirationDate: new Date(Date.now() + ms(config.refreshTokenExpiresIn)),
         },
       });
   } catch (error) {
@@ -63,7 +56,9 @@ export const signupController = async (req, res, next) => {
 
 export const refreshTokenController = async (req, res, next) => {
   try {
-    const userRefreshToken = req.cookies.refreshToken;
+    const authHeader = req.get('authorization');
+    const userRefreshToken = authHeader?.split(' ')[1];
+
     if (!userRefreshToken) {
       res.status(204).json();
       return;
@@ -75,15 +70,14 @@ export const refreshTokenController = async (req, res, next) => {
 
     res
       .status(200)
-      .cookie('refreshToken', newRefreshToken, {
-        expires: new Date(Date.now() + ms(config.refreshTokenExpiresIn)),
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-      })
       .json({
         accessToken: {
           token: newAccessToken,
           expirationDate: new Date(Date.now() + ms(config.accessTokenExpiresIn)),
+        },
+        refreshToken: {
+          token: newRefreshToken,
+          expirationDate: new Date(Date.now() + ms(config.refreshTokenExpiresIn)),
         },
         user,
       });
