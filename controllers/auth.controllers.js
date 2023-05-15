@@ -1,8 +1,9 @@
 import ms from 'ms';
-import { login, signup, refreshTokens, checkIsUserLoggedIn, logout, adminCheck } from '../services/auth.services.js';
+import { login, signup, refreshTokens, isUserLoggedIn, logout, adminCheck } from '../services/auth.services.js';
 import { createRoles } from '../services/roles.services.js';
 import HttpError from '../utils/http-error.js';
 import config from '../config/config.js';
+import { getAuthorizationToken } from '../utils/token.js';
 
 export const authController = async (req, res, next) => {
   // Check if admin exist.
@@ -19,6 +20,10 @@ export const authController = async (req, res, next) => {
 
 export const loginController = async (req, res, next) => {
   try {
+    const authToken = getAuthorizationToken(req);
+    if (isUserLoggedIn(authToken)) {
+      throw new HttpError('User already authenticated', 409);
+    }
     const { email, password } = req.body;
     const userIp = req.ip;
 
@@ -64,9 +69,8 @@ export const refreshTokenController = async (req, res, next) => {
       return;
     }
 
-    const { newAccessToken, newRefreshToken, user } = await refreshTokens(
-      userRefreshToken,
-    );
+    const userIp = req.ip;
+    const { newAccessToken, newRefreshToken, user } = await refreshTokens(userRefreshToken, userIp);
 
     res
       .status(200)

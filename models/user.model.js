@@ -26,7 +26,7 @@ export default (sequelize, DataTypes) => {
         lastname: this.lastname,
         email: this.email,
         createdAt: this.createdAt,
-        role: this?.role?.name,
+        ...(this.role?.name && { role: this.role?.name }),
       };
     }
 

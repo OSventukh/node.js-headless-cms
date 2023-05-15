@@ -3,11 +3,11 @@ import HttpError from '../utils/http-error.js';
 import { Post, UserBlockedToken, User } from '../models/index.js';
 import { ADMIN, MODER, SUPERADMIN, WRITER } from '../utils/constants/roles.js';
 import { BLOCKED } from '../utils/constants/status.js';
+import { getAuthorizationToken } from '../utils/token.js';
 
 export async function auth(req, res, next) {
   try {
-    const authHeader = req.get('authorization');
-    const token = authHeader?.split(' ')[1];
+    const token = getAuthorizationToken(req);
     if (!token) {
       throw new HttpError('Not Authenticated', 401);
     }

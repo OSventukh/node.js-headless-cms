@@ -55,7 +55,7 @@ export const createUser = async ({ topicId, roleId, ...data }) => {
     }
     throw new HttpError(
       error.message || 'Something went wrong',
-      error.statusCode || 500
+      error.statusCode || 500,
     );
   }
 };
@@ -114,27 +114,26 @@ export const getUsers = async (
   }
 };
 
-export const updateUser = async (id, { topicId, ...toUpdate }, authUser) => {
+export const updateUser = async (id, { topicId, roleId, ...toUpdate }, authUser) => {
   try {
     const topicIds = topicId ? Array.from(topicId) : [];
 
     // Find user and topics in database
-    const [user, topics] = await Promise.all([
-      await User.findByPk(id, { include: ['role'] }),
-      topicId && (await Topic.findAll({
+    const [user, topics, roleToUpdate] = await Promise.all([
+      User.findByPk(id, { include: ['role'] }),
+      Topic.findAll({
         where: {
           id: {
             [Op.in]: topicIds,
           },
         },
-      })),
+      }),
+      Role.findByPk(roleId),
     ]);
 
     if (!user) {
       throw new HttpError('User with this id not found', 404);
     }
-
-    const roleToUpdate = await Role.findByPk(toUpdate.roleId);
 
     // Edit super admin user
     if (user.role.name === SUPERADMIN) {
@@ -146,7 +145,7 @@ export const updateUser = async (id, { topicId, ...toUpdate }, authUser) => {
       }
 
       // Prevent changing role of super admin
-      if (toUpdate.roleId && roleToUpdate.name !== SUPERADMIN) {
+      if (roleToUpdate && roleToUpdate.name !== SUPERADMIN) {
         throw new HttpError('Cannot change the role of a SUPERADMIN user', 403);
       }
 
@@ -157,7 +156,7 @@ export const updateUser = async (id, { topicId, ...toUpdate }, authUser) => {
     }
 
     // Prevent create another super admin
-    if (user.role.name !== SUPERADMIN && roleToUpdate.name === SUPERADMIN) {
+    if (user.role.name !== SUPERADMIN && roleToUpdate && roleToUpdate.name === SUPERADMIN) {
       throw new HttpError('This action is not allowed', 403);
     }
 
@@ -169,6 +168,7 @@ export const updateUser = async (id, { topicId, ...toUpdate }, authUser) => {
         },
       }),
       topicId && user.setTopics(topics),
+      roleId && user.setTole(roleToUpdate)
     ]);
 
     if (result[0] === 0) {

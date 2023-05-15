@@ -9,7 +9,7 @@ describe('Pages serviсes', () => {
   let deletePage = null;
   beforeAll(async () => {
     await sequelize.query('SET FOREIGN_KEY_CHECKS = 0', { raw: true });
-    await Page.sync({ force: true });
+    await Page.sync({ force: true, logging: false });
     vi.clearAllMocks();
     vi.resetAllMocks();
     // import services after sequelize run

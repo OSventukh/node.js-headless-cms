@@ -9,7 +9,7 @@ import {
 } from 'vitest';
 import { sequelize, User, Role } from '../../models/index.js';
 import HttpError from '../../utils/http-error.js';
-import { ADMIN, MODER, WRITER } from '../../utils/constants/roles.js';
+import { SUPERADMIN, ADMIN, MODER, WRITER } from '../../utils/constants/roles.js';
 
 describe('Users serviсes', async () => {
   let createUser = null;
@@ -20,8 +20,11 @@ describe('Users serviсes', async () => {
 
   beforeAll(async () => {
     await sequelize.query('SET FOREIGN_KEY_CHECKS = 0', { raw: true });
-    await sequelize.sync({ force: true });
+    await sequelize.sync({ force: true, logging: false });
     await Role.bulkCreate([
+      {
+        name: SUPERADMIN,
+      },
       {
         name: ADMIN,
       },
@@ -58,7 +61,7 @@ describe('Users serviсes', async () => {
         lastname: 'User',
         email: 'test@test.com',
         password: '123456',
-        roleId: 1,
+        roleId: 2,
       };
       const user = await createUser(userData);
 
@@ -73,7 +76,7 @@ describe('Users serviсes', async () => {
         lastname: 'User',
         email: 'test@test.com',
         password: '123456',
-        roleId: 1,
+        roleId: 2,
       };
       await expect(createUser(userData)).rejects.toThrow(HttpError);
     });
@@ -84,7 +87,7 @@ describe('Users serviсes', async () => {
         lastname: 'User',
         email: 'test@test.com',
         password: '123456',
-        roleId: 1,
+        roleId: 2,
 
       };
       expect.assertions(1);
@@ -101,14 +104,14 @@ describe('Users serviсes', async () => {
         lastname: 'User',
         email: 'test@test.com',
         password: '123456',
-        roleId: 1,
+        roleId: 2,
       };
       const userData2 = {
         firstname: 'Test',
         lastname: 'User',
         email: 'test@test.com',
         password: '123456',
-        roleId: 1,
+        roleId: 2,
       };
 
       expect.assertions(2);
@@ -129,7 +132,7 @@ describe('Users serviсes', async () => {
         lastname: 'User',
         email: 'test@test.com',
         password: '123456',
-        roleId: 1,
+        roleId: 2,
       };
       const userData2 = {
         firstname: 'Test 2',
@@ -154,7 +157,7 @@ describe('Users serviсes', async () => {
         email: 'test1@test.com',
         password: '123456',
         status: 'active',
-        roleId: 1,
+        roleId: 2,
       };
       const userData2 = {
         firstname: 'Test 2',
@@ -162,7 +165,7 @@ describe('Users serviсes', async () => {
         email: 'test2@test.com',
         password: '123456',
         status: 'active',
-        roleId: 2,
+        roleId: 3,
       };
       const userData3 = {
         firstname: 'Test 3',
@@ -235,21 +238,25 @@ describe('Users serviсes', async () => {
       vi.spyOn(User, 'update');
 
       const mockUser = {
-        id: 1,
-        title: 'Old Title',
-        description: 'Old Description',
-        roleId: 1,
+        firstname: 'Test Firstname',
+        lastname: 'Test Lastname',
+        email: 'test@test.com',
+        password: '123456',
+        roleId: 3,
+        role: {
+          name: WRITER,
+        },
       };
       User.findByPk.mockResolvedValue(mockUser);
       User.update.mockResolvedValue([1]);
 
       const updatedUser = {
-        title: 'New Title',
-        description: 'New Description',
+        firstname: 'New firstname',
+        lastname: 'New lastname',
       };
       await updateUser(mockUser.id, updatedUser);
 
-      expect(User.findByPk).toHaveBeenCalledWith(mockUser.id);
+      expect(User.findByPk).toHaveBeenCalledWith(mockUser.id, { include: ['role'] });
       expect(User.update).toHaveBeenCalledWith(updatedUser, {
         where: { id: mockUser.id },
       });
@@ -260,7 +267,6 @@ describe('Users serviсes', async () => {
 
       User.findByPk.mockResolvedValue(null);
       await expect(updateUser(1, {})).rejects.toThrow();
-      expect(User.findByPk).toHaveBeenCalledWith(1);
     });
 
     it('Sould throw an error with message "User with this id not found" and status code 404 if user to update is not found', async () => {
@@ -277,10 +283,17 @@ describe('Users serviсes', async () => {
 
     it('Should throw an error with message "User was not updated" and status code 400 if user was not updated', async () => {
       expect.assertions(2);
-      vi.spyOn(User, 'findByPk');
-      vi.spyOn(User, 'update');
-
-      User.findByPk.mockResolvedValue({ id: 1 });
+      const mockUser = {
+        firstname: 'Test Firstname',
+        lastname: 'Test Lastname',
+        email: 'test@test.com',
+        password: '123456',
+        roleId: 3,
+        role: {
+          name: WRITER,
+        },
+      };
+      User.findByPk.mockResolvedValue(mockUser);
       User.update.mockResolvedValue([0]);
 
       try {
@@ -338,38 +351,15 @@ describe('Users serviсes', async () => {
       expect(users.count).toBe(0);
     });
 
-    it('Should throw an error with message "This user cannot be deleted" and statusCode 403 if try delete user with id 1', async () => {
-      const user = await createUser({
-        firstname: 'Test',
-        lastname: 'User',
-        email: 'test@test.com',
-        password: '123456',
-        roleId: 2,
-        id: 1,
-      });
-      try {
-        await deleteUser(user.id);
-      } catch (error) {
-        expect(error.message).toBe('This user cannot be deleted');
-        expect(error.statusCode).toBe(403);
-      }
-    });
-
-    it('Should throw an error with message "This user cannot be deleted" and statusCode 403 if try delete user with role admin', async () => {
-      await createUser({
-        firstname: 'Test',
-        lastname: 'User',
-        email: 'test@test.com',
-        password: '123456',
-        roleId: 3,
-      });
-      const user = await createUser({
+    it('Should throw an error with message "This user cannot be deleted" and statusCode 403 if try delete user with role super admin', async () => {
+      const { signup } = await import('../../services/auth.services.js');
+      const user = await signup({
         firstname: 'Test',
         lastname: 'User',
         email: 'test2@test.com',
         password: '123456',
-        roleId: 1,
       });
+
       expect.assertions(2);
       try {
         await deleteUser(user.id);

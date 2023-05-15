@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import request from 'supertest';
 import app from '../../app';
 
-import { checkIsUserLoggedIn, login, logout, refreshTokens } from '../../services/auth.services.js';
+import { isUserLoggedIn, login, logout, refreshTokens } from '../../services/auth.services.js';
 
 describe('Auth controllers', () => {
   beforeEach(() => {
@@ -25,7 +25,7 @@ describe('Auth controllers', () => {
     vi.restoreAllMocks();
   });
   describe('loginController', () => {
-    it('Should return accessToken and userData in response object', async () => {
+    it('Should return accessToken, refreshToken and userData in response object', async () => {
       const userCredentials = {
         email: 'test@test.com',
         password: '123456',
@@ -42,8 +42,10 @@ describe('Auth controllers', () => {
 
       login.mockResolvedValueOnce(loginBody);
       const response = await request(app).post('/login').send(userCredentials);
+
       expect(response.headers['content-type']).toMatch(/json/);
       expect(response.body.accessToken.token).toBe(loginBody.accessToken);
+      expect(response.body.refreshToken.token).toBe(loginBody.refreshToken);
       expect(response.body.user).toEqual(loginBody.user);
     });
 
@@ -63,24 +65,7 @@ describe('Auth controllers', () => {
       expect(response.statusCode).toBe(200);
     });
 
-    it('Should not return refreshToken in response object', async () => {
-      const userCredentials = {
-        email: 'test@test.com',
-        password: '123456',
-      };
-      const loginBody = {
-        accessToken: 'accessToken',
-        refreshToken: 'refreshToken',
-        userId: '1',
-      };
-
-      login.mockResolvedValueOnce(loginBody);
-      const response = await request(app).post('/login').send(userCredentials);
-      expect(response.headers['content-type']).toMatch(/json/);
-      expect(response.body.refreshToken).not.toBe(loginBody.refreshToken);
-    });
-
-    it('Should return refreshToken in cookies with HttpOnly option', async () => {
+    it('Should return an error with message "User already authenticated" and status code 409 if valid access token provided', async () => {
       const userCredentials = {
         email: 'test@test.com',
         password: '123456',
@@ -90,24 +75,7 @@ describe('Auth controllers', () => {
         refreshToken: '12345',
         userId: '1',
       };
-
-      login.mockResolvedValueOnce(loginBody);
-      const response = await request(app).post('/login').send(userCredentials);
-      expect(response.headers['set-cookie'][0]).toContain(`refreshToken=${loginBody.refreshToken}`);
-      expect(response.headers['set-cookie'][0]).toContain('HttpOnly');
-    });
-
-    it('Should return an error with message "User already authenticated" and status code 409 if valid refresh token provided', async () => {
-      const userCredentials = {
-        email: 'test@test.com',
-        password: '123456',
-      };
-      const loginBody = {
-        accessToken: '1234',
-        refreshToken: '12345',
-        userId: '1',
-      };
-      checkIsUserLoggedIn.mockResolvedValueOnce(true);
+      isUserLoggedIn.mockResolvedValueOnce(true);
       login.mockResolvedValueOnce(loginBody);
       const response = await request(app).post('/login').set('Cookie', ['refreshToken=1234567']).send(userCredentials);
 
@@ -117,39 +85,19 @@ describe('Auth controllers', () => {
   });
 
   describe('refreshTokenController', () => {
-    it('Should return new accessToken in response object if valid refresh provided by cookies', async () => {
+    it('Should return new accessToken and refreshToken in response object if valid refresh provided by header', async () => {
       const refreshBody = {
         newAccessToken: '1234',
         newRefreshToken: '123456',
       };
 
       refreshTokens.mockResolvedValueOnce(refreshBody);
-      const response = await request(app).get('/login/refreshtoken').set('Cookie', ['refreshToken=1234567']);
+      const response = await request(app).get('/login/refreshtoken').set('authorization', ['Bearer 1234567']);
+
       expect(response.body).haveOwnProperty('accessToken');
+      expect(response.body).haveOwnProperty('refreshToken');
       expect(response.body.accessToken.token).toBe(refreshBody.newAccessToken);
-    });
-
-    it('Should not return new refreshToken in response object', async () => {
-      const refreshBody = {
-        newAccessToken: '1234',
-        newRefreshToken: '123456',
-      };
-
-      refreshTokens.mockResolvedValueOnce(refreshBody);
-      const response = await request(app).get('/login/refreshtoken').set('Cookie', ['refreshToken=1234567']);
-      expect(response.body).not.haveOwnProperty('refreshToken');
-    });
-
-    it('Should return new refreshToken in cookies if old refreshToken was valid', async () => {
-      const refreshBody = {
-        newAccessToken: '1234',
-        newRefreshToken: '123456',
-      };
-
-      refreshTokens.mockResolvedValueOnce(refreshBody);
-      const response = await request(app).get('/login/refreshtoken').set('Cookie', ['refreshToken=1234567']);
-      expect(response.headers['set-cookie'][0]).toContain(`refreshToken=${refreshBody.newRefreshToken}`);
-      expect(response.headers['set-cookie'][0]).toContain('HttpOnly');
+      expect(response.body.refreshToken.token).toBe(refreshBody.newRefreshToken);
     });
 
     it('Should response with status code 204 and no content if refreshToken not provided', async () => {
@@ -159,7 +107,7 @@ describe('Auth controllers', () => {
     });
 
     it('Should response an error with message "Not Authenticated" and status code 401 if refreshToken not valid', async () => {
-      const response = await request(app).get('/login/refreshtoken').set('Cookie', ['refreshToken=1234567']);
+      const response = await request(app).get('/login/refreshtoken').set('authorization', ['Bearer 1234567']);
       expect(response.statusCode).toBe(401);
       expect(response.body.message).toBe('Not Authenticated');
     });

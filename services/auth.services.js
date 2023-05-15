@@ -11,6 +11,7 @@ import {
 import {
   generateAccessToken,
   generateRefreshToken,
+  verifyAccessToken,
   verifyRefreshToken,
 } from '../utils/token.js';
 import HttpError from '../utils/http-error.js';
@@ -132,7 +133,7 @@ export const signup = async (data) => {
   }
 };
 
-export const refreshTokens = async (oldRefreshToken) => {
+export const refreshTokens = async (oldRefreshToken, userIp) => {
   try {
     const { id } = verifyRefreshToken(oldRefreshToken);
     const userToken = await UserToken.findOne({
@@ -152,7 +153,8 @@ export const refreshTokens = async (oldRefreshToken) => {
 
     await userToken.destroy();
     await UserToken.create({
-      user: user.id,
+      ip: userIp,
+      userId: user.id,
       token: newRefreshToken,
       expiresIn: new Date(Date.now() + ms(config.refreshTokenExpiresIn)),
     });
@@ -162,9 +164,9 @@ export const refreshTokens = async (oldRefreshToken) => {
   }
 };
 
-export const checkIsUserLoggedIn = async (accessToken) => {
+export const isUserLoggedIn = (accessToken) => {
   try {
-    verifyRefreshToken(accessToken);
+    verifyAccessToken(accessToken);
     return true;
   } catch (error) {
     return false;
