@@ -42,8 +42,8 @@ export default (sequelize, DataTypes) => {
         defaultValue: 'draft',
         validate: {
           isIn: {
-            args: [['draft', 'publish']],
-            msg: 'Incorect value',
+            args: [['draft', 'published']],
+            msg: 'Incorect post status value',
           },
         },
       },

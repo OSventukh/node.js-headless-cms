@@ -1,7 +1,7 @@
 import { Op } from 'sequelize';
 import { Page } from '../models/index.js';
 import HttpError from '../utils/http-error.js';
-import { checkIncludes, buildWhereObject, getOrder, getPagination } from '../utils/models.js';
+import { checkIncludes, buildWhereObject, getOrder, getPagination, checkAttributes } from '../utils/models.js';
 
 export const createPage = async (pageData) => {
   try {
@@ -27,15 +27,18 @@ export const getPages = async (
   orderQuery,
   page,
   size,
+  columns,
 ) => {
   try {
     // Convert provided include query to array and check if it avaible for this model
-    const avaibleIncludes = ['topics', 'author'];
+    const avaibleIncludes = ['topics', 'author', 'parent'];
     const include = checkIncludes(includeQuery, avaibleIncludes);
 
     // Check if provided query avaible for filtering this model
-    const avaibleWheres = ['id', 'title', 'slug', 'status'];
-    const whereObj = buildWhereObject(whereQuery, avaibleWheres);
+    const avaibleColumns = ['id', 'title', 'slug', 'status', 'createdAt', 'updatedAt'];
+
+    const whereObj = buildWhereObject(whereQuery, avaibleColumns);
+    const attributes = checkAttributes(columns, avaibleColumns);
 
     const order = await getOrder(orderQuery, Page);
 
@@ -46,6 +49,7 @@ export const getPages = async (
       order,
       offset,
       limit,
+      ...(columns && { attributes: ['id', ...attributes] }),
     });
     return result;
   } catch (error) {

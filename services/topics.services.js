@@ -175,7 +175,7 @@ export const getTopicCategories = async (topicsIds) => {
           model: Category,
           as: 'categories',
           include: ['parent'],
-        }
+        },
       ],
     });
 

@@ -17,7 +17,7 @@ const storage = multer.diskStorage({
     if (file.fieldname === 'topic-image') {
       fileName = slugifyString(req.body.title + path.extname(file.originalname));
     } else {
-      fileName = `${file.fieldname} - ${Date.now()} - ${Math.round(Math.random() * 1e9)}`;
+      fileName = `${file.fieldname}-${Date.now()}-${Math.round(Math.random() * 1e9)}${path.extname(file.originalname)}`;
     }
 
     cb(null, fileName);

@@ -151,14 +151,17 @@ export const refreshTokens = async (oldRefreshToken, userIp) => {
     const newRefreshToken = generateRefreshToken({ id: user.id });
     const newAccessToken = generateAccessToken(user.getTokenData());
 
-    await userToken.destroy();
-    await UserToken.create({
-      ip: userIp,
-      userId: user.id,
-      token: newRefreshToken,
-      expiresIn: new Date(Date.now() + ms(config.refreshTokenExpiresIn)),
-    });
-    return { newAccessToken, newRefreshToken, user: user.getPublicData() };
+    await Promise.all([
+      UserToken.create({
+        ip: userIp,
+        userId: user.id,
+        token: newRefreshToken,
+        expiresIn: new Date(Date.now() + ms(config.refreshTokenExpiresIn)),
+      }),
+      userToken.destroy(),
+    ]);
+
+    return { newAccessToken, newRefreshToken };
   } catch (error) {
     throw new HttpError('Not Authenticated', 401);
   }

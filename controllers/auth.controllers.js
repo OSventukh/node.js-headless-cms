@@ -61,8 +61,7 @@ export const signupController = async (req, res, next) => {
 
 export const refreshTokenController = async (req, res, next) => {
   try {
-    const authHeader = req.get('authorization');
-    const userRefreshToken = authHeader?.split(' ')[1];
+    const userRefreshToken = getAuthorizationToken(req);
 
     if (!userRefreshToken) {
       res.status(204).json();
@@ -70,7 +69,7 @@ export const refreshTokenController = async (req, res, next) => {
     }
 
     const userIp = req.ip;
-    const { newAccessToken, newRefreshToken, user } = await refreshTokens(userRefreshToken, userIp);
+    const { newAccessToken, newRefreshToken } = await refreshTokens(userRefreshToken, userIp);
 
     res
       .status(200)
@@ -83,7 +82,6 @@ export const refreshTokenController = async (req, res, next) => {
           token: newRefreshToken,
           expirationDate: new Date(Date.now() + ms(config.refreshTokenExpiresIn)),
         },
-        user,
       });
   } catch (error) {
     next(new HttpError(error.message, error.statusCode));

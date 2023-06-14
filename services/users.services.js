@@ -168,7 +168,7 @@ export const updateUser = async (id, { topicId, roleId, ...toUpdate }, authUser)
         },
       }),
       topicId && user.setTopics(topics),
-      roleId && user.setTole(roleToUpdate)
+      roleId && user.setRole(roleToUpdate),
     ]);
 
     if (result[0] === 0) {

@@ -11,28 +11,17 @@ import {
 } from '../utils/models.js';
 
 const transformData = (data) => {
-  // extract title from all content
-  const title = data?.rawContent?.match(/<h1>(.*?)<\/h1>/)[1];
-
-  if (!title || title.trim().length === 0) {
-    throw new HttpError('Title should not be an empty', 400);
-  }
-
-  // Remove title from content
-  const contentWithoutTitle = data.rawContent.replace(/<h1>.*?<\/h1>/, '');
-
   // We divide the content using the separator presented in CKEditor;
-  const [excerpt, others] = contentWithoutTitle.split(
-    '<div class="page-break" style="page-break-after:always;"><span style="display:none;">&nbsp;</span></div>',
+  const [excerpt, others] = data.content.split(
+    '<!-- read more -->',
   );
 
   const content = others ? excerpt + others : excerpt;
-
   return {
-    title,
+    title: data.title,
     excerpt,
     content,
-    slug: data.slug ?? slugifyString(title),
+    slug: data.slug ?? slugifyString(data.title),
     status: data.status,
   };
 };
