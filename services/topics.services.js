@@ -1,14 +1,22 @@
 import { Op } from 'sequelize';
-import { Topic, Category, sequelize } from '../models/index.js';
+import { Topic, Category, Page, sequelize } from '../models/index.js';
 import HttpError from '../utils/http-error.js';
-import { checkIncludes, buildWhereObject, getOrder, getPagination, checkAttributes } from '../utils/models.js';
+import {
+  checkIncludes,
+  buildWhereObject,
+  getOrder,
+  getPagination,
+  checkAttributes,
+} from '../utils/models.js';
 
 async function getAllChildCategories(categories) {
   let allCategories = [...categories];
-  await Promise.all(categories.map(async (category) => {
-    const childCategories = await category.getChildren();
-    allCategories = allCategories.concat(childCategories);
-  }));
+  await Promise.all(
+    categories.map(async (category) => {
+      const childCategories = await category.getChildren();
+      allCategories = allCategories.concat(childCategories);
+    })
+  );
   return allCategories;
 }
 
@@ -17,8 +25,9 @@ export const createTopic = async (topicData) => {
   const categoriesIds = Array.isArray(topicData.categoryId)
     ? topicData.categoryId
     : [topicData.categoryId];
+
   try {
-    const [topic, categories] = await Promise.all([
+    const [topic, categories, page] = await Promise.all([
       Topic.create(topicData),
       Category.findAll({
         where: {
@@ -27,8 +36,13 @@ export const createTopic = async (topicData) => {
           },
         },
       }),
+      Page.findByPk(topicData.pageId),
     ]);
-    await topic.addCategories(categories);
+
+    await Promise.all([
+      await topic.setCategories(categories),
+      await topic.setPage(page),
+    ]);
     return topic;
   } catch (error) {
     if (error.name === 'SequelizeValidationError') {
@@ -40,7 +54,10 @@ export const createTopic = async (topicData) => {
       const errorMessage = `The ${fieldName} should be an unique. Value ${fieldValue} is already in use`;
       throw new HttpError(errorMessage, 409);
     }
-    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+    throw new HttpError(
+      error.message || 'Something went wrong',
+      error.statusCode || 500
+    );
   }
 };
 
@@ -50,7 +67,7 @@ export const getTopics = async (
   orderQuery,
   page,
   size,
-  columns,
+  columns
 ) => {
   try {
     // Convert provided include query to array and check if it avaible for this model
@@ -58,7 +75,18 @@ export const getTopics = async (
     const include = checkIncludes(includeQuery, avaibleIncludes);
 
     // Check if provided query avaible for filtering this model
-    const avaibleColumns = ['id', 'title', 'slug', 'image', 'description', 'status', 'parentId', 'categories', 'createdAt', 'updatedAt'];
+    const avaibleColumns = [
+      'id',
+      'title',
+      'slug',
+      'image',
+      'description',
+      'status',
+      'parentId',
+      'categories',
+      'createdAt',
+      'updatedAt',
+    ];
     const whereObj = buildWhereObject(whereQuery, avaibleColumns);
     const attributes = checkAttributes(columns, avaibleColumns);
 
@@ -76,7 +104,10 @@ export const getTopics = async (
 
     return result;
   } catch (error) {
-    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+    throw new HttpError(
+      error.message || 'Something went wrong',
+      error.statusCode || 500
+    );
   }
 };
 
@@ -86,7 +117,7 @@ export const updateTopic = async (id, toUpdate) => {
     ? toUpdate.categoryId
     : [toUpdate.categoryId];
   try {
-    const [topic, categories] = await Promise.all([
+    const [topic, categories, page] = await Promise.all([
       Topic.findByPk(id),
       Category.findAll({
         where: {
@@ -95,6 +126,7 @@ export const updateTopic = async (id, toUpdate) => {
           },
         },
       }),
+      Page.findByPk(toUpdate.pageId)
     ]);
 
     if (!topic) {
@@ -106,6 +138,7 @@ export const updateTopic = async (id, toUpdate) => {
     const result = await sequelize.transaction(async (transaction) => {
       const updatedData = await Promise.all([
         topic.setCategories(categoriesWithChild, { transaction }),
+        topic.setPage(page, { transaction }),
         Topic.update(toUpdate, {
           where: {
             id,
@@ -119,7 +152,10 @@ export const updateTopic = async (id, toUpdate) => {
       throw new HttpError('Topic was not updated', 400);
     }
   } catch (error) {
-    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+    throw new HttpError(
+      error.message || 'Something went wrong',
+      error.statusCode || 500
+    );
   }
 };
 
@@ -153,7 +189,10 @@ export const deleteTopic = async (id) => {
 
     return result;
   } catch (error) {
-    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+    throw new HttpError(
+      error.message || 'Something went wrong',
+      error.statusCode || 500
+    );
   }
 };
 
@@ -182,6 +221,9 @@ export const getTopicCategories = async (topicsIds) => {
     const categories = topics.map((topic) => topic.categories).flat();
     return categories;
   } catch (error) {
-    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+    throw new HttpError(
+      error.message || 'Something went wrong',
+      error.statusCode || 500
+    );
   }
 };

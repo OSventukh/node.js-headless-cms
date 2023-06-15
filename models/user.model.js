@@ -2,7 +2,7 @@ import { Model } from 'sequelize';
 import ms from 'ms';
 import generateConfirmationToken from '../utils/confirmation-token.js';
 import { hashPassword, comparePassword } from '../utils/hash.js';
-import { ACTIVE, PENDING, BLOCKED } from '../utils/constants/status.js';
+import { ACTIVE, PENDING, BLOCKED } from '../utils/constants/users.js';
 
 export default (sequelize, DataTypes) => {
   class User extends Model {

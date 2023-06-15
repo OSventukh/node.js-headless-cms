@@ -1,7 +1,7 @@
 import express from 'express';
 
 import { auth, rolesAccess } from '../middlewares/auth.js';
-import { SUPERADMIN, ADMIN, MODER } from '../utils/constants/roles.js';
+import { SUPERADMIN, ADMIN, MODER } from '../utils/constants/users.js';
 import {
   createPageController,
   getPagesController,

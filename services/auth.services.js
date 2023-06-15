@@ -16,8 +16,7 @@ import {
 } from '../utils/token.js';
 import HttpError from '../utils/http-error.js';
 import config from '../config/config.js';
-import { ACTIVE } from '../utils/constants/status.js';
-import { SUPERADMIN } from '../utils/constants/roles.js';
+import { ACTIVE, SUPERADMIN } from '../utils/constants/users.js';
 
 export const adminCheck = async () => {
   try {

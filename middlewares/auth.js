@@ -1,8 +1,7 @@
 import jwt from 'jsonwebtoken';
 import HttpError from '../utils/http-error.js';
 import { Post, UserBlockedToken, User } from '../models/index.js';
-import { ADMIN, MODER, SUPERADMIN, WRITER } from '../utils/constants/roles.js';
-import { BLOCKED } from '../utils/constants/status.js';
+import { ADMIN, MODER, SUPERADMIN, WRITER, BLOCKED } from '../utils/constants/users.js';
 import { getAuthorizationToken, verifyAccessToken } from '../utils/token.js';
 
 export async function auth(req, res, next) {

@@ -9,8 +9,7 @@ import {
   getPagination,
 } from '../utils/models.js';
 
-import { ADMIN, SUPERADMIN } from '../utils/constants/roles.js';
-import { ACTIVE, PENDING } from '../utils/constants/status.js';
+import { ADMIN, SUPERADMIN, ACTIVE, PENDING } from '../utils/constants/users.js';
 
 export const createUser = async ({ topicId, roleId, ...data }) => {
   try {
