@@ -75,7 +75,7 @@ router.delete(
 
 router.delete('/users', auth, rolesAccess([SUPERADMIN, ADMIN]), deleteUserController);
 
-router.get('/roles', auth, rolesAccess([SUPERADMIN, ADMIN]), getUserRolesController);
+router.get('/roles', auth, getUserRolesController);
 
 router.get('/usertopics', auth, getUserTopicsController);
 

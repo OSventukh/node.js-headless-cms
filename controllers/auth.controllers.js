@@ -1,5 +1,5 @@
 import ms from 'ms';
-import { login, signup, refreshTokens, isUserLoggedIn, logout, adminCheck } from '../services/auth.services.js';
+import { login, signup, refreshTokens, getPendingUser, confirmUser, isUserLoggedIn, logout, adminCheck } from '../services/auth.services.js';
 import { createRoles } from '../services/roles.services.js';
 import HttpError from '../utils/http-error.js';
 import config from '../config/config.js';

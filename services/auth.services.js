@@ -37,7 +37,10 @@ export const adminCheck = async () => {
     });
     return !!user;
   } catch (error) {
-    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+    throw new HttpError(
+      error.message || 'Something went wrong',
+      error.statusCode || 500
+    );
   }
 };
 
@@ -49,10 +52,18 @@ export const login = async (email, password, userIp) => {
       },
       include: ['role', 'topics', 'tokens'],
     });
-    console.log(['user'], password)
+
     if (!user) {
       throw new HttpError('Invalid email or password', 403);
     }
+
+    if (user.status === PENDING) {
+      throw new HttpError(
+        'Your account has not been verified yet. Please check your email and follow the confirmation link.',
+        401,
+      );
+    }
+
     const isMatchPassword = await user.comparePassword(password);
 
     if (!isMatchPassword) {
@@ -64,7 +75,7 @@ export const login = async (email, password, userIp) => {
     // A user should have no more than 5 tokens
     if (user.tokens && user.tokens.length === 5) {
       const sortedTokens = user.tokens.sort(
-        (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
+        (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
       );
       await sortedTokens[0].destroy();
     }
@@ -81,7 +92,10 @@ export const login = async (email, password, userIp) => {
       refreshToken,
     };
   } catch (error) {
-    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+    throw new HttpError(
+      error.message || 'Something went wrong',
+      error.statusCode || 500
+    );
   }
 };
 
@@ -100,7 +114,7 @@ export const signup = async (data) => {
 
     const adminRole = await Role.findOne({
       where: {
-        name: 'Super Administrator',
+        name: SUPERADMIN,
       },
     });
 
@@ -111,14 +125,22 @@ export const signup = async (data) => {
     // Creating user and adding role 'administrator';
     const user = await sequelize.transaction(async (transaction) => {
       const createdUser = await User.create(
-        { ...data, status: ACTIVE },
-        { transaction },
+        {
+          ...data,
+          status: ACTIVE,
+          confirmationToken: null,
+          confirmationTokenExpirationDate: null,
+        },
+        { transaction }
       );
       await Promise.all([
-        Option.create({
-          name: 'admin_email',
-          value: data.email,
-        }, { transaction }),
+        Option.create(
+          {
+            name: 'admin_email',
+            value: data.email,
+          },
+          { transaction }
+        ),
         createdUser.setRole(adminRole, { transaction }),
       ]);
       return createdUser;
@@ -128,7 +150,10 @@ export const signup = async (data) => {
     if (error.name === 'SequelizeValidationError') {
       throw new HttpError(error.message, 400);
     }
-    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+    throw new HttpError(
+      error.message || 'Something went wrong',
+      error.statusCode || 500
+    );
   }
 };
 
@@ -239,6 +264,7 @@ export const confirmUser = async (confirmationToken, password) => {
     if (new Date(user.confirmationTokenExpirationDate) < new Date()) {
       throw new HttpError('Confirmation token is expired', 401);
     }
+
     user.status = ACTIVE;
     user.password = password;
     user.confirmationToken = null;

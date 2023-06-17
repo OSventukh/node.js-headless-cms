@@ -9,8 +9,13 @@ import {
   getPagination,
 } from '../utils/models.js';
 import sendMail from '../utils/nodemailer.js';
-
-import { ADMIN, SUPERADMIN, ACTIVE, PENDING } from '../utils/constants/users.js';
+import { confirmRegistrationEmail } from '../utils/emails/email-list.js';
+import {
+  ADMIN,
+  SUPERADMIN,
+  ACTIVE,
+  PENDING,
+} from '../utils/constants/users.js';
 
 export const createUser = async ({ topicId, roleId, ...data }, host) => {
   try {
@@ -37,27 +42,25 @@ export const createUser = async ({ topicId, roleId, ...data }, host) => {
     }
 
     const user = await sequelize.transaction(async (transaction) => {
-      const createdUser = await User.create({ ...data, status: PENDING }, { transaction });
+      const createdUser = await User.create(
+        { ...data, status: PENDING },
+        { transaction },
+      );
       await Promise.all([
-        topics && topics.length > 0 && await createdUser.setTopics(topics, { transaction }),
-        role && await createdUser.setRole(role, { transaction }),
+        topics && topics.length > 0 && (await createdUser.setTopics(topics, { transaction })),
+        role && (await createdUser.setRole(role, { transaction })),
       ]);
       return createdUser;
     });
-
-    const info = await sendMail({
-      to: user.email,
-      subject: 'Confirm registration',
-      body: `<body>
-        <h1>VETHELTH</h1>
-        <p>Dear, ${user.firstname}</p>
-        <p>An administrator has created an account for you. To complete your registration and activate your account, please click on the link below</p>
-        <div>
-          <a href="${host}/confirm/${user.confirmationToken}">Click Here</a>
-        </div>
-      </body>`,
-    });
-
+    const info = await sendMail(
+      confirmRegistrationEmail({
+        userEmail: user.email,
+        userName: user.firstname,
+        host,
+        token: user.confirmationToken,
+      }),
+    );
+    console.log(['info'], info)
     return user.getPublicData();
   } catch (error) {
     if (error.name === 'SequelizeValidationError') {
@@ -68,7 +71,7 @@ export const createUser = async ({ topicId, roleId, ...data }, host) => {
     }
     throw new HttpError(
       error.message || 'Something went wrong',
-      error.statusCode || 500,
+      error.statusCode || 500
     );
   }
 };
@@ -80,7 +83,7 @@ export const getUsers = async (
   page,
   size,
   paranoid,
-  columns,
+  columns
 ) => {
   try {
     // Convert provided include query to array and check if it avaible for this model
@@ -122,12 +125,16 @@ export const getUsers = async (
   } catch (error) {
     throw new HttpError(
       error.message || 'Something went wrong',
-      error.statusCode || 500,
+      error.statusCode || 500
     );
   }
 };
 
-export const updateUser = async (id, { topicId, roleId, ...toUpdate }, authUser) => {
+export const updateUser = async (
+  id,
+  { topicId, roleId, ...toUpdate },
+  authUser
+) => {
   try {
     const topicIds = topicId ? Array.from(topicId) : [];
 
@@ -164,12 +171,17 @@ export const updateUser = async (id, { topicId, roleId, ...toUpdate }, authUser)
 
       // Prevent changing status of super admin
       if (toUpdate.status && toUpdate.status !== ACTIVE) {
-        throw new HttpError('Cannot change the status of a SUPERADMIN user', 403);
+        throw new HttpError(
+          'Cannot change the status of a SUPERADMIN user',
+          403
+        );
       }
     }
 
     // Prevent create another super admin
-    if (user.role.name !== SUPERADMIN && roleToUpdate && roleToUpdate.name === SUPERADMIN) {
+    if (
+      user.role.name !== SUPERADMIN && roleToUpdate && roleToUpdate.name === SUPERADMIN
+    ) {
       throw new HttpError('This action is not allowed', 403);
     }
 
@@ -202,7 +214,7 @@ export const deleteUser = async (id) => {
     const users = await User.findAll({
       where: {
         id: {
-          [Op.in]: usersId
+          [Op.in]: usersId,
         },
       },
       include: ['role'],
@@ -264,7 +276,10 @@ export const getUserRoles = async () => {
     });
     return roles;
   } catch (error) {
-    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+    throw new HttpError(
+      error.message || 'Something went wrong',
+      error.statusCode || 500
+    );
   }
 };
 
@@ -280,6 +295,9 @@ export const getUserTopics = async (authUser) => {
     const userTopics = await authUser.getTopics();
     return userTopics;
   } catch (error) {
-    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+    throw new HttpError(
+      error.message || 'Something went wrong',
+      error.statusCode || 500
+    );
   }
 };
