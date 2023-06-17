@@ -88,6 +88,6 @@ export const deletePostController = async (req, res, next) => {
 export const uploadPostImageController = (req, res, next) => {
   const imageUrl = `http://localhost:5000/uploads/${req.file.filename}`;
   res.json({
-    url: imageUrl,
+    location: imageUrl,
   });
 };

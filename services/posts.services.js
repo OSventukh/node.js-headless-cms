@@ -11,33 +11,19 @@ import {
 } from '../utils/models.js';
 
 const transformData = (data) => {
-  // extract title from all content
-  const title = data?.rawContent?.match(/<h1>(.*?)<\/h1>/)[1];
-
-  if (!title || title.trim().length === 0) {
-    throw new HttpError('Title should not be an empty', 400);
-  }
-
-  // Remove title from content
-  const contentWithoutTitle = data.rawContent.replace(/<h1>.*?<\/h1>/, '');
-
   // We divide the content using the separator presented in CKEditor;
-  const [excerpt, others] = contentWithoutTitle.split(
-    '<div class="page-break" style="page-break-after:always;"><span style="display:none;">&nbsp;</span></div>',
-  );
-
-  const content = others ? excerpt + others : excerpt;
+  const excerpt = data.content.split('<!-- read more -->')[0];
 
   return {
-    title,
+    title: data.title,
     excerpt,
-    content,
-    slug: data.slug ?? slugifyString(title),
+    content: data.content,
+    slug: data.slug ? slugifyString(data.slug) : slugifyString(data.title),
     status: data.status,
   };
 };
 
-export const createPost = async ({ topicId, categoryId, ...postData }) => {
+export const createPost = async ({ topicId, categoryId, userId, ...postData }) => {
   try {
     // Сheck whether the given ids is an array, and if it is not, it converts it into an array.
     const topicsIds = Array.isArray(topicId) ? topicId : [topicId];
@@ -71,7 +57,7 @@ export const createPost = async ({ topicId, categoryId, ...postData }) => {
       throw new HttpError('No topic selected', 400);
     }
 
-    const post = await Post.create(transformedData);
+    const post = await Post.create({ ...transformedData, userId });
     // Add categories and topics to post
     await Promise.all([post.addCategories(categories), post.addTopics(topics)]);
     return post;
@@ -87,7 +73,7 @@ export const createPost = async ({ topicId, categoryId, ...postData }) => {
     }
     throw new HttpError(
       error.message || 'Something went wrong',
-      error.statusCode || 500,
+      error.statusCode || 500
     );
   }
 };
@@ -98,7 +84,7 @@ export const getPosts = async (
   orderQuery,
   columns,
   page,
-  size,
+  size
 ) => {
   try {
     // Convert provided include query to array and check if it avaible for this model
@@ -106,7 +92,16 @@ export const getPosts = async (
     const include = checkIncludes(includeQuery, avaibleIncludes);
 
     // Check if provided query avaible for filtering this model
-    const avaibleColumns = ['id', 'title', 'slug', 'status', 'content', 'excerpt', 'createdAt', 'updatedAt'];
+    const avaibleColumns = [
+      'id',
+      'title',
+      'slug',
+      'status',
+      'content',
+      'excerpt',
+      'createdAt',
+      'updatedAt',
+    ];
 
     const whereObj = buildWhereObject(whereQuery, avaibleColumns);
     const attributes = checkAttributes(columns, avaibleColumns);
@@ -127,7 +122,7 @@ export const getPosts = async (
   } catch (error) {
     throw new HttpError(
       error.message || 'Something went wrong',
-      error.statusCode || 500,
+      error.statusCode || 500
     );
   }
 };
@@ -181,7 +176,7 @@ export const updatePost = async (id, { topicId, categoryId, ...toUpdate }) => {
   } catch (error) {
     throw new HttpError(
       error.message || 'Something went wrong',
-      error.statusCode || 500,
+      error.statusCode || 500
     );
   }
 };
@@ -199,7 +194,8 @@ export const deletePost = async (id) => {
     });
 
     if (!posts || posts.length === 0) {
-      const errorMessage = postsId.length > 1 ? 'Posts not found' : 'Post not found';
+      const errorMessage =
+        postsId.length > 1 ? 'Posts not found' : 'Post not found';
       throw new HttpError(errorMessage, 404);
     }
 
@@ -219,7 +215,7 @@ export const deletePost = async (id) => {
   } catch (error) {
     throw new HttpError(
       error.message || 'Something went wrong',
-      error.statusCode || 500,
+      error.statusCode || 500
     );
   }
 };

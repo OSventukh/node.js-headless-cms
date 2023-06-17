@@ -1,8 +1,9 @@
 import ms from 'ms';
-import { login, signup, refreshTokens, checkIsUserLoggedIn, logout, adminCheck, getPendingUser, confirmUser } from '../services/auth.services.js';
+import { login, signup, refreshTokens, isUserLoggedIn, logout, adminCheck } from '../services/auth.services.js';
 import { createRoles } from '../services/roles.services.js';
 import HttpError from '../utils/http-error.js';
 import config from '../config/config.js';
+import { getAuthorizationToken } from '../utils/token.js';
 
 export const authController = async (req, res, next) => {
   // Check if admin exist.
@@ -19,28 +20,25 @@ export const authController = async (req, res, next) => {
 
 export const loginController = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
-    const userRefreshToken = req.cookies?.refreshToken;
-    const userIp = req.ip;
-
-    // Check if user already logged in;
-    const isUserLoggedIn = await checkIsUserLoggedIn(userRefreshToken);
-    if (isUserLoggedIn) {
+    const authToken = getAuthorizationToken(req);
+    if (isUserLoggedIn(authToken)) {
       throw new HttpError('User already authenticated', 409);
     }
+    const { email, password } = req.body;
+    const userIp = req.ip;
+
     const { user, accessToken, refreshToken } = await login(email, password, userIp);
     res
       .status(200)
-      .cookie('refreshToken', refreshToken, {
-        expires: new Date(Date.now() + ms(config.refreshTokenExpiresIn)),
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-      })
       .json({
         user,
         accessToken: {
           token: accessToken,
           expirationDate: new Date(Date.now() + ms(config.accessTokenExpiresIn)),
+        },
+        refreshToken: {
+          token: refreshToken,
+          expirationDate: new Date(Date.now() + ms(config.refreshTokenExpiresIn)),
         },
       });
   } catch (error) {
@@ -63,29 +61,27 @@ export const signupController = async (req, res, next) => {
 
 export const refreshTokenController = async (req, res, next) => {
   try {
-    const userRefreshToken = req.cookies.refreshToken;
+    const userRefreshToken = getAuthorizationToken(req);
+
     if (!userRefreshToken) {
       res.status(204).json();
       return;
     }
 
-    const { newAccessToken, newRefreshToken, user } = await refreshTokens(
-      userRefreshToken,
-    );
+    const userIp = req.ip;
+    const { newAccessToken, newRefreshToken } = await refreshTokens(userRefreshToken, userIp);
 
     res
       .status(200)
-      .cookie('refreshToken', newRefreshToken, {
-        expires: new Date(Date.now() + ms(config.refreshTokenExpiresIn)),
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-      })
       .json({
         accessToken: {
           token: newAccessToken,
           expirationDate: new Date(Date.now() + ms(config.accessTokenExpiresIn)),
         },
-        user,
+        refreshToken: {
+          token: newRefreshToken,
+          expirationDate: new Date(Date.now() + ms(config.refreshTokenExpiresIn)),
+        },
       });
   } catch (error) {
     next(new HttpError(error.message, error.statusCode));

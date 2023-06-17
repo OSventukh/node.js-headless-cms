@@ -18,10 +18,10 @@ describe('auth services', () => {
   let login;
   let refreshTokens;
   let logout;
-  let checkIsUserLoggedIn;
+  let isUserLoggedIn;
   beforeAll(async () => {
     await sequelize.query('SET FOREIGN_KEY_CHECKS = 0', { raw: true });
-    await User.sync({ force: true });
+    await User.sync({ force: true, logging: false });
     await Promise.all([
       UserToken.sync({ force: true }),
       UserBlockedToken.sync({ force: true }),
@@ -31,7 +31,7 @@ describe('auth services', () => {
     login = authServices.login;
     refreshTokens = authServices.refreshTokens;
     logout = authServices.logout;
-    checkIsUserLoggedIn = authServices.checkIsUserLoggedIn;
+    isUserLoggedIn = authServices.isUserLoggedIn;
   });
   beforeEach(() => {
     vi.stubEnv('ACCESS_TOKEN_SECRET_KEY', '12345');
@@ -260,7 +260,7 @@ describe('auth services', () => {
   });
 
   describe('isUserLoggedIn', () => {
-    it('Should return true if provided valid refreshToken', async () => {
+    it('Should return true if provided valid accessToken', async () => {
       const userCredentials = {
         firstname: 'Test',
         email: 'test@test.com',
@@ -271,12 +271,12 @@ describe('auth services', () => {
         email: userCredentials.email,
         password: userCredentials.password,
       });
-      const { refreshToken } = await login(
+      const { accessToken } = await login(
         userCredentials.email,
         userCredentials.password,
       );
 
-      const result = await checkIsUserLoggedIn(refreshToken);
+      const result = await isUserLoggedIn(accessToken);
       expect(result).toBe(true);
     });
 
@@ -296,7 +296,7 @@ describe('auth services', () => {
         userCredentials.password,
       );
 
-      const result = await checkIsUserLoggedIn('123456');
+      const result = await isUserLoggedIn('123456');
       expect(result).toBe(false);
     });
   });

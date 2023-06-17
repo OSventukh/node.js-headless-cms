@@ -17,7 +17,7 @@ describe('Topics serviсes', () => {
   let deleteTopic = null;
   beforeAll(async () => {
     await sequelize.query('SET FOREIGN_KEY_CHECKS = 0', { raw: true });
-    await Topic.sync({ force: true });
+    await Topic.sync({ force: true, logging: false });
     // import services after sequelize run
     const topicsServices = await import('../../services/topics.services.js');
     createTopic = topicsServices.createTopic;

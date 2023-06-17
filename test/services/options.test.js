@@ -8,7 +8,7 @@ describe('Options serviсes', () => {
   let getOptions = null;
   beforeAll(async () => {
     await sequelize.query('SET FOREIGN_KEY_CHECKS = 0', { raw: true });
-    await Option.sync({ force: true });
+    await Option.sync({ force: true, logging: false });
     vi.clearAllMocks();
     vi.resetAllMocks();
     // import services after sequelize run

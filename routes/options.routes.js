@@ -9,7 +9,7 @@ import {
 
 import { optionValidator } from '../utils/validators.js';
 import checkValidation from '../middlewares/validation.js';
-import { SUPERADMIN, ADMIN } from '../utils/constants/roles.js';
+import { SUPERADMIN, ADMIN } from '../utils/constants/users.js';
 
 const router = express.Router();
 

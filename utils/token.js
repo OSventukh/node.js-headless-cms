@@ -33,3 +33,9 @@ export const verifyRefreshToken = (token) => {
   const decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET_KEY);
   return decoded;
 };
+
+export const getAuthorizationToken = (req) => {
+  const authHeader = req.get('authorization');
+  const token = authHeader?.split(' ')[1];
+  return token;
+};

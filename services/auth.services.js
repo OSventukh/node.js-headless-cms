@@ -11,11 +11,12 @@ import {
 import {
   generateAccessToken,
   generateRefreshToken,
+  verifyAccessToken,
   verifyRefreshToken,
 } from '../utils/token.js';
 import HttpError from '../utils/http-error.js';
 import config from '../config/config.js';
-import { ACTIVE, PENDING } from '../utils/constants/status.js';
+import { ACTIVE, SUPERADMIN, PENDING } from '../utils/constants/users.js';
 
 export const adminCheck = async () => {
   try {
@@ -86,15 +87,17 @@ export const login = async (email, password, userIp) => {
 
 export const signup = async (data) => {
   try {
-    const adminEmail = await Option.findOne({
+    const superAdmin = await User.findOne({
       where: {
-        name: 'admin_email',
+        '$Role.name$': SUPERADMIN,
       },
+      include: ['role'],
     });
 
-    if (adminEmail) {
+    if (superAdmin) {
       throw new HttpError('Administrator already exist', 409);
     }
+
     const adminRole = await Role.findOne({
       where: {
         name: 'Super Administrator',
@@ -112,11 +115,11 @@ export const signup = async (data) => {
         { transaction },
       );
       await Promise.all([
-        await Option.create({
+        Option.create({
           name: 'admin_email',
           value: data.email,
         }, { transaction }),
-        await createdUser.setRole(adminRole, { transaction }),
+        createdUser.setRole(adminRole, { transaction }),
       ]);
       return createdUser;
     });
@@ -129,7 +132,7 @@ export const signup = async (data) => {
   }
 };
 
-export const refreshTokens = async (oldRefreshToken) => {
+export const refreshTokens = async (oldRefreshToken, userIp) => {
   try {
     const { id } = verifyRefreshToken(oldRefreshToken);
     const userToken = await UserToken.findOne({
@@ -140,27 +143,32 @@ export const refreshTokens = async (oldRefreshToken) => {
     const user = await User.findByPk(id, {
       include: ['role', 'topics'],
     });
+
     if (!userToken || !user) {
       throw new HttpError('Not Authenticated', 401);
     }
     const newRefreshToken = generateRefreshToken({ id: user.id });
     const newAccessToken = generateAccessToken(user.getTokenData());
 
-    await userToken.destroy();
-    await UserToken.create({
-      user: user.id,
-      token: newRefreshToken,
-      expiresIn: new Date(Date.now() + ms(config.refreshTokenExpiresIn)),
-    });
-    return { newAccessToken, newRefreshToken, user: user.getPublicData() };
+    await Promise.all([
+      UserToken.create({
+        ip: userIp,
+        userId: user.id,
+        token: newRefreshToken,
+        expiresIn: new Date(Date.now() + ms(config.refreshTokenExpiresIn)),
+      }),
+      userToken.destroy(),
+    ]);
+
+    return { newAccessToken, newRefreshToken };
   } catch (error) {
     throw new HttpError('Not Authenticated', 401);
   }
 };
 
-export const checkIsUserLoggedIn = async (accessToken) => {
+export const isUserLoggedIn = (accessToken) => {
   try {
-    verifyRefreshToken(accessToken);
+    verifyAccessToken(accessToken);
     return true;
   } catch (error) {
     return false;

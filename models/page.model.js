@@ -11,8 +11,6 @@ export default (sequelize, DataTypes) => {
       // define association here
       this.belongsTo(models.User, { foreignKey: 'userId', as: 'author' });
       this.belongsTo(models.Topic, { foreignKey: 'topicId', as: 'topic' });
-      this.hasMany(models.Page, { foreignKey: 'parentId', as: 'children' });
-      this.belongsTo(models.Page, { foreignKey: 'parentId', as: 'parent' });
     }
   }
   Page.init(
@@ -42,8 +40,8 @@ export default (sequelize, DataTypes) => {
         defaultValue: 'draft',
         validate: {
           isIn: {
-            args: [['draft', 'publish']],
-            msg: 'Incorect value',
+            args: [['draft', 'published']],
+            msg: 'Incorect post status value',
           },
         },
       },

@@ -20,9 +20,9 @@ describe('Posts serviсes', () => {
   let category;
   beforeAll(async () => {
     await sequelize.query('SET FOREIGN_KEY_CHECKS = 0', { raw: true });
-    await Post.sync({ alter: true });
-    await Topic.sync({ force: true });
-    await Category.sync({ force: true });
+    await Post.sync({ alter: true, logging: false });
+    await Topic.sync({ force: true, logging: false });
+    await Category.sync({ force: true, logging: false });
     // import services after sequelize run
     const postsServices = await import('../../services/posts.services.js');
     createPost = postsServices.createPost;

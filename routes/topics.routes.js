@@ -1,7 +1,7 @@
 import express from 'express';
 
 import { auth, rolesAccess } from '../middlewares/auth.js';
-import { SUPERADMIN, ADMIN } from '../utils/constants/roles.js';
+import { SUPERADMIN, ADMIN } from '../utils/constants/users.js';
 import upload from '../utils/multer.js';
 
 import {

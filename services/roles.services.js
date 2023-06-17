@@ -1,7 +1,7 @@
 /* eslint-disable import/prefer-default-export */
 import { Role } from '../models/index.js';
 import HttpError from '../utils/http-error.js';
-import { SUPERADMIN, ADMIN, MODER, WRITER } from '../utils/constants/roles.js';
+import { SUPERADMIN, ADMIN, MODER, WRITER } from '../utils/constants/users.js';
 
 export const createRoles = async () => {
   try {

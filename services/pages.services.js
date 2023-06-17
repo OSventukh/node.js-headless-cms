@@ -1,11 +1,24 @@
 import { Op } from 'sequelize';
 import { Page } from '../models/index.js';
+import slugifyString from '../utils/slugify.js';
+
 import HttpError from '../utils/http-error.js';
-import { checkIncludes, buildWhereObject, getOrder, getPagination } from '../utils/models.js';
+import {
+  checkIncludes,
+  buildWhereObject,
+  getOrder,
+  getPagination,
+  checkAttributes,
+} from '../utils/models.js';
 
 export const createPage = async (pageData) => {
   try {
-    const page = await Page.create(pageData);
+    const page = await Page.create({
+      ...pageData,
+      slug: pageData.slug
+        ? slugifyString(pageData.slug)
+        : slugifyString(pageData.title),
+    });
     return page;
   } catch (error) {
     if (error.name === 'SequelizeValidationError') {
@@ -17,7 +30,10 @@ export const createPage = async (pageData) => {
       const errorMessage = `The ${fieldName} should be an unique. Value ${fieldValue} is already in use`;
       throw new HttpError(errorMessage, 409);
     }
-    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+    throw new HttpError(
+      error.message || 'Something went wrong',
+      error.statusCode || 500
+    );
   }
 };
 
@@ -27,15 +43,25 @@ export const getPages = async (
   orderQuery,
   page,
   size,
+  columns
 ) => {
   try {
     // Convert provided include query to array and check if it avaible for this model
-    const avaibleIncludes = ['topics', 'author'];
+    const avaibleIncludes = ['topics', 'author', 'parent'];
     const include = checkIncludes(includeQuery, avaibleIncludes);
 
     // Check if provided query avaible for filtering this model
-    const avaibleWheres = ['id', 'title', 'slug', 'status'];
-    const whereObj = buildWhereObject(whereQuery, avaibleWheres);
+    const avaibleColumns = [
+      'id',
+      'title',
+      'slug',
+      'status',
+      'createdAt',
+      'updatedAt',
+    ];
+
+    const whereObj = buildWhereObject(whereQuery, avaibleColumns);
+    const attributes = checkAttributes(columns, avaibleColumns);
 
     const order = await getOrder(orderQuery, Page);
 
@@ -46,10 +72,14 @@ export const getPages = async (
       order,
       offset,
       limit,
+      ...(columns && { attributes: ['id', ...attributes] }),
     });
     return result;
   } catch (error) {
-    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+    throw new HttpError(
+      error.message || 'Something went wrong',
+      error.statusCode || 500
+    );
   }
 };
 
@@ -69,7 +99,10 @@ export const updatePage = async (id, toUpdate) => {
       throw new HttpError('Page was not updated', 400);
     }
   } catch (error) {
-    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+    throw new HttpError(
+      error.message || 'Something went wrong',
+      error.statusCode || 500
+    );
   }
 };
 
@@ -104,6 +137,9 @@ export const deletePage = async (id) => {
 
     return result;
   } catch (error) {
-    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+    throw new HttpError(
+      error.message || 'Something went wrong',
+      error.statusCode || 500
+    );
   }
 };
