@@ -71,7 +71,7 @@ export const getTopics = async (
 ) => {
   try {
     // Convert provided include query to array and check if it avaible for this model
-    const avaibleIncludes = ['users', 'pages', 'posts', 'categories', 'parent'];
+    const avaibleIncludes = ['users', 'page', 'posts', 'categories', 'parent'];
     const include = checkIncludes(includeQuery, avaibleIncludes);
 
     // Check if provided query avaible for filtering this model
@@ -148,7 +148,8 @@ export const updateTopic = async (id, toUpdate) => {
       ]);
       return updatedData[1];
     });
-    if (result[0] === 0) {
+
+    if (result && result[0] === 0) {
       throw new HttpError('Topic was not updated', 400);
     }
   } catch (error) {

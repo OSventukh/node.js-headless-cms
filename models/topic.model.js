@@ -15,7 +15,7 @@ export default (sequelize, DataTypes) => {
         as: 'posts',
         through: 'PostTopic',
       });
-      this.hasOne(models.Page, { foreignKey: 'pageId', as: 'pages' });
+      this.hasOne(models.Page, { foreignKey: 'pageId', as: 'page' });
       this.hasMany(models.Category, {
         foreignKey: 'topicId',
         as: 'categories',
