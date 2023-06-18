@@ -52,7 +52,8 @@ export const createUser = async ({ topicId, roleId, ...data }, host) => {
       ]);
       return createdUser;
     });
-    const info = await sendMail(
+
+    await sendMail(
       confirmRegistrationEmail({
         userEmail: user.email,
         userName: user.firstname,
@@ -60,7 +61,7 @@ export const createUser = async ({ topicId, roleId, ...data }, host) => {
         token: user.confirmationToken,
       }),
     );
-    console.log(['info'], info)
+
     return user.getPublicData();
   } catch (error) {
     if (error.name === 'SequelizeValidationError') {

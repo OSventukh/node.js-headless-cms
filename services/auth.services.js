@@ -7,7 +7,8 @@ import {
   UserBlockedToken,
   Option,
 } from '../models/index.js';
-
+import sendMail from '../utils/nodemailer.js';
+import { resetPasswordEmail } from '../utils/emails/email-list.js';
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -17,6 +18,7 @@ import {
 import HttpError from '../utils/http-error.js';
 import config from '../config/config.js';
 import { ACTIVE, SUPERADMIN, PENDING } from '../utils/constants/users.js';
+import generateConfirmationToken from '../utils/confirmation-token.js';
 
 export const adminCheck = async () => {
   try {
@@ -60,7 +62,7 @@ export const login = async (email, password, userIp) => {
     if (user.status === PENDING) {
       throw new HttpError(
         'Your account has not been verified yet. Please check your email and follow the confirmation link.',
-        401,
+        401
       );
     }
 
@@ -271,6 +273,37 @@ export const confirmUser = async (confirmationToken, password) => {
     user.confirmationTokenExpirationDate = null;
 
     await user.save();
+  } catch (error) {
+    throw new HttpError(error.message, error.statusCode);
+  }
+};
+
+export const resetPassword = async (email, host) => {
+  try {
+    const user = await User.findOne({
+      where: {
+        email,
+      },
+    });
+
+    if (!user) {
+      throw new HttpError('User with this email not exist', 400);
+    }
+
+    const confirmationToken = generateConfirmationToken();
+
+    user.confirmationToken = confirmationToken;
+    user.confirmationTokenExpirationDate = new Date(Date.now() + ms('1 day'));
+
+    await user.save();
+    await sendMail(
+      resetPasswordEmail({
+        host,
+        token: confirmationToken,
+        userEmail: user.email,
+        userName: user.firstname,
+      }),
+    );
   } catch (error) {
     throw new HttpError(error.message, error.statusCode);
   }

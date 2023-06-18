@@ -1,7 +1,9 @@
 import crypto from 'crypto';
 import HttpError from './http-error.js';
+// eslint-disable-next-line import/no-cycle
+import { User } from '../models/index.js';
 
-export default async function generateConfirmationToken(User, attempts = 0) {
+export default async function generateConfirmationToken(attempts = 0) {
   const MAX_ATTEMPTS = 10;
 
   // to prevent infinity loop limit the number of attempts

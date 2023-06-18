@@ -13,7 +13,7 @@ export function confirmRegistrationEmail({ userName, userEmail, host, token }) {
   };
 }
 
-export function resetPassword({ userName, userEmail, host, token }) {
+export function resetPasswordEmail({ userName, userEmail, host, token }) {
   return {
     to: userEmail,
     subject: 'Reset password',
