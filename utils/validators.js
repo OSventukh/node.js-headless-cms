@@ -46,7 +46,16 @@ export function confirmUserValidator() {
       ),
     body('confirmPassword')
       .custom((value, { req }) => value === req.body.password)
-      .withMessage('d')
+      .withMessage('d'),
+  ];
+}
+
+export function resetPasswordValidator() {
+  return [
+    body('email')
+      .isEmail()
+      .normalizeEmail({ gmail_remove_dots: false })
+      .withMessage('Please, enter a valid email'),
   ];
 }
 

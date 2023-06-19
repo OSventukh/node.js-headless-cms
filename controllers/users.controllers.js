@@ -26,7 +26,9 @@ export const createUserController = async (req, res, next) => {
 export const getUsersController = async (req, res, next) => {
   // receive user id from url params or query
   const id = req.params.userId || req.query.id;
+  console.log(['include'])
   const { include, order, page, size, all, columns, ...whereQuery } = req.query;
+
   try {
     // getting users with provided paramaters and response it to the client
     const { count, rows } = await getUsers(

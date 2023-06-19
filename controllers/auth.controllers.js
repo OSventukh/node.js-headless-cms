@@ -1,5 +1,15 @@
 import ms from 'ms';
-import { login, signup, refreshTokens, getPendingUser, confirmUser, isUserLoggedIn, logout, adminCheck } from '../services/auth.services.js';
+import {
+  login,
+  signup,
+  refreshTokens,
+  getPendingUser,
+  confirmUser,
+  isUserLoggedIn,
+  logout,
+  adminCheck,
+  resetPassword,
+} from '../services/auth.services.js';
 import { createRoles } from '../services/roles.services.js';
 import HttpError from '../utils/http-error.js';
 import config from '../config/config.js';
@@ -27,20 +37,22 @@ export const loginController = async (req, res, next) => {
     const { email, password } = req.body;
     const userIp = req.ip;
 
-    const { user, accessToken, refreshToken } = await login(email, password, userIp);
-    res
-      .status(200)
-      .json({
-        user,
-        accessToken: {
-          token: accessToken,
-          expirationDate: new Date(Date.now() + ms(config.accessTokenExpiresIn)),
-        },
-        refreshToken: {
-          token: refreshToken,
-          expirationDate: new Date(Date.now() + ms(config.refreshTokenExpiresIn)),
-        },
-      });
+    const { user, accessToken, refreshToken } = await login(
+      email,
+      password,
+      userIp
+    );
+    res.status(200).json({
+      user,
+      accessToken: {
+        token: accessToken,
+        expirationDate: new Date(Date.now() + ms(config.accessTokenExpiresIn)),
+      },
+      refreshToken: {
+        token: refreshToken,
+        expirationDate: new Date(Date.now() + ms(config.refreshTokenExpiresIn)),
+      },
+    });
   } catch (error) {
     next(new HttpError(error.message, error.statusCode));
   }
@@ -69,20 +81,21 @@ export const refreshTokenController = async (req, res, next) => {
     }
 
     const userIp = req.ip;
-    const { newAccessToken, newRefreshToken } = await refreshTokens(userRefreshToken, userIp);
+    const { newAccessToken, newRefreshToken } = await refreshTokens(
+      userRefreshToken,
+      userIp
+    );
 
-    res
-      .status(200)
-      .json({
-        accessToken: {
-          token: newAccessToken,
-          expirationDate: new Date(Date.now() + ms(config.accessTokenExpiresIn)),
-        },
-        refreshToken: {
-          token: newRefreshToken,
-          expirationDate: new Date(Date.now() + ms(config.refreshTokenExpiresIn)),
-        },
-      });
+    res.status(200).json({
+      accessToken: {
+        token: newAccessToken,
+        expirationDate: new Date(Date.now() + ms(config.accessTokenExpiresIn)),
+      },
+      refreshToken: {
+        token: newRefreshToken,
+        expirationDate: new Date(Date.now() + ms(config.refreshTokenExpiresIn)),
+      },
+    });
   } catch (error) {
     next(new HttpError(error.message, error.statusCode));
   }
@@ -93,12 +106,9 @@ export const logoutController = async (req, res, next) => {
     const userRefreshToken = req.cookies.refreshToken;
     const userAccessToken = req.get('authorization').split(' ')[1];
     await logout(userRefreshToken, userAccessToken);
-    res
-      .status(200)
-      .clearCookie('refreshToken')
-      .json({
-        message: 'You have successfully logged out',
-      });
+    res.status(200).clearCookie('refreshToken').json({
+      message: 'You have successfully logged out',
+    });
   } catch (error) {
     next(new HttpError(error.message, error.statusCode));
   }
@@ -132,6 +142,20 @@ export const confirmUserController = async (req, res, next) => {
     await confirmUser(token, password);
     res.status(200).json({
       message: 'User successfully verified',
+    });
+  } catch (error) {
+    next(new HttpError(error.message, error.statusCode));
+  }
+};
+
+export const resetPasswordController = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    const host = req.get('Origin');
+
+    await resetPassword(email, host);
+    res.status(200).json({
+      message: 'A confirmation link has been sent to your email address',
     });
   } catch (error) {
     next(new HttpError(error.message, error.statusCode));

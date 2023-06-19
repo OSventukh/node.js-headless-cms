@@ -110,7 +110,6 @@ export const getUsers = async (
     const order = await getOrder(orderQuery, User, [
       { model: 'Role', as: 'role', column: 'name' },
     ]);
-
     const { offset, limit } = getPagination(page, size);
 
     const result = await User.findAndCountAll({
