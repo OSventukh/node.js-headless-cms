@@ -233,10 +233,6 @@ export const getPendingUser = async (confirmationToken) => {
       throw new HttpError('User not found', 404);
     }
 
-    if (user.status !== PENDING) {
-      throw new HttpError('The user is already verified', 409);
-    }
-
     if (new Date(user.confirmationTokenExpirationDate) < new Date()) {
       throw new HttpError('Confirmation token is expired', 401);
     }
@@ -257,10 +253,6 @@ export const confirmUser = async (confirmationToken, password) => {
 
     if (!user) {
       throw new HttpError('User not found', 404);
-    }
-
-    if (user.status !== PENDING) {
-      throw new HttpError('The user is already verified', 409);
     }
 
     if (new Date(user.confirmationTokenExpirationDate) < new Date()) {
@@ -290,7 +282,7 @@ export const resetPassword = async (email, host) => {
       throw new HttpError('User with this email not exist', 400);
     }
 
-    const confirmationToken = generateConfirmationToken();
+    const confirmationToken = await generateConfirmationToken();
 
     user.confirmationToken = confirmationToken;
     user.confirmationTokenExpirationDate = new Date(Date.now() + ms('1 day'));

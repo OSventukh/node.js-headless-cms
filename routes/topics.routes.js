@@ -23,8 +23,7 @@ import checkValidation from '../middlewares/validation.js';
 const router = express.Router();
 
 router.get(
-  '/topics/:topicId',
-  idValidator('topicId'),
+  '/topics/:id',
   paginationValidator(),
   checkValidation,
   getTopicsController,

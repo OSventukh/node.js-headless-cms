@@ -71,7 +71,7 @@ export const getTopics = async (
 ) => {
   try {
     // Convert provided include query to array and check if it avaible for this model
-    const avaibleIncludes = ['users', 'page', 'posts', 'categories', 'parent'];
+    const avaibleIncludes = ['users', 'page', 'posts', 'categories', 'parent', 'children'];
     const include = checkIncludes(includeQuery, avaibleIncludes);
 
     // Check if provided query avaible for filtering this model
@@ -93,8 +93,12 @@ export const getTopics = async (
     const order = await getOrder(orderQuery, Topic);
 
     const { offset, limit } = getPagination(page, size);
+
     const result = await Topic.findAndCountAll({
-      where: whereObj,
+      where: {
+        ...whereObj,
+        parentId: null,
+      },
       include,
       order,
       offset,
