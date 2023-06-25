@@ -46,7 +46,7 @@ export const getCategories = async (
 ) => {
   try {
     // Convert provided include query to array and check if it avaible for this model
-    const avaibleIncludes = ['posts', 'parent'];
+    const avaibleIncludes = ['posts', 'parent', 'children'];
     const include = checkIncludes(includeQuery, avaibleIncludes);
 
     // Check if provided query avaible for filtering this model
@@ -59,8 +59,19 @@ export const getCategories = async (
     const { offset, limit } = getPagination(page, size);
 
     const result = await Category.findAndCountAll({
-      where: whereObj,
-      include,
+      where: {
+        ...whereObj,
+        parentId: null,
+      },
+      include: [
+        ...include,
+        include.includes('children')
+        && attributes && {
+          model: Category,
+          as: 'children',
+          attributes,
+        },
+      ].filter(Boolean),
       order,
       offset,
       limit,

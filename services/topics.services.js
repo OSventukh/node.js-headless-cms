@@ -94,12 +94,20 @@ export const getTopics = async (
 
     const { offset, limit } = getPagination(page, size);
 
+
     const result = await Topic.findAndCountAll({
       where: {
         ...whereObj,
         parentId: null,
       },
-      include,
+      include: [
+        ...include,
+        include.includes('children') && attributes && {
+          model: Topic,
+          as: 'children',
+          attributes,
+        }
+      ].filter(Boolean),
       order,
       offset,
       limit,

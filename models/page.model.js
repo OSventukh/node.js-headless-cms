@@ -26,10 +26,6 @@ export default (sequelize, DataTypes) => {
         type: DataTypes.TEXT,
         allowNull: false,
       },
-      description: {
-        type: DataTypes.TEXT,
-        allowNull: false,
-      },
       slug: {
         type: DataTypes.STRING,
         unique: true,

@@ -53,7 +53,7 @@ export const createPost = async ({
         },
       }),
     ]);
-    console.log(['topics'], categories);
+
     if (!topics || topics.length === 0) {
       throw new HttpError('No topic selected', 400);
     }
