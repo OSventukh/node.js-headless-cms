@@ -2,13 +2,7 @@ import { Model } from 'sequelize';
 
 export default (sequelize, DataTypes) => {
   class Post extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
     static associate(models) {
-      // define association here
       this.belongsTo(models.User, { foreignKey: 'userId', as: 'author' });
       this.belongsToMany(models.Category, { foreignKey: 'categoryId', as: 'categories', through: 'PostCategory' });
       this.belongsToMany(models.Topic, { foreignKey: 'topicId', as: 'topics', through: 'PostTopic' });
@@ -34,7 +28,7 @@ export default (sequelize, DataTypes) => {
       slug: {
         type: DataTypes.STRING,
         unique: true,
-        allowNull: false,
+        allowNull: false
       },
       status: {
         type: DataTypes.STRING,

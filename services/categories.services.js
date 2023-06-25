@@ -1,11 +1,23 @@
 import { Op } from 'sequelize';
 import { Category } from '../models/index.js';
 import HttpError from '../utils/http-error.js';
-import { checkIncludes, checkAttributes, buildWhereObject, getOrder, getPagination } from '../utils/models.js';
+import {
+  checkIncludes,
+  checkAttributes,
+  buildWhereObject,
+  getOrder,
+  getPagination,
+} from '../utils/models.js';
+import slugifyString from '../utils/slugify.js';
 
 export const createCategory = async (categoryData) => {
   try {
-    const category = await Category.create(categoryData);
+    const category = await Category.create({
+      ...categoryData,
+      slug: categoryData.slug
+        ? slugifyString(categoryData.slug)
+        : slugifyString(categoryData.title),
+    });
     return category;
   } catch (error) {
     if (error.name === 'SequelizeValidationError') {
@@ -17,7 +29,10 @@ export const createCategory = async (categoryData) => {
       const errorMessage = `The ${fieldName} should be an unique. Value ${fieldValue} is already in use`;
       throw new HttpError(errorMessage, 409);
     }
-    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+    throw new HttpError(
+      error.message || 'Something went wrong',
+      error.statusCode || 500
+    );
   }
 };
 
@@ -27,7 +42,7 @@ export const getCategories = async (
   orderQuery,
   page,
   size,
-  columns,
+  columns
 ) => {
   try {
     // Convert provided include query to array and check if it avaible for this model
@@ -53,7 +68,10 @@ export const getCategories = async (
     });
     return result;
   } catch (error) {
-    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+    throw new HttpError(
+      error.message || 'Something went wrong',
+      error.statusCode || 500
+    );
   }
 };
 
@@ -73,7 +91,10 @@ export const updateCategory = async (id, toUpdate) => {
       throw new HttpError('Category was not updated', 400);
     }
   } catch (error) {
-    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+    throw new HttpError(
+      error.message || 'Something went wrong',
+      error.statusCode || 500
+    );
   }
 };
 
@@ -108,6 +129,9 @@ export const deleteCategory = async (id) => {
 
     return result;
   } catch (error) {
-    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+    throw new HttpError(
+      error.message || 'Something went wrong',
+      error.statusCode || 500
+    );
   }
 };

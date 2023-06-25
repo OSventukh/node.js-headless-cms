@@ -23,7 +23,12 @@ const transformData = (data) => {
   };
 };
 
-export const createPost = async ({ topicId, categoryId, userId, ...postData }) => {
+export const createPost = async ({
+  topicId,
+  categoryId,
+  userId,
+  ...postData
+}) => {
   try {
     // Сheck whether the given ids is an array, and if it is not, it converts it into an array.
     const topicsIds = Array.isArray(topicId) ? topicId : [topicId];
@@ -48,7 +53,7 @@ export const createPost = async ({ topicId, categoryId, userId, ...postData }) =
         },
       }),
     ]);
-
+    console.log(['topics'], categories);
     if (!topics || topics.length === 0) {
       throw new HttpError('No topic selected', 400);
     }
@@ -59,7 +64,16 @@ export const createPost = async ({ topicId, categoryId, userId, ...postData }) =
 
     const post = await Post.create({ ...transformedData, userId });
     // Add categories and topics to post
-    await Promise.all([post.addCategories(categories), post.addTopics(topics)]);
+    await Promise.all([
+      post.setCategories([
+        ...categories.map((category) => category.id),
+        ...categories.map((category) => category.parentId).filter(Boolean),
+      ]),
+      post.setTopics([
+        ...topics.map((topic) => topic.id),
+        ...topics.map((topic) => topic.parentId).filter(Boolean),
+      ]),
+    ]);
     return post;
   } catch (error) {
     if (error.name === 'SequelizeValidationError') {
@@ -84,7 +98,9 @@ export const getPosts = async (
   orderQuery,
   columns,
   page,
-  size
+  size,
+  topic,
+  category
 ) => {
   try {
     // Convert provided include query to array and check if it avaible for this model
@@ -112,7 +128,23 @@ export const getPosts = async (
 
     const result = await Post.findAndCountAll({
       where: whereObj,
-      include,
+      include: [
+        ...include,
+        topic && {
+          model: Topic,
+          as: 'topics',
+          where: {
+            slug: topic,
+          },
+        },
+        category && {
+          model: Category,
+          as: 'categories',
+          where: {
+            slug: category,
+          },
+        },
+      ].filter(Boolean),
       order,
       offset,
       limit,
@@ -159,8 +191,21 @@ export const updatePost = async (id, { topicId, categoryId, ...toUpdate }) => {
 
     const result = await sequelize.transaction(async (transaction) => {
       const updatedData = await Promise.all([
-        post.setCategories(categories, { transaction }),
-        post.setTopics(topics, { transaction }),
+        await Promise.all([
+          post.setCategories(
+            [
+              ...categories.map((category) => category.id),
+              ...categories
+                .map((category) => category.parentId)
+                .filter(Boolean),
+            ],
+            { transaction },
+          ),
+          post.setTopics([
+            ...topics.map((topic) => topic.id),
+            ...topics.map((topic) => topic.parentId).filter(Boolean),
+          ], { transaction }),
+        ]),
         Post.update(transformedData, {
           where: {
             id,
@@ -170,7 +215,8 @@ export const updatePost = async (id, { topicId, categoryId, ...toUpdate }) => {
       ]);
       return updatedData[2];
     });
-    if (result[0] === 0) {
+
+    if (result && result[0] === 0) {
       throw new HttpError('Post was not updated', 400);
     }
   } catch (error) {
@@ -194,8 +240,7 @@ export const deletePost = async (id) => {
     });
 
     if (!posts || posts.length === 0) {
-      const errorMessage =
-        postsId.length > 1 ? 'Posts not found' : 'Post not found';
+      const errorMessage = postsId.length > 1 ? 'Posts not found' : 'Post not found';
       throw new HttpError(errorMessage, 404);
     }
 

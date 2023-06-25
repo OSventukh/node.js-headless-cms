@@ -22,20 +22,27 @@ export const createCategoryController = async (req, res, next) => {
 export const getCategoriesController = async (req, res, next) => {
   // Receive category id from url params or query
   const id = req.params.categoryId || req.query.id;
-  const { include, order, page, size, columns, ...whereQuery } = req.query;
+  const { include, order, page, size, columns, slug, ...whereQuery } = req.query;
   try {
     // get topics with provided parameters and response it to the client
     const { count, rows } = await getCategories(
       {
         id,
+        slug,
         ...whereQuery,
       },
       include,
       order,
       page,
       size,
-      columns,
+      columns
     );
+    if (id || slug) {
+      res.status(200).json({
+        category: rows[0],
+      });
+      return;
+    }
     res.status(200).json({
       count,
       currentPage: page,
@@ -75,7 +82,10 @@ export const deleteCategoryController = async (req, res, next) => {
     const result = await deleteCategory(categoryId);
 
     res.status(200).json({
-      message: result > 1 ? 'Categories were successfully deleted' : 'Category was successfully deleted',
+      message:
+        result > 1
+          ? 'Categories were successfully deleted'
+          : 'Category was successfully deleted',
       count: result,
     });
   } catch (error) {

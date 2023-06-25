@@ -22,7 +22,7 @@ export const createPostController = async (req, res, next) => {
 export const getPostsController = async (req, res, next) => {
   // Receive post id from url params or query
   const id = req.params.postId || req.query.id;
-  const { include, order, page, size, columns, ...whereQuery } = req.query;
+  const { include, order, page, size, columns, topic, category, ...whereQuery } = req.query;
   try {
     // get topics with provided parameters and response it to the client
     const { count, rows } = await getPosts(
@@ -35,6 +35,8 @@ export const getPostsController = async (req, res, next) => {
       columns,
       page,
       size,
+      topic,
+      category,
     );
     res.status(200).json({
       count,
