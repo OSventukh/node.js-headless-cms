@@ -20,14 +20,12 @@ async function getAllChildCategories(categories) {
   return allCategories;
 }
 
-export const createTopic = async (topicData) => {
+export const createTopic = async ({ pageId, parentId, ...topicData }) => {
   // Сheck whether the given ids is an array, and if it is not, it converts it into an array.
-  const categoriesIds = Array.isArray(topicData.categoryId)
-    ? topicData.categoryId
-    : [topicData.categoryId];
+  const categoriesIds = topicData?.categoryId ? Array.from(topicData.categoryId) : [];
 
   try {
-    const [topic, categories, page] = await Promise.all([
+    const [topic, categories, page, parentTopic] = await Promise.all([
       Topic.create(topicData),
       Category.findAll({
         where: {
@@ -36,12 +34,18 @@ export const createTopic = async (topicData) => {
           },
         },
       }),
-      Page.findByPk(topicData.pageId),
+      Page.findByPk(pageId),
+      Topic.findByPk(parentId),
     ]);
+
+    if (parentTopic && topic.children.length > 0) {
+      throw new HttpError('This topic contains child topics. Only one level of nesting is allowed.', 400);
+    }
 
     await Promise.all([
       await topic.setCategories(categories),
       await topic.setPage(page),
+      topic.id !== parentTopic.id && await topic.setParent(parentTopic),
     ]);
     return topic;
   } catch (error) {
@@ -94,18 +98,16 @@ export const getTopics = async (
 
     const { offset, limit } = getPagination(page, size);
 
-
     const result = await Topic.findAndCountAll({
       where: {
         ...whereObj,
-        parentId: null,
       },
       include: [
         ...include,
-        include.includes('children') && attributes && {
+        include.includes('children') && attributes?.length > 0 && {
           model: Topic,
           as: 'children',
-          attributes,
+          attributes: [...attributes, 'id'],
         }
       ].filter(Boolean),
       order,
@@ -113,7 +115,6 @@ export const getTopics = async (
       limit,
       ...(columns && { attributes: ['id', ...attributes] }),
     });
-
     return result;
   } catch (error) {
     throw new HttpError(
@@ -123,14 +124,13 @@ export const getTopics = async (
   }
 };
 
-export const updateTopic = async (id, toUpdate) => {
+export const updateTopic = async (id, { pageId, parentId, ...toUpdate }) => {
   // Сheck whether the given ids is an array, and if it is not, it converts it into an array.
-  const categoriesIds = Array.isArray(toUpdate.categoryId)
-    ? toUpdate.categoryId
-    : [toUpdate.categoryId];
+  const categoriesIds = toUpdate.categoryId ? Array.from(toUpdate.categoryId) : [];
+
   try {
-    const [topic, categories, page] = await Promise.all([
-      Topic.findByPk(id),
+    const [topic, categories, page, parentTopic] = await Promise.all([
+      Topic.findByPk(id, { include: ['children'] }),
       Category.findAll({
         where: {
           id: {
@@ -138,19 +138,34 @@ export const updateTopic = async (id, toUpdate) => {
           },
         },
       }),
-      Page.findByPk(toUpdate.pageId)
+      Page.findByPk(pageId),
+      Topic.findByPk(parentId),
     ]);
 
     if (!topic) {
       throw new HttpError('Topic with this id not found', 404);
     }
 
+    if (parentTopic && (topic.id === parentTopic.id || parentTopic.parentId === topic.id)) {
+      throw new HttpError('This topic cannot be the parent topic', 400);
+    }
+
+    if (parentTopic && topic.children.length > 0) {
+      throw new HttpError('This topic contains child topics. Only one level of nesting is allowed.', 400);
+    }
+
+    if (parentTopic && parentTopic.parentId) {
+      throw new HttpError('The topic you want to select as a parent is a child of another topic. Only one level of nesting is allowed.', 400);
+    }
+
+    // if (awaittopic.getChildren())
     const categoriesWithChild = await getAllChildCategories(categories);
 
     const result = await sequelize.transaction(async (transaction) => {
       const updatedData = await Promise.all([
         topic.setCategories(categoriesWithChild, { transaction }),
         topic.setPage(page, { transaction }),
+        topic.setParent(parentTopic, { transaction }),
         Topic.update(toUpdate, {
           where: {
             id,

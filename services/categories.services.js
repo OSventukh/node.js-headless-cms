@@ -10,14 +10,26 @@ import {
 } from '../utils/models.js';
 import slugifyString from '../utils/slugify.js';
 
-export const createCategory = async (categoryData) => {
+export const createCategory = async ({ parentId, ...categoryData }) => {
   try {
     const category = await Category.create({
       ...categoryData,
-      slug: categoryData.slug
+      slug: categoryData?.slug
         ? slugifyString(categoryData.slug)
-        : slugifyString(categoryData.title),
+        : slugifyString(categoryData.name),
     });
+
+    const parentCategory = await Category.findByPk(parentId);
+
+    if (!parentCategory) {
+      throw new HttpError();
+    }
+
+    if (parentCategory && parentCategory.parentId) {
+      throw new HttpError('The category you want to select as a parent is a child of another category. Only one level of nesting is allowed.', 400);
+    }
+
+    await category.setParent(parentCategory);
     return category;
   } catch (error) {
     if (error.name === 'SequelizeValidationError') {
@@ -66,10 +78,10 @@ export const getCategories = async (
       include: [
         ...include,
         include.includes('children')
-        && attributes && {
+        && attributes.length > 0 && {
           model: Category,
           as: 'children',
-          attributes,
+          attributes: [...attributes, 'id'],
         },
       ].filter(Boolean),
       order,
@@ -86,11 +98,30 @@ export const getCategories = async (
   }
 };
 
-export const updateCategory = async (id, toUpdate) => {
+export const updateCategory = async (id, { parentId, ...toUpdate }) => {
   try {
-    const category = await Category.findByPk(id);
+    const [category, parentCategory] = await Promise.all([
+      Category.findByPk(id, { include: ['children'] }),
+      Category.findByPk(parentId),
+    ]);
+
     if (!category) {
       throw new HttpError('Category with this id not found', 404);
+    }
+
+    if (
+      parentCategory
+      && (category.id === parentCategory.id || parentCategory.parentId === category.id)
+    ) {
+      throw new HttpError('This category cannot be the parent category', 400);
+    }
+
+    if (parentCategory && category.children.length > 0) {
+      throw new HttpError('This category contains child category. Only one level of nesting is allowed.', 400);
+    }
+
+    if (parentCategory && parentCategory.parentId) {
+      throw new HttpError('The category you want to select as a parent is a child of another category. Only one level of nesting is allowed.', 400);
     }
 
     const result = await Category.update(toUpdate, {
