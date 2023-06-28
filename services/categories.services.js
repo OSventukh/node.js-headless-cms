@@ -26,7 +26,10 @@ export const createCategory = async ({ parentId, ...categoryData }) => {
     }
 
     if (parentCategory && parentCategory.parentId) {
-      throw new HttpError('The category you want to select as a parent is a child of another category. Only one level of nesting is allowed.', 400);
+      throw new HttpError(
+        'The category you want to select as a parent is a child of another category. Only one level of nesting is allowed.',
+        400,
+      );
     }
 
     await category.setParent(parentCategory);
@@ -43,7 +46,7 @@ export const createCategory = async ({ parentId, ...categoryData }) => {
     }
     throw new HttpError(
       error.message || 'Something went wrong',
-      error.statusCode || 500
+      error.statusCode || 500,
     );
   }
 };
@@ -54,7 +57,7 @@ export const getCategories = async (
   orderQuery,
   page,
   size,
-  columns
+  columns,
 ) => {
   try {
     // Convert provided include query to array and check if it avaible for this model
@@ -73,7 +76,6 @@ export const getCategories = async (
     const result = await Category.findAndCountAll({
       where: {
         ...whereObj,
-        parentId: null,
       },
       include: [
         ...include,
@@ -93,7 +95,7 @@ export const getCategories = async (
   } catch (error) {
     throw new HttpError(
       error.message || 'Something went wrong',
-      error.statusCode || 500
+      error.statusCode || 500,
     );
   }
 };
@@ -111,31 +113,46 @@ export const updateCategory = async (id, { parentId, ...toUpdate }) => {
 
     if (
       parentCategory
-      && (category.id === parentCategory.id || parentCategory.parentId === category.id)
+      && (category.id === parentCategory.id
+      || parentCategory.parentId === category.id)
     ) {
       throw new HttpError('This category cannot be the parent category', 400);
     }
 
     if (parentCategory && category.children.length > 0) {
-      throw new HttpError('This category contains child category. Only one level of nesting is allowed.', 400);
+      throw new HttpError(
+        'This category contains child category. Only one level of nesting is allowed.',
+        400,
+      );
     }
 
     if (parentCategory && parentCategory.parentId) {
-      throw new HttpError('The category you want to select as a parent is a child of another category. Only one level of nesting is allowed.', 400);
+      throw new HttpError(
+        'The category you want to select as a parent is a child of another category. Only one level of nesting is allowed.',
+        400,
+      );
     }
 
-    const result = await Category.update(toUpdate, {
-      where: {
-        id,
+    const result = await Category.update(
+      {
+        ...toUpdate,
+        slug: toUpdate?.slug
+          ? slugifyString(toUpdate.slug)
+          : slugifyString(toUpdate.name),
       },
-    });
+      {
+        where: {
+          id,
+        },
+      },
+    );
     if (result[0] === 0) {
       throw new HttpError('Category was not updated', 400);
     }
   } catch (error) {
     throw new HttpError(
       error.message || 'Something went wrong',
-      error.statusCode || 500
+      error.statusCode || 500,
     );
   }
 };
@@ -173,7 +190,7 @@ export const deleteCategory = async (id) => {
   } catch (error) {
     throw new HttpError(
       error.message || 'Something went wrong',
-      error.statusCode || 500
+      error.statusCode || 500,
     );
   }
 };

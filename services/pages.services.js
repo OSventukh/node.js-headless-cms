@@ -32,7 +32,7 @@ export const createPage = async (pageData) => {
     }
     throw new HttpError(
       error.message || 'Something went wrong',
-      error.statusCode || 500
+      error.statusCode || 500,
     );
   }
 };
@@ -43,7 +43,7 @@ export const getPages = async (
   orderQuery,
   page,
   size,
-  columns
+  columns,
 ) => {
   try {
     // Convert provided include query to array and check if it avaible for this model
@@ -78,7 +78,7 @@ export const getPages = async (
   } catch (error) {
     throw new HttpError(
       error.message || 'Something went wrong',
-      error.statusCode || 500
+      error.statusCode || 500,
     );
   }
 };
@@ -90,18 +90,26 @@ export const updatePage = async (id, toUpdate) => {
       throw new HttpError('Page with this id not found', 404);
     }
 
-    const result = await Page.update(toUpdate, {
-      where: {
-        id,
+    const result = await Page.update(
+      {
+        ...toUpdate,
+        slug: toUpdate.slug
+          ? slugifyString(toUpdate.slug)
+          : slugifyString(toUpdate.title),
       },
-    });
+      {
+        where: {
+          id,
+        },
+      },
+    );
     if (result[0] === 0) {
       throw new HttpError('Page was not updated', 400);
     }
   } catch (error) {
     throw new HttpError(
       error.message || 'Something went wrong',
-      error.statusCode || 500
+      error.statusCode || 500,
     );
   }
 };
@@ -139,7 +147,7 @@ export const deletePage = async (id) => {
   } catch (error) {
     throw new HttpError(
       error.message || 'Something went wrong',
-      error.statusCode || 500
+      error.statusCode || 500,
     );
   }
 };

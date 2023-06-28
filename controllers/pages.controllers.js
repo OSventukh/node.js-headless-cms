@@ -23,7 +23,7 @@ export const getPagesController = async (req, res, next) => {
   // Receive page id from url params or query
   const id = req.params.pageId || req.query.id;
 
-  const { include, order, page, size, columns, ...whereQuery } = req.query;
+  const { include, order, page, size, columns, slug, ...whereQuery } = req.query;
 
   try {
     // get topics with provided parameters and response it to the client
@@ -38,6 +38,12 @@ export const getPagesController = async (req, res, next) => {
       size,
       columns,
     );
+    if (id || slug) {
+      res.status(200).json({
+        page: rows[0],
+      });
+      return;
+    }
     res.status(200).json({
       count,
       currentPage: page,

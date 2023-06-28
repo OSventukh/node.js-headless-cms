@@ -22,7 +22,8 @@ export const createPostController = async (req, res, next) => {
 export const getPostsController = async (req, res, next) => {
   // Receive post id from url params or query
   const id = req.params.postId || req.query.id;
-  const { include, order, page, size, columns, topic, category, ...whereQuery } = req.query;
+  const { include, order, page, size, columns, topic, category, slug, ...whereQuery } = req.query;
+
   try {
     // get topics with provided parameters and response it to the client
     const { count, rows } = await getPosts(
@@ -38,6 +39,12 @@ export const getPostsController = async (req, res, next) => {
       topic,
       category,
     );
+    if (id || slug) {
+      res.status(200).json({
+        post: rows[0],
+      });
+      return;
+    }
     res.status(200).json({
       count,
       currentPage: page,
@@ -87,7 +94,7 @@ export const deletePostController = async (req, res, next) => {
   }
 };
 
-export const uploadPostImageController = (req, res, next) => {
+export const uploadPostImageController = (req, res) => {
   const imageUrl = `http://localhost:5000/uploads/${req.file.filename}`;
   res.json({
     location: imageUrl,

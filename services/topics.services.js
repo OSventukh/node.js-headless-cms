@@ -1,5 +1,6 @@
 import { Op } from 'sequelize';
 import { Topic, Category, Page, sequelize } from '../models/index.js';
+import slugifyString from '../utils/slugify.js';
 import HttpError from '../utils/http-error.js';
 import {
   checkIncludes,
@@ -22,11 +23,18 @@ async function getAllChildCategories(categories) {
 
 export const createTopic = async ({ pageId, parentId, ...topicData }) => {
   // Сheck whether the given ids is an array, and if it is not, it converts it into an array.
-  const categoriesIds = topicData?.categoryId ? Array.from(topicData.categoryId) : [];
+  const categoriesIds = topicData?.categoryId
+    ? Array.from(topicData.categoryId)
+    : [];
 
   try {
     const [topic, categories, page, parentTopic] = await Promise.all([
-      Topic.create(topicData),
+      Topic.create({
+        ...topicData,
+        slug: topicData.slug
+          ? slugifyString(topicData.slug)
+          : slugifyString(topicData.title),
+      }),
       Category.findAll({
         where: {
           id: {
@@ -39,13 +47,16 @@ export const createTopic = async ({ pageId, parentId, ...topicData }) => {
     ]);
 
     if (parentTopic && topic.children.length > 0) {
-      throw new HttpError('This topic contains child topics. Only one level of nesting is allowed.', 400);
+      throw new HttpError(
+        'This topic contains child topics. Only one level of nesting is allowed.',
+        400
+      );
     }
 
     await Promise.all([
       await topic.setCategories(categories),
       await topic.setPage(page),
-      topic.id !== parentTopic.id && await topic.setParent(parentTopic),
+      topic.id !== parentTopic.id && (await topic.setParent(parentTopic)),
     ]);
     return topic;
   } catch (error) {
@@ -75,7 +86,14 @@ export const getTopics = async (
 ) => {
   try {
     // Convert provided include query to array and check if it avaible for this model
-    const avaibleIncludes = ['users', 'page', 'posts', 'categories', 'parent', 'children'];
+    const avaibleIncludes = [
+      'users',
+      'page',
+      'posts',
+      'categories',
+      'parent',
+      'children',
+    ];
     const include = checkIncludes(includeQuery, avaibleIncludes);
 
     // Check if provided query avaible for filtering this model
@@ -104,10 +122,22 @@ export const getTopics = async (
       },
       include: [
         ...include,
-        include.includes('children') && attributes?.length > 0 && {
+        include.includes('children')
+        && attributes?.length > 0 && {
           model: Topic,
           as: 'children',
           attributes: [...attributes, 'id'],
+        },
+        include.includes('categories') && {
+          model: Category,
+          as: 'categories',
+          where: {
+            parentId: null,
+          },
+          include: {
+            model: Category,
+            as: 'children',
+          }
         }
       ].filter(Boolean),
       order,
@@ -126,7 +156,9 @@ export const getTopics = async (
 
 export const updateTopic = async (id, { pageId, parentId, ...toUpdate }) => {
   // Сheck whether the given ids is an array, and if it is not, it converts it into an array.
-  const categoriesIds = toUpdate.categoryId ? Array.from(toUpdate.categoryId) : [];
+  const categoriesIds = toUpdate.categoryId
+    ? Array.from(toUpdate.categoryId)
+    : [];
 
   try {
     const [topic, categories, page, parentTopic] = await Promise.all([
@@ -146,16 +178,25 @@ export const updateTopic = async (id, { pageId, parentId, ...toUpdate }) => {
       throw new HttpError('Topic with this id not found', 404);
     }
 
-    if (parentTopic && (topic.id === parentTopic.id || parentTopic.parentId === topic.id)) {
+    if (
+      parentTopic
+      && (topic.id === parentTopic.id || parentTopic.parentId === topic.id)
+    ) {
       throw new HttpError('This topic cannot be the parent topic', 400);
     }
 
     if (parentTopic && topic.children.length > 0) {
-      throw new HttpError('This topic contains child topics. Only one level of nesting is allowed.', 400);
+      throw new HttpError(
+        'This topic contains child topics. Only one level of nesting is allowed.',
+        400
+      );
     }
 
     if (parentTopic && parentTopic.parentId) {
-      throw new HttpError('The topic you want to select as a parent is a child of another topic. Only one level of nesting is allowed.', 400);
+      throw new HttpError(
+        'The topic you want to select as a parent is a child of another topic. Only one level of nesting is allowed.',
+        400
+      );
     }
 
     // if (awaittopic.getChildren())
@@ -166,12 +207,20 @@ export const updateTopic = async (id, { pageId, parentId, ...toUpdate }) => {
         topic.setCategories(categoriesWithChild, { transaction }),
         topic.setPage(page, { transaction }),
         topic.setParent(parentTopic, { transaction }),
-        Topic.update(toUpdate, {
-          where: {
-            id,
+        Topic.update(
+          {
+            ...toUpdate,
+            slug: toUpdate.slug
+              ? slugifyString(toUpdate.slug)
+              : slugifyString(toUpdate.title),
           },
-          transaction,
-        }),
+          {
+            where: {
+              id,
+            },
+            transaction,
+          }
+        ),
       ]);
       return updatedData[1];
     });

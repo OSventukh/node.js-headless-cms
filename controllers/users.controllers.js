@@ -43,6 +43,12 @@ export const getUsersController = async (req, res, next) => {
       all,
       columns,
     );
+    if (id) {
+      res.status(200).json({
+        user: rows[0],
+      });
+      return;
+    }
     res.status(200).json({
       count,
       currentPage: page,

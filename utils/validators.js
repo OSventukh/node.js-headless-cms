@@ -137,7 +137,7 @@ export function idValidator(id) {
 
 export function paginationValidator() {
   return [
-    query('page').optional().isInt({ min: 1 }).toInt(),
-    query('size').optional().isInt({ min: 1 }).toInt(),
+    query('page').optional().toInt(),
+    query('size').optional().toInt(),
   ];
 }
