@@ -65,7 +65,6 @@ export const login = async (email, password, userIp) => {
         401
       );
     }
-
     const isMatchPassword = await user.comparePassword(password);
 
     if (!isMatchPassword) {

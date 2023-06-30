@@ -1,4 +1,3 @@
-import jwt from 'jsonwebtoken';
 import HttpError from '../utils/http-error.js';
 import { Post, UserBlockedToken, User } from '../models/index.js';
 import { ADMIN, MODER, SUPERADMIN, WRITER, BLOCKED } from '../utils/constants/users.js';

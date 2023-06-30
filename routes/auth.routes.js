@@ -1,6 +1,7 @@
 import express from 'express';
 
 import { auth } from '../middlewares/auth.js';
+import { rateLimiter } from '../middlewares/rate-limiter.js';
 import { confirmUserValidator, resetPasswordValidator, loginValidator, signupValidator } from '../utils/validators.js';
 import checkValidation from '../middlewares/validation.js';
 
@@ -19,7 +20,7 @@ const router = express.Router();
 
 router.get('/auth', authController);
 
-router.post('/login', loginValidator(), checkValidation, loginController);
+router.post('/login', loginValidator(), checkValidation, rateLimiter, loginController);
 
 router.post('/signup', signupValidator(), checkValidation, signupController);
 
