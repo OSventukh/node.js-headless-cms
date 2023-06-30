@@ -29,6 +29,7 @@ export const getPostsController = async (req, res, next) => {
     const { count, rows } = await getPosts(
       {
         id,
+        slug,
         ...whereQuery,
       },
       include,

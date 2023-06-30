@@ -134,11 +134,15 @@ export const getTopics = async (
           where: {
             parentId: null,
           },
-          include: {
-            model: Category,
-            as: 'children',
-          }
-        }
+          include: [
+            {
+              model: Category,
+              as: 'children',
+              required: false,
+            },
+          ].filter(Boolean),
+          required: false,
+        },
       ].filter(Boolean),
       order,
       offset,
@@ -179,8 +183,7 @@ export const updateTopic = async (id, { pageId, parentId, ...toUpdate }) => {
     }
 
     if (
-      parentTopic
-      && (topic.id === parentTopic.id || parentTopic.parentId === topic.id)
+      parentTopic && (topic.id === parentTopic.id || parentTopic.parentId === topic.id)
     ) {
       throw new HttpError('This topic cannot be the parent topic', 400);
     }

@@ -1,6 +1,5 @@
 import { Op } from 'sequelize';
 import HttpError from '../utils/http-error.js';
-import { getPosts } from '../services/posts.services.js';
 import { Post } from '../models/index.js';
 
 /* eslint-disable import/prefer-default-export */
@@ -8,18 +7,9 @@ import { Post } from '../models/index.js';
 export const searchController = async (req, res, next) => {
   try {
     const searchString = decodeURIComponent(req.params.searchString);
-    // const { include, order, page, size, columns } = req.query;
-
-    // const { count, rows } = await getPosts(
-    //   {
-    //     [Op.or]: [{ title: searchString }, { content: searchString }],
-    //   },
-    //   include,
-    //   order,
-    //   columns,
-    //   page,
-    //   size,
-    // );
+    if (!searchString || searchString.length === 0) {
+      throw new HttpError('Search query should not be an empty', 400);
+    }
     const result = await Post.findAll({
       where: {
         [Op.or]: [
@@ -27,6 +17,7 @@ export const searchController = async (req, res, next) => {
           { content: { [Op.like]: `%${searchString}%` } },
         ],
       },
+      include: ['topics']
     });
     res.status(200).json({
       posts: result,
