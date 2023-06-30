@@ -30,7 +30,7 @@ export const limiterConsecutiveFailsByEmailAndIP = new RateLimiterMySQL(
     keyPrefix: 'login_fail_consecutive_email_and_ip',
     points: config.maxConsecutiveFailsByEmailAndIP,
     duration: 60 * 60, // Delete key after 1 hour
-    blockDuration: 60, // Block for 1 hour
+    blockDuration: 60 * 60, // Block for 1 hour
   },
   ready,
 );
