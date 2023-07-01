@@ -1,1 +1,1 @@
-# Simple headless CMS for creating blog api
+# Express.js rest api server
