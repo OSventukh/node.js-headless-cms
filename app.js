@@ -13,6 +13,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(helmet());
 app.use('/uploads', express.static(path.join('uploads')));
+
 app.use(
   cors({
     origin: process.env.ACCESS_DOMEN || true,

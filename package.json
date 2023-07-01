@@ -1,5 +1,5 @@
 {
-  "name": "node.js-headless-cms",
+  "name": "vethealth",
   "description": "",
   "type": "module",
   "version": "1.0.0",
@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/OSventukh/vethealth-backend#readme",
   "dependencies": {
-    "bcrypt": "^5.1.0",
+    "bcrypt": "^5.0.1",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "cron": "^2.3.0",
@@ -37,17 +37,14 @@
     "nodemailer": "^6.9.1",
     "rate-limiter-flexible": "^2.4.1",
     "sequelize": "^6.28.0",
-    "slugify": "^1.6.6"
+    "slugify": "^1.6.6",
+    "winston": "^3.9.0"
   },
   "devDependencies": {
     "@vitest/coverage-c8": "^0.28.5",
     "cross-env": "^7.0.3",
-    "eslint": "^8.32.0",
-    "eslint-config-airbnb": "^19.0.4",
-    "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-plugin-import": "^2.27.5",
-    "eslint-plugin-jsx-a11y": "^6.7.1",
-    "nodemon": "^2.0.20",
+    "eslint": "^8.44.0",
+    "nodemon": "^1.14.9",
     "supertest": "^6.3.3",
     "vitest": "^0.28.4"
   }
