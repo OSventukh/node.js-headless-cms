@@ -47,9 +47,7 @@ router.post(
 
 router.post(
   '/posts/upload-image',
-  // auth,
-  // rolesAccess([ADMIN, MODER, WRITER]),
-  upload.single('upload'),
+  upload.single('post-image'),
   uploadPostImageController,
 );
 

@@ -7,7 +7,7 @@
   "scripts": {
     "test": "cross-env NODE_ENV=test vitest --no-threads",
     "test:coverage": "cross-env NODE_ENV=test vitest --no-threads --coverage",
-    "start": "node server.js",
+    
     "dev": "cross-env NODE_ENV=development nodemon server.js",
     "migrate": "sequelize-cli db:migrate"
   },

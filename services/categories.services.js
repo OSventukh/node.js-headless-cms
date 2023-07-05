@@ -21,10 +21,6 @@ export const createCategory = async ({ parentId, ...categoryData }) => {
 
     const parentCategory = await Category.findByPk(parentId);
 
-    if (!parentCategory) {
-      throw new HttpError();
-    }
-
     if (parentCategory && parentCategory.parentId) {
       throw new HttpError(
         'The category you want to select as a parent is a child of another category. Only one level of nesting is allowed.',
@@ -133,22 +129,23 @@ export const updateCategory = async (id, { parentId, ...toUpdate }) => {
       );
     }
 
-    const result = await Category.update(
-      {
-        ...toUpdate,
-        slug: toUpdate?.slug
-          ? slugifyString(toUpdate.slug)
-          : slugifyString(toUpdate.name),
-      },
-      {
-        where: {
-          id,
+    await Promise.all([
+      category.setParent(parentCategory),
+      Category.update(
+        {
+          ...toUpdate,
+          slug: toUpdate?.slug
+            ? slugifyString(toUpdate.slug)
+            : slugifyString(toUpdate.name),
         },
-      },
-    );
-    if (result[0] === 0) {
-      throw new HttpError('Category was not updated', 400);
-    }
+        {
+          where: {
+            id,
+          },
+        },
+      ),
+
+    ])
   } catch (error) {
     throw new HttpError(
       error.message || 'Something went wrong',

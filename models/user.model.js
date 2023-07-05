@@ -10,13 +10,12 @@ export default (sequelize, DataTypes) => {
       // define association here
       this.hasMany(models.UserToken, { foreignKey: 'userId', as: 'tokens' });
       this.hasMany(models.Post, { foreignKey: 'userId', as: 'posts' });
-      this.hasMany(models.Page, { foreignKey: 'userId', as: 'pages' });
       this.belongsToMany(models.Topic, {
-        foreignKey: 'topicId',
+        foreignKey: 'userId',
         as: 'topics',
         through: 'TopicUsers',
       });
-      this.belongsTo(models.Role, { foreignKey: 'roleId', as: 'role' });
+      this.belongsTo(models.Role, { foreignKey: 'userId', as: 'role' });
     }
 
     getPublicData() {
@@ -45,6 +44,11 @@ export default (sequelize, DataTypes) => {
 
   User.init(
     {
+      id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+      },
       firstname: {
         type: DataTypes.STRING,
         allowNull: false,

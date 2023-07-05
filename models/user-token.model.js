@@ -8,10 +8,14 @@ export default (sequelize, DataTypes) => {
   }
   UserToken.init(
     {
+      id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+      },
       token: {
         type: DataTypes.STRING(512),
         allowNull: false,
-        unique: true,
       },
       expiresIn: {
         type: DataTypes.DATE,

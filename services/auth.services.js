@@ -102,17 +102,6 @@ export const login = async (email, password, userIp) => {
 
 export const signup = async (data) => {
   try {
-    const superAdmin = await User.findOne({
-      where: {
-        '$Role.name$': SUPERADMIN,
-      },
-      include: ['role'],
-    });
-
-    if (superAdmin) {
-      throw new HttpError('Administrator already exist', 409);
-    }
-
     const adminRole = await Role.findOne({
       where: {
         name: SUPERADMIN,
@@ -121,6 +110,17 @@ export const signup = async (data) => {
 
     if (!adminRole) {
       throw new HttpError('Role not found', 500);
+    }
+
+    const superAdmin = await User.findOne({
+      where: {
+        roleId: adminRole.id,
+      },
+      include: ['role'],
+    });
+
+    if (superAdmin) {
+      throw new HttpError('Administrator already exist', 409);
     }
 
     // Creating user and adding role 'administrator';
@@ -293,7 +293,7 @@ export const resetPassword = async (email, host) => {
         token: confirmationToken,
         userEmail: user.email,
         userName: user.firstname,
-      }),
+      })
     );
   } catch (error) {
     throw new HttpError(error.message, error.statusCode);

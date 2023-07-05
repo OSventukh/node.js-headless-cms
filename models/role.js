@@ -9,16 +9,20 @@ export default (sequelize, DataTypes) => {
 
   Role.init(
     {
+      id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+      },
       name: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true,
       },
     },
     {
       sequelize,
       modelName: 'Role',
-    },
+    }
   );
   return Role;
 };

@@ -199,6 +199,9 @@ export const updateUser = async (
     if (result[0] === 0) {
       throw new HttpError('User was not updated', 400);
     }
+    const updatedUser = await User.findByPk(id, { include: ['role']});
+    return updatedUser.getPublicData();
+
   } catch (error) {
     throw new HttpError(
       error.message || 'Something went wrong',

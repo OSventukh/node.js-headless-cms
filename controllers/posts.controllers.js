@@ -1,12 +1,10 @@
 import HttpError from '../utils/http-error.js';
-
 import {
   createPost,
   getPosts,
   updatePost,
   deletePost,
 } from '../services/posts.services.js';
-
 export const createPostController = async (req, res, next) => {
   try {
     const post = await createPost({ ...req.body, userId: req.authUser.id });
@@ -96,7 +94,9 @@ export const deletePostController = async (req, res, next) => {
 };
 
 export const uploadPostImageController = (req, res) => {
-  const imageUrl = `http://localhost:5000/uploads/${req.file.filename}`;
+  const host = req.header('host');
+  const protocol = req.protocol;
+  const imageUrl = `${protocol}://${host}/uploads/images/posts/${new Date().toISOString().slice(0, 10)}/${req.file.filename}`;
   res.json({
     location: imageUrl,
   });

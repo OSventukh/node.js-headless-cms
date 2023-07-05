@@ -28,36 +28,46 @@ export const createTopic = async ({ pageId, parentId, ...topicData }) => {
     : [];
 
   try {
-    const [topic, categories, page, parentTopic] = await Promise.all([
-      Topic.create({
-        ...topicData,
-        slug: topicData.slug
-          ? slugifyString(topicData.slug)
-          : slugifyString(topicData.title),
-      }),
-      Category.findAll({
-        where: {
-          id: {
-            [Op.in]: categoriesIds,
+    const topic = await sequelize.transaction(async (transaction) => {
+      const [topic, categories, page, parentTopic] = await Promise.all([
+        Topic.create(
+          {
+            ...topicData,
+            slug: topicData.slug
+              ? slugifyString(topicData.slug)
+              : slugifyString(topicData.title),
           },
-        },
-      }),
-      Page.findByPk(pageId),
-      Topic.findByPk(parentId),
-    ]);
+          { transaction }
+        ),
+        Category.findAll(
+          {
+            where: {
+              id: {
+                [Op.in]: categoriesIds,
+              },
+            },
+          },
+          { transaction }
+        ),
+        Page.findByPk(pageId, { transaction }),
+        Topic.findByPk(parentId, { transaction }),
+      ]);
 
-    if (parentTopic && topic.children.length > 0) {
-      throw new HttpError(
-        'This topic contains child topics. Only one level of nesting is allowed.',
-        400
-      );
-    }
+      if (parentTopic && parentTopic.parentId) {
+        throw new HttpError(
+          'The topic you want to select as a parent is a child of another topic. Only one level of nesting is allowed.',
+          400
+        );
+      }
 
-    await Promise.all([
-      await topic.setCategories(categories),
-      await topic.setPage(page),
-      topic.id !== parentTopic.id && (await topic.setParent(parentTopic)),
-    ]);
+      await Promise.all([
+        await topic.setCategories(categories, { transaction }),
+        await topic.setPage(page),
+        topic?.id !== parentTopic?.id &&
+          (await topic.setParent(parentTopic, { transaction })),
+      ]);
+      return topic;
+    });
     return topic;
   } catch (error) {
     if (error.name === 'SequelizeValidationError') {
@@ -122,12 +132,12 @@ export const getTopics = async (
       },
       include: [
         ...include,
-        include.includes('children')
-        && attributes?.length > 0 && {
-          model: Topic,
-          as: 'children',
-          attributes: [...attributes, 'id'],
-        },
+        include.includes('children') &&
+          attributes?.length > 0 && {
+            model: Topic,
+            as: 'children',
+            attributes: [...attributes, 'id'],
+          },
         include.includes('categories') && {
           model: Category,
           as: 'categories',
@@ -183,7 +193,8 @@ export const updateTopic = async (id, { pageId, parentId, ...toUpdate }) => {
     }
 
     if (
-      parentTopic && (topic.id === parentTopic.id || parentTopic.parentId === topic.id)
+      parentTopic &&
+      (topic.id === parentTopic.id || parentTopic.parentId === topic.id)
     ) {
       throw new HttpError('This topic cannot be the parent topic', 400);
     }
@@ -251,7 +262,8 @@ export const deleteTopic = async (id) => {
     });
 
     if (!topics || topics.length === 0) {
-      const errorMessage = topicsId.length > 1 ? 'Topics not found' : 'Topic not found';
+      const errorMessage =
+        topicsId.length > 1 ? 'Topics not found' : 'Topic not found';
       throw new HttpError(errorMessage, 404);
     }
 
