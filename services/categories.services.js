@@ -28,7 +28,12 @@ export const createCategory = async ({ parentId, ...categoryData }) => {
       );
     }
 
+    // add association between category and parent category topics
     await category.setParent(parentCategory);
+    const topicsParentCategory = await parentCategory.getTopics();
+    if (topicsParentCategory.length > 0) {
+      await category.setTopics(topicsParentCategory)
+    }
     return category;
   } catch (error) {
     if (error.name === 'SequelizeValidationError') {
@@ -146,6 +151,12 @@ export const updateCategory = async (id, { parentId, ...toUpdate }) => {
       ),
 
     ])
+
+    const topicsParentCategory = await parentCategory.getTopics();
+    if (topicsParentCategory.length > 0) {
+      await category.setTopics(topicsParentCategory)
+    }
+
   } catch (error) {
     throw new HttpError(
       error.message || 'Something went wrong',

@@ -19,6 +19,7 @@ import {
 
 export const createUser = async ({ topicId, roleId, ...data }, host) => {
   try {
+    await sequelize.transaction(async (transaction) => {});
     // Create user and find topic
     const topicIds = topicId ? Array.from(topicId) : [];
     const [topics, role] = await Promise.all([
@@ -28,6 +29,7 @@ export const createUser = async ({ topicId, roleId, ...data }, host) => {
             [Op.in]: topicIds,
           },
         },
+        include: ['children']
       }),
       await Role.findByPk(roleId),
     ]);
@@ -44,23 +46,24 @@ export const createUser = async ({ topicId, roleId, ...data }, host) => {
     const user = await sequelize.transaction(async (transaction) => {
       const createdUser = await User.create(
         { ...data, status: PENDING },
-        { transaction },
+        { transaction }
       );
       await Promise.all([
-        topics && topics.length > 0 && (await createdUser.setTopics(topics, { transaction })),
+        topics &&
+          topics.length > 0 &&
+          (await createdUser.setTopics(topics, { transaction })),
         role && (await createdUser.setRole(role, { transaction })),
       ]);
+      await sendMail(
+        confirmRegistrationEmail({
+          userEmail: createdUser.email,
+          userName: createdUser.firstname,
+          host,
+          token: createdUser.confirmationToken,
+        })
+      );
       return createdUser;
     });
-
-    await sendMail(
-      confirmRegistrationEmail({
-        userEmail: user.email,
-        userName: user.firstname,
-        host,
-        token: user.confirmationToken,
-      }),
-    );
 
     return user.getPublicData();
   } catch (error) {
@@ -180,7 +183,9 @@ export const updateUser = async (
 
     // Prevent create another super admin
     if (
-      user.role.name !== SUPERADMIN && roleToUpdate && roleToUpdate.name === SUPERADMIN
+      user.role.name !== SUPERADMIN &&
+      roleToUpdate &&
+      roleToUpdate.name === SUPERADMIN
     ) {
       throw new HttpError('This action is not allowed', 403);
     }
@@ -199,9 +204,8 @@ export const updateUser = async (
     if (result[0] === 0) {
       throw new HttpError('User was not updated', 400);
     }
-    const updatedUser = await User.findByPk(id, { include: ['role']});
+    const updatedUser = await User.findByPk(id, { include: ['role'] });
     return updatedUser.getPublicData();
-
   } catch (error) {
     throw new HttpError(
       error.message || 'Something went wrong',
@@ -291,11 +295,24 @@ export const getUserTopics = async (authUser) => {
     const authUserRole = await authUser.getRole();
 
     if (authUserRole.name === SUPERADMIN || authUserRole === ADMIN) {
-      const allTopics = await Topic.findAll();
+      const allTopics = await Topic.findAll({
+        where: {
+          '$children.id$': null,
+        },
+        include: ['children'],
+        order: [['createdAT', 'ASC']],
+      });
+
       return allTopics;
     }
 
-    const userTopics = await authUser.getTopics();
+    const userTopics = await authUser.getTopics({
+      where: {
+        '$children.id$': null,
+      },
+      include: ['children'],
+      order: [['createdAT', 'ASC']],
+    });
     return userTopics;
   } catch (error) {
     throw new HttpError(

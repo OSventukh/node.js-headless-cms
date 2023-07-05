@@ -12,7 +12,6 @@ const PORT = process.env.PORT || 5000;
     app.listen(PORT);
     
   } catch (error) {
-    console.log(error)
     logger.error('server error', error)
   }
 })());

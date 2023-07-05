@@ -131,10 +131,6 @@ export function topicValidator() {
   ];
 }
 
-export function idValidator(id) {
-  return [param(id).optional().isInt().escape()];
-}
-
 export function paginationValidator() {
   return [
     query('page').optional().toInt(),

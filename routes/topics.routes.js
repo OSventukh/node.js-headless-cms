@@ -14,7 +14,6 @@ import {
 
 import {
   topicValidator,
-  idValidator,
   paginationValidator,
 } from '../utils/validators.js';
 
@@ -51,7 +50,6 @@ router.patch(
   auth,
   rolesAccess([SUPERADMIN, ADMIN]),
   topicValidator(),
-  idValidator('topicId'),
   checkValidation,
   upload.single('topic-image'),
   updateTopicController,
@@ -71,7 +69,6 @@ router.delete(
   '/topics/:topicId',
   auth,
   rolesAccess([SUPERADMIN, ADMIN]),
-  idValidator('topicId'),
   checkValidation,
   deleteTopicController,
 );
@@ -80,7 +77,6 @@ router.delete(
   '/topics',
   auth,
   rolesAccess([SUPERADMIN, ADMIN]),
-  idValidator('topicId'),
   checkValidation,
   deleteTopicController,
 );

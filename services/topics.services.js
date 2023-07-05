@@ -127,9 +127,7 @@ export const getTopics = async (
     const { offset, limit } = getPagination(page, size);
 
     const result = await Topic.findAndCountAll({
-      where: {
-        ...whereObj,
-      },
+      where: whereObj,
       include: [
         ...include,
         include.includes('children') &&
@@ -137,6 +135,7 @@ export const getTopics = async (
             model: Topic,
             as: 'children',
             attributes: [...attributes, 'id'],
+            order,
           },
         include.includes('categories') && {
           model: Category,
@@ -144,11 +143,13 @@ export const getTopics = async (
           where: {
             parentId: null,
           },
+          order,
           include: [
             {
               model: Category,
               as: 'children',
               required: false,
+              order,
             },
           ].filter(Boolean),
           required: false,

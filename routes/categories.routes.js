@@ -11,7 +11,6 @@ import {
 
 import {
   categoryValidator,
-  idValidator,
   paginationValidator,
 } from '../utils/validators.js';
 import checkValidation from '../middlewares/validation.js';
@@ -28,7 +27,6 @@ router.get(
 
 router.get(
   '/categories/:categoryId',
-  idValidator('categoryId'),
   paginationValidator(),
   checkValidation,
   getCategoriesController,
@@ -47,7 +45,6 @@ router.patch(
   '/categories/:categoryId',
   auth,
   rolesAccess([SUPERADMIN, ADMIN]),
-  idValidator('categoryId'),
   categoryValidator(),
   checkValidation,
   updateCategoryController,
@@ -65,7 +62,6 @@ router.patch(
 router.delete(
   '/categories/:categoryId',
   auth,
-  idValidator('categoryId'),
   checkValidation,
   deleteCategoryController,
 );

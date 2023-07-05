@@ -13,7 +13,6 @@ import {
 
 import {
   postValidator,
-  idValidator,
   paginationValidator,
 } from '../utils/validators.js';
 import checkValidation from '../middlewares/validation.js';
@@ -23,7 +22,6 @@ const router = express.Router();
 
 router.get(
   '/posts/:postId',
-  idValidator('postId'),
   paginationValidator(),
   checkValidation,
   getPostsController,
@@ -57,7 +55,6 @@ router.patch(
   rolesAccess([SUPERADMIN, ADMIN, MODER, WRITER]),
   canEditPost,
   postValidator(),
-  idValidator('postId'),
   checkValidation,
   updatePostController,
 );
@@ -77,7 +74,6 @@ router.delete(
   auth,
   rolesAccess([SUPERADMIN, ADMIN, MODER, WRITER]),
   canEditPost,
-  idValidator('postId'),
   checkValidation,
   deletePostController,
 );
