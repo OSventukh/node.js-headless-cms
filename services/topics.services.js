@@ -135,7 +135,6 @@ export const getTopics = async (
             model: Topic,
             as: 'children',
             attributes: [...attributes, 'id'],
-            order,
           },
         include.includes('categories') && {
           model: Category,
@@ -143,22 +142,28 @@ export const getTopics = async (
           where: {
             parentId: null,
           },
-          order,
           include: [
             {
               model: Category,
               as: 'children',
               required: false,
-              order,
             },
           ].filter(Boolean),
           required: false,
         },
       ].filter(Boolean),
-      order,
+      order: [
+        ...order,
+        include.includes('categories') && [
+          { model: Category, as: 'categories' },
+          'createdAt',
+          'ASC',
+        ],
+      ].filter(Boolean),
       offset,
       limit,
       ...(columns && { attributes: ['id', ...attributes] }),
+      subQuery: false,
     });
     return result;
   } catch (error) {

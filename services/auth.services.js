@@ -175,7 +175,6 @@ export const refreshTokens = async (oldRefreshToken, userIp) => {
     }
     const newRefreshToken = generateRefreshToken({ id: user.id });
     const newAccessToken = generateAccessToken(user.getTokenData());
-
     await Promise.all([
       UserToken.create({
         ip: userIp,

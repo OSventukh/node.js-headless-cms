@@ -58,10 +58,6 @@ export const createPost = async ({
       throw new HttpError('No topic selected', 400);
     }
 
-    if (!categories || categories.length === 0) {
-      throw new HttpError('No topic selected', 400);
-    }
-
     const post = await Post.create({ ...transformedData, userId });
     // Add categories and topics to post
     await Promise.all([

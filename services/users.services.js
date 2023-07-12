@@ -140,7 +140,6 @@ export const updateUser = async (
 ) => {
   try {
     const topicIds = topicId ? Array.from(topicId) : [];
-
     // Find user and topics in database
     const [user, topics, roleToUpdate] = await Promise.all([
       User.findByPk(id, { include: ['role'] }),
@@ -302,7 +301,6 @@ export const getUserTopics = async (authUser) => {
         include: ['children'],
         order: [['createdAT', 'ASC']],
       });
-
       return allTopics;
     }
 
@@ -313,6 +311,7 @@ export const getUserTopics = async (authUser) => {
       include: ['children'],
       order: [['createdAT', 'ASC']],
     });
+
     return userTopics;
   } catch (error) {
     throw new HttpError(

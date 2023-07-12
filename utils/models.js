@@ -31,7 +31,10 @@ export function buildWhereObject(whereQuery = {}, avaibleWheres = []) {
 
 export async function getOrder(orderQuery = '', Model, associations = []) {
   const ordersArr = [];
-  if (!orderQuery) return [['createdAt', 'ASC']];
+  if (!orderQuery.includes('createdAt')) {
+    ordersArr.push(['createdAt', 'ASC'])
+  }
+  if (!orderQuery) return ordersArr;
   try {
     const model = await Model.describe();
     orderQuery.split(',').forEach((item) => {

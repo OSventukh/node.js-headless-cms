@@ -95,8 +95,7 @@ export const deletePostController = async (req, res, next) => {
 
 export const uploadPostImageController = (req, res) => {
   const host = req.header('host');
-  const protocol = req.protocol;
-  const imageUrl = `${protocol}://${host}/uploads/images/posts/${new Date().toISOString().slice(0, 10)}/${req.file.filename}`;
+  const imageUrl = `https://${host}/uploads/images/posts/${new Date().toISOString().slice(0, 10)}/${req.file.filename}`;
   res.json({
     location: imageUrl,
   });
