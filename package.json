@@ -7,7 +7,6 @@
   "scripts": {
     "test": "cross-env NODE_ENV=test vitest --no-threads",
     "test:coverage": "cross-env NODE_ENV=test vitest --no-threads --coverage",
-    
     "dev": "cross-env NODE_ENV=development nodemon server.js",
     "migrate": "sequelize-cli db:migrate"
   },
@@ -22,6 +21,7 @@
   },
   "homepage": "https://github.com/OSventukh/vethealth-backend#readme",
   "dependencies": {
+    "@google-analytics/data": "^3.3.0",
     "bcrypt": "^5.0.1",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
