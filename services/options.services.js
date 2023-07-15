@@ -15,7 +15,10 @@ export const createOption = async (optionData) => {
       const errorMessage = `Option "${fieldValue}" is already in use`;
       throw new HttpError(errorMessage, 409);
     }
-    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+    throw new HttpError(
+      error.message || 'Something went wrong',
+      error.statusCode || 500
+    );
   }
 };
 
@@ -30,7 +33,10 @@ export const getOptions = async (whereQuery = {}) => {
     });
     return result;
   } catch (error) {
-    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+    throw new HttpError(
+      error.message || 'Something went wrong',
+      error.statusCode || 500
+    );
   }
 };
 
@@ -51,12 +57,15 @@ export const updateOption = async (name, updatedValue) => {
         where: {
           name,
         },
-      },
+      }
     );
     if (result[0] === 0) {
       throw new HttpError('Option was not updated', 400);
     }
   } catch (error) {
-    throw new HttpError(error.message || 'Something went wrong', error.statusCode || 500);
+    throw new HttpError(
+      error.message || 'Something went wrong',
+      error.statusCode || 500
+    );
   }
 };
