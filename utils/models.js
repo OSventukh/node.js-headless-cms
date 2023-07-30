@@ -65,7 +65,7 @@ export async function getOrder(orderQuery = '', Model, associations = []) {
 }
 
 export function getPagination(page, size) {
-  const limit = size || config.defaultRecordsPerPage;
-  const offset = page && page > 0 ? size * (page - 1) : 0;
+  const limit = +size || config.defaultRecordsPerPage;
+  const offset = page && +page > 0 ? +size * (+page - 1) : 0;
   return { limit, offset };
 }
