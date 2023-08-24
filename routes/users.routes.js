@@ -22,6 +22,7 @@ const router = express.Router();
 
 router.get(
   '/users/:userId',
+  auth,
   paginationValidator(),
   checkValidation,
   getUsersController,
@@ -29,6 +30,7 @@ router.get(
 
 router.get(
   '/users',
+  auth,
   paginationValidator(),
   checkValidation,
   getUsersController,

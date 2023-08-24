@@ -96,10 +96,18 @@ export default (sequelize, DataTypes) => {
       sequelize,
       modelName: 'User',
       paranoid: true,
+      defaultScope: { attributes: { exclude: ['password', 'confirmationToken', 'confirmationTokenExpirationDate'] } },
+      scopes: {
+        login: {
+          attributes: { include: ['password', 'confirmationToken', 'confirmationTokenExpirationDate']}
+        }
+      },
       hooks: {
         beforeCreate: async (record) => {
           record.confirmationToken = await generateConfirmationToken(User);
-          record.confirmationTokenExpirationDate = new Date(Date.now() + ms('1 day'));
+          record.confirmationTokenExpirationDate = new Date(
+            Date.now() + ms('1 day')
+          );
           if (record.password) {
             record.password = await hashPassword(record.password);
           }

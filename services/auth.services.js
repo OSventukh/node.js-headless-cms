@@ -48,7 +48,7 @@ export const adminCheck = async () => {
 
 export const login = async (email, password, userIp) => {
   try {
-    const user = await User.findOne({
+    const user = await User.scope('login').findOne({
       where: {
         email,
       },
@@ -221,7 +221,7 @@ export const logout = async (refreshToken, accessToken) => {
 
 export const getPendingUser = async (confirmationToken) => {
   try {
-    const user = await User.findOne({
+    const user = await User.scope('login').findOne({
       where: {
         confirmationToken,
       },
@@ -243,7 +243,7 @@ export const getPendingUser = async (confirmationToken) => {
 
 export const confirmUser = async (confirmationToken, password) => {
   try {
-    const user = await User.findOne({
+    const user = await User.scope('login').findOne({
       where: {
         confirmationToken,
       },
@@ -270,7 +270,7 @@ export const confirmUser = async (confirmationToken, password) => {
 
 export const resetPassword = async (email, host) => {
   try {
-    const user = await User.findOne({
+    const user = await User.scope('login').findOne({
       where: {
         email,
       },

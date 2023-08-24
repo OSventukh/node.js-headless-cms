@@ -1,5 +1,5 @@
 import { Op } from 'sequelize';
-import { sequelize, Post, Topic, Category } from '../models/index.js';
+import { sequelize, Post, Topic, Category, User } from '../models/index.js';
 import HttpError from '../utils/http-error.js';
 import slugifyString from '../utils/slugify.js';
 import {
@@ -126,6 +126,11 @@ export const getPosts = async (
       where: whereObj,
       include: [
         ...include,
+        include.includes('author') && {
+          model: User,
+          as: 'author',
+          attributes: ['id', 'firstname']
+        },
         topic && {
           model: Topic,
           as: 'topics',
