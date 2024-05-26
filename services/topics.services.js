@@ -219,7 +219,6 @@ export const updateTopic = async (id, { pageId, parentId, ...toUpdate }) => {
       );
     }
 
-    // if (awaittopic.getChildren())
     const categoriesWithChild = await getAllChildCategories(categories);
 
     const result = await sequelize.transaction(async (transaction) => {

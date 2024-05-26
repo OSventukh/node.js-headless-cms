@@ -38,7 +38,7 @@ export const createUser = async ({ topicId, roleId, ...data }, host) => {
       throw new HttpError('Role not found', 404);
     }
 
-    // Prevent creante another super admin
+    // Prevent creating another super admin
     if (role.name === SUPERADMIN) {
       throw new HttpError('This action is not allowed', 403);
     }
